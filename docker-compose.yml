@@ -10,11 +10,11 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: DealershipDB
     ports:
-      - "3306:3306"
+      - "3307:3306"
   # flask app service
   app:
     build: .
-    command: python run.py
+    command: flask run --host=0.0.0.0
     volumes:
       - .:/app
     ports:
