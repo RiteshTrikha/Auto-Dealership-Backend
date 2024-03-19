@@ -10,6 +10,12 @@ def create_app(config_class=Config):
     
     db.init_app(app)
 
+    from app.customer import customer_bp
+    app.register_blueprint(customer_bp)
+
+    from app.user import user_bp
+    app.register_blueprint(user_bp)
+
     from app.scheduling import scheduling_bp
     app.register_blueprint(scheduling_bp)
 
@@ -18,9 +24,6 @@ def create_app(config_class=Config):
 
     from app.purchasing import purchasing_bp
     app.register_blueprint(purchasing_bp)
-
-    from app.shared import shared_bp
-    app.register_blueprint(shared_bp)
     
     from app.auth import auth_bp
     app.register_blueprint(auth_bp)

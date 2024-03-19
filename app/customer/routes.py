@@ -1,13 +1,13 @@
 from flask import jsonify, request
-from . import shared_bp
+from . import customer_bp
 from .models import *
 from app import db
 
-@shared_bp.route('/api/shared/hello', methods=['GET'])
+@customer_bp.route('/api/customer/hello', methods=['GET'])
 def hello():
-    return jsonify({'message': 'Hello from shared_bp!'})
+    return jsonify({'message': 'Hello from customer_bp!'})
 
-@shared_bp.route('/api/shared/customer/<int:customer_id>', methods=['GET'])
+@customer_bp.route('/api/customer/<int:customer_id>', methods=['GET'])
 def get_customer(customer_id):
     customer = db.session.query(Customer).filter(Customer.customer_id == customer_id).first()
     if customer:
