@@ -1,6 +1,9 @@
-from flask import Flask
+from flask import Flask, current_app, g
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
+from services.scheduling_service import ScheduleService
+from services.negotiation_service import NegotiationService
+from services.purchasing_service import PurchasingService
 
 db = SQLAlchemy()
 
@@ -10,6 +13,13 @@ def create_app(config_class=Config):
     
     db.init_app(app)
 
+    # Registering Services
+    app.schedule_service = ScheduleService()
+    app.negotiation_service = NegotiationService()
+    app.purchasing_service = PurchasingService()
+
+
+    # Registering Blueprints
     from app.customer import customer_bp
     app.register_blueprint(customer_bp)
 
@@ -27,5 +37,11 @@ def create_app(config_class=Config):
     
     from app.auth import auth_bp
     app.register_blueprint(auth_bp)
+
+    @app.before_request
+    def before_request():
+        g.schedule_service = current_app.schedule_service
+        g.negotiation_service = current_app.negotiation_service
+        g.purchasing_service = current_app.purchasing_service
 
     return app
