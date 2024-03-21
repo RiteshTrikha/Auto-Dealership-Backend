@@ -15,12 +15,13 @@ class Customer(Base):
     first_name = Column(String(32), nullable=False)
     last_name = Column(String(32))
     email = Column(String(254))
-    password = Column(String(32), nullable=False)
+    password = Column(String(72), nullable=False)
     ssn = Column(String(11))
     birth_date = Column(Date)
     drivers_license = Column(String(16))
     address_id = Column(Integer)
     create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
+    status = Column(Integer, nullable=False)
     
     # serializer
     def serialize(self):
@@ -34,5 +35,6 @@ class Customer(Base):
             'birth_date': self.birth_date,
             'drivers_license': self.drivers_license,
             'address_id': self.address_id,
-            'create_time': self.create_time
+            'create_time': self.create_time,
+            'status': self.status
         }

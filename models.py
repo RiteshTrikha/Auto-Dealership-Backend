@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, INTEGER, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,7 +12,7 @@ class RetailItem(Base):
 
     retail_item_id = Column(INTEGER, primary_key=True, unique=True)
     name = Column(String(45))
-    price = Column(Integer)
+    price = Column(INTEGER)
     description = Column(String(254))
 
 
@@ -28,15 +28,16 @@ class Vehical(Base):
 
     vehical_id = Column(INTEGER, primary_key=True, unique=True)
     vin = Column(String(17), nullable=False)
-    price = Column(Integer)
+    price = Column(INTEGER)
     year = Column(String(4))
     make = Column(String(45))
     model = Column(String(45))
-    miles = Column(Integer)
-    mpg = Column(Integer)
+    miles = Column(INTEGER)
+    mpg = Column(INTEGER)
+    color = Column(String(45))
     fuel_type = Column(String(45))
     transmission = Column(String(45))
-    vehical_status = Column(Integer)
+    vehical_status = Column(INTEGER)
 
 
 class CreditReport(Base):
@@ -44,7 +45,7 @@ class CreditReport(Base):
 
     credit_report_id = Column(INTEGER, primary_key=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    score = Column(Integer, nullable=False)
+    score = Column(INTEGER, nullable=False)
 
     customer = relationship('Customer')
 
@@ -62,13 +63,13 @@ class CustomerVehical(Base):
     customer = relationship('Customer')
 
 
-class Employee(Base):
-    __tablename__ = 'employee'
+class user(Base):
+    __tablename__ = 'user'
 
-    employee_id = Column(INTEGER, primary_key=True, unique=True)
+    user_id = Column(INTEGER, primary_key=True, unique=True)
     role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
     email = Column(String(255))
-    password = Column(String(32), nullable=False)
+    password = Column(String(72), nullable=False)
     first_name = Column(String(45))
     last_name = Column(String(45))
     create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
@@ -82,7 +83,7 @@ class Negotiation(Base):
     negotiation_id = Column(INTEGER, primary_key=True, unique=True)
     vehical_id = Column(ForeignKey('vehical.vehical_id'), nullable=False, index=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    negotiation_status = Column(String(45), nullable=False, server_default=text("'Active'"))
+    negotiation_status = Column(INTEGER, nullable=False)
     start_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     end_date = Column(DateTime)
 
@@ -96,11 +97,11 @@ class Purchase(Base):
     purchase_id = Column(INTEGER, primary_key=True, unique=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
     purchase_date = Column(DateTime)
-    purchase_type = Column(String(45))
-    payment_method = Column(String(45))
-    sub_total = Column(Integer)
+    purchase_type = Column(INTEGER)
+    payment_method = Column(INTEGER)
+    sub_total = Column(INTEGER)
     tax = Column(Float)
-    total = Column(Integer)
+    total = Column(INTEGER)
 
     customer = relationship('Customer')
 
@@ -112,7 +113,7 @@ class TimeSlot(Base):
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
-    is_available = Column(TINYINT)
+    is_available = Column(INTEGER, nullable=False)
 
     role = relationship('Role')
 
@@ -125,10 +126,10 @@ class Log(Base):
     message = Column(String(512))
     date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     customer_id = Column(ForeignKey('customer.customer_id'), index=True)
-    employee_id = Column(ForeignKey('employee.employee_id'), index=True)
+    user_id = Column(ForeignKey('user.user_id'), index=True)
 
     customer = relationship('Customer')
-    employee = relationship('Employee')
+    user = relationship('user')
 
 
 class Appointment(Base):
@@ -137,12 +138,12 @@ class Appointment(Base):
     appointment_id = Column(INTEGER, primary_key=True, unique=True)
     time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    employee_id = Column(ForeignKey('employee.employee_id'), index=True)
+    user_id = Column(ForeignKey('user.user_id'), index=True)
     appointment_type = Column(INTEGER, nullable=False)
-    status = Column(String(45))
+    status = Column(INTEGER, nullable=False)
 
     customer = relationship('Customer')
-    employee = relationship('Employee')
+    user = relationship('user')
     time_slot = relationship('TimeSlot')
 
 
@@ -152,9 +153,9 @@ class Finance(Base):
     finance_id = Column(INTEGER, primary_key=True, unique=True)
     purchase_id = Column(ForeignKey('purchase.purchase_id'), nullable=False, unique=True)
     apy = Column(Float)
-    term = Column(Integer)
-    paid = Column(Integer)
-    finance_status = Column(Integer)
+    term = Column(INTEGER)
+    paid = Column(INTEGER)
+    finance_status = Column(INTEGER)
 
     purchase = relationship('Purchase')
 
@@ -164,9 +165,9 @@ class Offer(Base):
 
     offer_id = Column(INTEGER, primary_key=True, unique=True)
     negotiation_id = Column(ForeignKey('negotiation.negotiation_id'), nullable=False, index=True)
-    offer_price = Column(Integer, nullable=False)
+    offer_price = Column(INTEGER, nullable=False)
     offer_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-    offer_status = Column(String(45))
+    offer_status = Column(INTEGER, nullable=False)
 
     negotiation = relationship('Negotiation')
 
@@ -191,7 +192,7 @@ class PurchaseItem(Base):
     purchase_item_id = Column(INTEGER, primary_key=True, unique=True)
     purchase_id = Column(ForeignKey('purchase.purchase_id'), nullable=False, unique=True)
     item_id = Column(INTEGER, nullable=False, unique=True)
-    price = Column(Integer)
+    price = Column(INTEGER)
 
     purchase = relationship('Purchase')
 
@@ -214,8 +215,8 @@ class CounterOffer(Base):
 
     counter_offer_id = Column(INTEGER, primary_key=True, unique=True)
     offer_id = Column(ForeignKey('offer.offer_id'), nullable=False, unique=True)
-    counter_price = Column(Integer, nullable=False)
+    counter_price = Column(INTEGER, nullable=False)
     counter_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-    counter_status = Column(String(45))
+    counter_status = Column(INTEGER, nullable=False)
 
     offer = relationship('Offer')
