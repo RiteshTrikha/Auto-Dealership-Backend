@@ -15,7 +15,7 @@ class Customer(Base):
     first_name = Column(String(32), nullable=False)
     last_name = Column(String(32))
     email = Column(String(254))
-    password = Column(String(32), nullable=False)
+    password = Column(String(72), nullable=False)
     ssn = Column(String(11))
     birth_date = Column(Date)
     drivers_license = Column(String(16))

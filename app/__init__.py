@@ -13,11 +13,6 @@ def create_app(config_class=Config):
     
     db.init_app(app)
 
-    # Registering Services
-    app.schedule_service = ScheduleService()
-    app.negotiation_service = NegotiationService()
-    app.purchasing_service = PurchasingService()
-
 
     # Registering Blueprints
     from app.customer import customer_bp
@@ -25,6 +20,9 @@ def create_app(config_class=Config):
 
     from app.user import user_bp
     app.register_blueprint(user_bp)
+
+    from app.services import services_bp
+    app.register_blueprint(services_bp)
 
     from app.scheduling import scheduling_bp
     app.register_blueprint(scheduling_bp)
@@ -37,6 +35,11 @@ def create_app(config_class=Config):
     
     from app.auth import auth_bp
     app.register_blueprint(auth_bp)
+
+    # Registering Services
+    app.schedule_service = ScheduleService()
+    app.negotiation_service = NegotiationService()
+    app.purchasing_service = PurchasingService()
 
     @app.before_request
     def before_request():

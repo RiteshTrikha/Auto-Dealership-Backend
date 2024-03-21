@@ -34,6 +34,7 @@ class Vehical(Base):
     model = Column(String(45))
     miles = Column(Integer)
     mpg = Column(Integer)
+    color = Column(String(45))
     fuel_type = Column(String(45))
     transmission = Column(String(45))
     vehical_status = Column(Integer)
@@ -62,13 +63,13 @@ class CustomerVehical(Base):
     customer = relationship('Customer')
 
 
-class Employee(Base):
-    __tablename__ = 'employee'
+class user(Base):
+    __tablename__ = 'user'
 
-    employee_id = Column(INTEGER, primary_key=True, unique=True)
+    user_id = Column(INTEGER, primary_key=True, unique=True)
     role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
     email = Column(String(255))
-    password = Column(String(32), nullable=False)
+    password = Column(String(72), nullable=False)
     first_name = Column(String(45))
     last_name = Column(String(45))
     create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
@@ -125,10 +126,10 @@ class Log(Base):
     message = Column(String(512))
     date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     customer_id = Column(ForeignKey('customer.customer_id'), index=True)
-    employee_id = Column(ForeignKey('employee.employee_id'), index=True)
+    user_id = Column(ForeignKey('user.user_id'), index=True)
 
     customer = relationship('Customer')
-    employee = relationship('Employee')
+    user = relationship('user')
 
 
 class Appointment(Base):
@@ -137,12 +138,12 @@ class Appointment(Base):
     appointment_id = Column(INTEGER, primary_key=True, unique=True)
     time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    employee_id = Column(ForeignKey('employee.employee_id'), index=True)
+    user_id = Column(ForeignKey('user.user_id'), index=True)
     appointment_type = Column(INTEGER, nullable=False)
     status = Column(String(45))
 
     customer = relationship('Customer')
-    employee = relationship('Employee')
+    user = relationship('user')
     time_slot = relationship('TimeSlot')
 
 
