@@ -1,9 +1,9 @@
 from flask import Flask, current_app, g
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
-from services.scheduling_service import ScheduleService
-from services.negotiation_service import NegotiationService
-from services.purchasing_service import PurchasingService
+from app.services.scheduling_service import ScheduleService
+from app.services.negotiation_service import NegotiationService
+from app.services.purchasing_service import PurchasingService
 
 db = SQLAlchemy()
 
