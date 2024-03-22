@@ -193,6 +193,3 @@ class AppointmentDetail(Base):
 
     appointment = relationship('Appointment')
     customer_vehical = relationship('CustomerVehical')
-
-
-
