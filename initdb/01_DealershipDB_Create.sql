@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`time_slot` (
   `time_slot_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `start_time` DATETIME NULL,
   `end_time` DATETIME NULL,
-  `role_id` INT UNSIGNED NOT NULL,
+  `time_slot_type` INT NOT NULL,
   `is_available` INT NOT NULL,
   PRIMARY KEY (`time_slot_id`),
   UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC) VISIBLE,
