@@ -112,10 +112,8 @@ class TimeSlot(Base):
     time_slot_id = Column(INTEGER, primary_key=True, unique=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
+    time_slot_type = Column(INTEGER, nullable=False)
     is_available = Column(INTEGER, nullable=False)
-
-    role = relationship('Role')
 
 
 class Log(Base):
