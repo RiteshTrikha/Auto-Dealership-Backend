@@ -1,9 +1,6 @@
 from flask import Flask, current_app, g
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
-from app.services.scheduling_service import ScheduleService
-from app.services.negotiation_service import NegotiationService
-from app.services.purchasing_service import PurchasingService
 
 db = SQLAlchemy()
 
@@ -36,15 +33,30 @@ def create_app(config_class=Config):
     from app.auth import auth_bp
     app.register_blueprint(auth_bp)
 
+    from app.inventory import inventory_bp
+    app.register_blueprint(inventory_bp)
+
+    from app.routes import routes_bp
+    app.register_blueprint(routes_bp)
+
     # Registering Services
+    from app.services.scheduling_service import ScheduleService
     app.schedule_service = ScheduleService()
+
+    from app.services.negotiation_service import NegotiationService
     app.negotiation_service = NegotiationService()
+
+    from app.services.purchasing_service import PurchasingService
     app.purchasing_service = PurchasingService()
+
+    from app.services.inventory_service import InventoryService
+    app.inventory_service = InventoryService()
 
     @app.before_request
     def before_request():
         g.schedule_service = current_app.schedule_service
         g.negotiation_service = current_app.negotiation_service
         g.purchasing_service = current_app.purchasing_service
+        g.inventory_service = current_app.inventory_service
 
     return app
