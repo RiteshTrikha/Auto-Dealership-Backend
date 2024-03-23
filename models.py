@@ -7,37 +7,12 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 metadata = Base.metadata
 
-class RetailItem(Base):
-    __tablename__ = 'retail_item'
-
-    retail_item_id = Column(INTEGER, primary_key=True, unique=True)
-    name = Column(String(45))
-    price = Column(INTEGER)
-    description = Column(String(254))
-
 
 class Role(Base):
     __tablename__ = 'role'
 
     role_id = Column(INTEGER, primary_key=True, unique=True)
     role = Column(INTEGER, nullable=False)
-
-
-class Vehical(Base):
-    __tablename__ = 'vehical'
-
-    vehical_id = Column(INTEGER, primary_key=True, unique=True)
-    vin = Column(String(17), nullable=False)
-    price = Column(INTEGER)
-    year = Column(String(4))
-    make = Column(String(45))
-    model = Column(String(45))
-    miles = Column(INTEGER)
-    mpg = Column(INTEGER)
-    color = Column(String(45))
-    fuel_type = Column(String(45))
-    transmission = Column(String(45))
-    vehical_status = Column(INTEGER)
 
 
 class CreditReport(Base):

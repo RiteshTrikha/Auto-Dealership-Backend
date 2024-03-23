@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`vehical` (
   `color` VARCHAR(45) NULL,
   `fuel_type` VARCHAR(45) NULL,
   `transmission` VARCHAR(45) NULL,
+  `image` VARCHAR(254) NULL,
   `vehical_status` INT NULL,
   PRIMARY KEY (`vehical_id`),
   UNIQUE INDEX `vehical_id_UNIQUE` (`vehical_id` ASC) VISIBLE);
@@ -241,13 +242,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`time_slot` (
   `time_slot_type` INT NOT NULL,
   `is_available` INT NOT NULL,
   PRIMARY KEY (`time_slot_id`),
-  UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC) VISIBLE,
-  INDEX `fk_role_idx` (`role_id` ASC) VISIBLE,
-  CONSTRAINT `fk_time_slot_role`
-    FOREIGN KEY (`role_id`)
-    REFERENCES `DealershipDB`.`role` (`role_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
+  UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC) VISIBLE);
 
 
 -- -----------------------------------------------------
