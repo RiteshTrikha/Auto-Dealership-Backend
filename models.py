@@ -38,18 +38,7 @@ class CustomerVehical(Base):
     customer = relationship('Customer')
 
 
-class user(Base):
-    __tablename__ = 'user'
 
-    user_id = Column(INTEGER, primary_key=True, unique=True)
-    role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
-    email = Column(String(255))
-    password = Column(String(72), nullable=False)
-    first_name = Column(String(45))
-    last_name = Column(String(45))
-    create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
-
-    role = relationship('Role')
 
 
 class Negotiation(Base):
