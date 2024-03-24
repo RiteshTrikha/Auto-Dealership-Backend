@@ -105,16 +105,7 @@ class Purchase(Base):
     customer = relationship('Customer')
 
 
-class TimeSlot(Base):
-    __tablename__ = 'time_slot'
 
-    time_slot_id = Column(INTEGER, primary_key=True, unique=True)
-    start_time = Column(DateTime)
-    end_time = Column(DateTime)
-    role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
-    is_available = Column(TINYINT)
-
-    role = relationship('Role')
 
 
 class Log(Base):
@@ -131,19 +122,7 @@ class Log(Base):
     employee = relationship('Employee')
 
 
-class Appointment(Base):
-    __tablename__ = 'appointment'
 
-    appointment_id = Column(INTEGER, primary_key=True, unique=True)
-    time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    employee_id = Column(ForeignKey('employee.employee_id'), index=True)
-    appointment_type = Column(INTEGER, nullable=False)
-    status = Column(String(45))
-
-    customer = relationship('Customer')
-    employee = relationship('Employee')
-    time_slot = relationship('TimeSlot')
 
 
 class Finance(Base):
@@ -196,17 +175,7 @@ class PurchaseItem(Base):
     purchase = relationship('Purchase')
 
 
-class AppointmentDetail(Base):
-    __tablename__ = 'appointment_details'
 
-    appointment_details_id = Column(INTEGER, primary_key=True, unique=True)
-    appointment_id = Column(ForeignKey('appointment.appointment_id'), nullable=False, index=True)
-    customer_vehical_id = Column(ForeignKey('customer_vehical.customer_vehical_id'), nullable=False, index=True)
-    customer_message = Column(String(512))
-    notes = Column(String(512))
-
-    appointment = relationship('Appointment')
-    customer_vehical = relationship('CustomerVehical')
 
 
 class CounterOffer(Base):
