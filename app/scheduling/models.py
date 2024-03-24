@@ -44,6 +44,15 @@ class AppointmentDetail(Base):
         db.session.add(appointment_details)
         db.session.commit()
         return appointment_details
+    
+    def update_appointment_details(self, appointment_details_id, appointment_id, customer_vehical_id, customer_message, notes):
+        appointment_details = db.session.query(AppointmentDetail).filter_by(appointment_details_id=appointment_details_id).first()
+        appointment_details.appointment_id = appointment_id
+        appointment_details.customer_vehical_id = customer_vehical_id
+        appointment_details.customer_message = customer_message
+        appointment_details.notes = notes
+        db.session.commit()
+        return appointment_details
 
 class Appointment(Base):
     __tablename__ = 'appointment'
