@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`negotiation` (
   `negotiation_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `vehical_id` INT UNSIGNED NOT NULL,
   `customer_id` INT UNSIGNED NOT NULL,
-  `negotiation_status` INT NOT NULL,
+  `negotiation_status` INT NOT NULL DEFAULT 1,
   `start_date` DATETIME NULL DEFAULT NOW(),
   `end_date` DATETIME NULL,
   PRIMARY KEY (`negotiation_id`),
@@ -138,36 +138,17 @@ DROP TABLE IF EXISTS `DealershipDB`.`offer` ;
 CREATE TABLE IF NOT EXISTS `DealershipDB`.`offer` (
   `offer_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `negotiation_id` INT UNSIGNED NOT NULL,
+  `offer_type` INT NOT NULL,
   `offer_price` INT NOT NULL,
   `offer_date` DATETIME NULL DEFAULT NOW(),
-  `offer_status` INT NOT NULL,
+  `offer_status` INT NOT NULL DEFAULT 1,
+  `message` VARCHAR(512) NULL,
   PRIMARY KEY (`offer_id`),
   UNIQUE INDEX `offer_counter_id_UNIQUE` (`offer_id` ASC) VISIBLE,
   INDEX `fk_negotiation_idx` (`negotiation_id` ASC) VISIBLE,
   CONSTRAINT `fk_offer_negotiation`
     FOREIGN KEY (`negotiation_id`)
     REFERENCES `DealershipDB`.`negotiation` (`negotiation_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-
--- -----------------------------------------------------
--- Table `DealershipDB`.`counter_offer`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`counter_offer` ;
-
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`counter_offer` (
-  `counter_offer_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `offer_id` INT UNSIGNED NOT NULL,
-  `counter_price` INT NOT NULL,
-  `counter_date` DATETIME NULL DEFAULT NOW(),
-  `counter_status` INT NOT NULL,
-  PRIMARY KEY (`counter_offer_id`),
-  UNIQUE INDEX `offer_counter_id_UNIQUE` (`offer_id` ASC) VISIBLE,
-  UNIQUE INDEX `counter_offer_id_UNIQUE` (`counter_offer_id` ASC) VISIBLE,
-  CONSTRAINT `fk_counter_offer_offer`
-    FOREIGN KEY (`offer_id`)
-    REFERENCES `DealershipDB`.`offer` (`offer_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
