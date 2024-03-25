@@ -3,6 +3,7 @@ from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, Strin
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from enum import Enum
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -30,29 +31,54 @@ class AppointmentDetail(Base):
             'notes': self.notes
         }
     
-    def get_appointment_details(self, appointment_id):
-        return db.session.query(AppointmentDetail).filter_by(appointment_id=appointment_id).all()
+    @classmethod
+    def get_all_appointment_details(cls):
+        try:
+            return db.session.query(AppointmentDetail).all()
+        except Exception as e:
+            raise e
     
-    def get_appointment_details_by_id(self, appointment_details_id):
-        return db.session.query(AppointmentDetail).filter_by(appointment_details_id=appointment_details_id).first()
+    @classmethod
+    def get_appointment_details_by_appointment_id(cls, appointment_id):
+        try:
+            return db.session.query(AppointmentDetail).filter_by(appointment_id=appointment_id).all()
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def get_appointment_details_by_appointment_details_id(cls, appointment_details_id):
+        try:
+            return db.session.query(AppointmentDetail).filter_by(appointment_details_id=appointment_details_id).first()
+        except Exception as e:
+            raise e
     
-    def get_appointment_details_by_customer_vehical_id(self, customer_vehical_id):
-        return db.session.query(AppointmentDetail).filter_by(customer_vehical_id=customer_vehical_id).all()
+    @classmethod
+    def get_appointment_details_by_customer_vehical_id(cls, customer_vehical_id):
+        try:
+            return db.session.query(AppointmentDetail).filter_by(customer_vehical_id=customer_vehical_id).all()
+        except Exception as e:
+            raise e
 
     def create_appointment_details(self, appointment_id, customer_vehical_id, customer_message, notes):
-        appointment_details = AppointmentDetail(appointment_id=appointment_id, customer_vehical_id=customer_vehical_id, customer_message=customer_message, notes=notes)
-        db.session.add(appointment_details)
-        db.session.commit()
-        return appointment_details
+        try:
+            appointment_details = AppointmentDetail(appointment_id=appointment_id, customer_vehical_id=customer_vehical_id, customer_message=customer_message, notes=notes)
+            db.session.add(appointment_details)
+            db.session.commit()
+            return appointment_details
+        except Exception as e:
+            raise e
     
     def update_appointment_details(self, appointment_details_id, appointment_id, customer_vehical_id, customer_message, notes):
-        appointment_details = db.session.query(AppointmentDetail).filter_by(appointment_details_id=appointment_details_id).first()
-        appointment_details.appointment_id = appointment_id
-        appointment_details.customer_vehical_id = customer_vehical_id
-        appointment_details.customer_message = customer_message
-        appointment_details.notes = notes
-        db.session.commit()
-        return appointment_details
+        try:
+            appointment_details = db.session.query(AppointmentDetail).filter_by(appointment_details_id=appointment_details_id).first()
+            appointment_details.appointment_id = appointment_id
+            appointment_details.customer_vehical_id = customer_vehical_id
+            appointment_details.customer_message = customer_message
+            appointment_details.notes = notes
+            db.session.commit()
+            return appointment_details
+        except Exception as e:
+            raise e
 
 class Appointment(Base):
     __tablename__ = 'appointment'
@@ -83,33 +109,62 @@ class Appointment(Base):
             'status': self.status
         }
     
+    @classmethod
+    def get_all_appointments(cls):
+        try:
+            return db.session.query(Appointment).all()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_appointment_by_id(cls, appointment_id):
+        try:
+            return db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_appointments_by_user_id(cls, user_id):
+        try:
+            return db.session.query(Appointment).filter_by(user_id=user_id).all()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_appointments_by_customer_id(cls, customer_id):
+        try:
+            return db.session.query(Appointment).filter_by(customer_id=customer_id).all()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_appointments_by_time_slot_id(cls, time_slot_id):
+        try:
+            return db.session.query(Appointment).filter_by(time_slot_id=time_slot_id).all()
+        except Exception as e:
+            raise e
+    
     def create_appointment(self, time_slot_id, customer_id, user_id, appointment_type, status):
-        appointment = Appointment(time_slot_id=time_slot_id, customer_id=customer_id, user_id=user_id, appointment_type=appointment_type, status=status)
-        db.session.add(appointment)
-        db.session.commit()
-        return appointment
+        try:
+            appointment = Appointment(time_slot_id=time_slot_id, customer_id=customer_id, user_id=user_id, appointment_type=appointment_type, status=status)
+            db.session.add(appointment)
+            db.session.commit()
+            return appointment
+        except Exception as e:
+            raise e
     
     def update_appointment(self, appointment_id, time_slot_id, customer_id, user_id, appointment_type, status):
-        appointment = db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
-        appointment.time_slot_id = time_slot_id
-        appointment.customer_id = customer_id
-        appointment.user_id = user_id
-        appointment.appointment_type = appointment_type
-        appointment.status = status
-        db.session.commit()
-        return appointment
-    
-    def get_appointment_by_id(self, appointment_id):
-        return db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
-    
-    def get_appointments_by_user(self, user_id):
-        return db.session.query(Appointment).filter_by(user_id=user_id).all()
-    
-    def get_appointments_by_customer(self, customer_id):
-        return db.session.query(Appointment).filter_by(customer_id=customer_id).all()
-    
-    def get_appointments_by_time_slot(self, time_slot_id):
-        return db.session.query(Appointment).filter_by(time_slot_id=time_slot_id).all()
+        try:
+            appointment = db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
+            appointment.time_slot_id = time_slot_id
+            appointment.customer_id = customer_id
+            appointment.user_id = user_id
+            appointment.appointment_type = appointment_type
+            appointment.status = status
+            db.session.commit()
+            return appointment  
+        except Exception as e:
+            raise e
 
 
 class TimeSlot(Base):
@@ -141,17 +196,44 @@ class TimeSlot(Base):
             'is_available': self.is_available
         }
     
-    def create_time_slot(self, start_time, end_time, time_slot_type, is_available):
-        time_slot = TimeSlot(start_time=start_time, end_time=end_time, time_slot_type=time_slot_type, is_available=is_available)
-        db.session.add(time_slot)
-        db.session.commit()
-        return time_slot
+    @classmethod
+    def get_available_time_slots(cls):
+        try:
+            return db.session.query(TimeSlot).filter_by(is_available=1).all()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_time_slots_by_type(cls, time_slot_type):
+        try:
+            return db.session.query(TimeSlot).filter_by(time_slot_type=time_slot_type).all()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_time_slot_by_id(cls, time_slot_id):
+        try:
+            return db.session.query(TimeSlot).filter_by(time_slot_id=time_slot_id).first()
+        except Exception as e:
+            raise e
 
-    def get_available_time_slots(self, is_available):
-        return db.session.query(TimeSlot).filter_by(is_available=1).all()
+    def create_time_slot(self, start_time, end_time, time_slot_type, is_available):
+        try:
+            time_slot = TimeSlot(start_time=start_time, end_time=end_time, time_slot_type=time_slot_type, is_available=is_available)
+            db.session.add(time_slot)
+            db.session.commit()
+            return time_slot
+        except Exception as e:
+            raise e
     
-    def get_time_slots_by_type(self, time_slot_type):
-        return db.session.query(TimeSlot).filter_by(time_slot_type=time_slot_type).all()
-    
-    def get_time_slot_by_id(self, time_slot_id):
-        return db.session.query(TimeSlot).filter_by(time_slot_id=time_slot_id).first()
+    def update_time_slot(self, time_slot_id, start_time, end_time, time_slot_type, is_available):
+        try:
+            time_slot = db.session.query(TimeSlot).filter_by(time_slot_id=time_slot_id).first()
+            time_slot.start_time = start_time
+            time_slot.end_time = end_time
+            time_slot.time_slot_type = time_slot_type
+            time_slot.is_available = is_available
+            db.session.commit()
+            return time_slot
+        except Exception as e:
+            raise e
