@@ -1,15 +1,24 @@
 from flask import Flask, current_app, g
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
+from flasgger import Swagger
+from flask_cors import CORS
+from 
 
 db = SQLAlchemy()
+swagger = Swagger()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
     db.init_app(app)
+    swagger.init_app(app)
 
+    # Registering Models
+    from app.customer.models import Customer
+    from app.inventory.models import Vehical, RetailItem
+    from app.negotiation.models import Negotiation, Offer
 
     # Registering Blueprints
     from app.customer import customer_bp
