@@ -1,9 +1,9 @@
 from flask import Flask, current_app, g
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
-from services.scheduling_service import ScheduleService
-from services.negotiation_service import NegotiationService
-from services.purchasing_service import PurchasingService
+from app.scheduling.scheduling_service import ScheduleService
+from app.services.negotiation_service import NegotiationService
+from app.services.purchasing_service import PurchasingService
 
 db = SQLAlchemy()
 
@@ -28,6 +28,9 @@ def create_app(config_class=Config):
 
     from app.scheduling import scheduling_bp
     app.register_blueprint(scheduling_bp)
+
+    from app.services import services_bp
+    app.register_blueprint(services_bp)
 
     from app.negotiation import negotiation_bp
     app.register_blueprint(negotiation_bp)
