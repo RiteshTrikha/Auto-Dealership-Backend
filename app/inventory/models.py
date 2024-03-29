@@ -2,13 +2,9 @@ from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-from enum import Enum
+from enum import IntEnum
 
-Base = declarative_base()
-metadata = Base.metadata
-
-class RetailItem(Base):
+class RetailItem(db.Model):
     __tablename__ = 'retail_item'
 
     retail_item_id = Column(INTEGER, primary_key=True, unique=True)
@@ -16,10 +12,10 @@ class RetailItem(Base):
     price = Column(INTEGER)
     description = Column(String(254))
 
-class Vehical(Base):
+class Vehical(db.Model):
     __tablename__ = 'vehical'
 
-    class VehicalStatus(Enum):
+    class VehicalStatus(IntEnum):
         INACTIVE = 0
         AVAILABLE = 1
         SOLD = 2

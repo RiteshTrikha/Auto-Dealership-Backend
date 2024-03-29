@@ -1,15 +1,16 @@
-from flask import jsonify, request, current_app
-from . import routes_bp
-from app.services.inventory_service import InventoryService
-from app import db
-from app.customer.models import Customer
+from flask import jsonify, request
+from . import inventory_bp
+from app import g
+from .services import InventoryService
 
-@routes_bp.route('/api/inventory/hello', methods=['GET'])
-def hello():
-    return jsonify({'message': 'Hello from routes_bp!'})
-
-@routes_bp.route('/api/inventory/vehicles', methods=['GET'])
+@inventory_bp.route('/api/inventory/vehicles', methods=['GET'])
 def get_all_vehicles():
+    """
+    Get all vehicles
+    ---
+    tags:
+      - Inventory
+    """
     try:
         vehicles = InventoryService().get_all_vehicles()
         if vehicles is None:
@@ -30,8 +31,20 @@ def get_all_vehicles():
             message=str(e)
             ), 400
 
-@routes_bp.route('/api/inventory/vehicle/<vehical_id>', methods=['GET'])
+@inventory_bp.route('/api/inventory/vehicle/<vehical_id>', methods=['GET'])
 def get_vehicle(vehical_id):
+    """
+    Get a vehicle by id
+    ---
+    tags:
+      - Inventory
+    parameters:
+        - name: vehical_id
+          in: path
+          type: integer
+          required: true
+          description: The ID of the vehicle
+    """
     try:
         vehicle = InventoryService().get_vehicle(vehical_id)
         if vehicle is None:
@@ -52,8 +65,14 @@ def get_vehicle(vehical_id):
             message=str(e)
             ), 400
     
-@routes_bp.route('/api/inventory/top_5_vehicles', methods=['GET'])
+@inventory_bp.route('/api/inventory/top_5_vehicles', methods=['GET'])
 def get_top_5_vehicles():
+    """
+    Get top 5 vehicles
+    ---
+    tags:
+      - Inventory
+    """
     try:
         vehicles = InventoryService().get_top_5_vehicles()
         if vehicles is None:

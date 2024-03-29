@@ -1,4 +1,4 @@
-from app.inventory.models import Vehical
+from .models import Vehical, RetailItem
 
 class InventoryService:
     
@@ -22,4 +22,3 @@ class InventoryService:
             return vehicles
         except Exception as e:
             raise e
-    
