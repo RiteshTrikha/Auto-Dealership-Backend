@@ -1,4 +1,5 @@
-from app.negotiation.models import Negotiation, Offer
+from flask import current_app, g
+from .models import Negotiation, Offer
 
 class NegotiationService:
     # logic for negotiations

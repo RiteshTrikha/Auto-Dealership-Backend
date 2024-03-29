@@ -1,10 +1,9 @@
-from flask import jsonify, request, current_app
-from flasgger import swag_from
-from . import routes_bp
-from app.services.inventory_service import InventoryService
-from app import db
+from flask import jsonify, request
+from . import inventory_bp
+from app import g
+from .services import InventoryService
 
-@routes_bp.route('/api/inventory/vehicles', methods=['GET'])
+@inventory_bp.route('/api/inventory/vehicles', methods=['GET'])
 def get_all_vehicles():
     """
     Get all vehicles
@@ -32,7 +31,7 @@ def get_all_vehicles():
             message=str(e)
             ), 400
 
-@routes_bp.route('/api/inventory/vehicle/<vehical_id>', methods=['GET'])
+@inventory_bp.route('/api/inventory/vehicle/<vehical_id>', methods=['GET'])
 def get_vehicle(vehical_id):
     """
     Get a vehicle by id
@@ -66,7 +65,7 @@ def get_vehicle(vehical_id):
             message=str(e)
             ), 400
     
-@routes_bp.route('/api/inventory/top_5_vehicles', methods=['GET'])
+@inventory_bp.route('/api/inventory/top_5_vehicles', methods=['GET'])
 def get_top_5_vehicles():
     """
     Get top 5 vehicles
