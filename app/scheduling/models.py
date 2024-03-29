@@ -87,12 +87,16 @@ class Appointment(Base):
         SERVICE = 1
         TEST_DRIVE = 2
 
+    class Status(Enum):
+        CONFIRMED = 1
+        CANCELLED = 2
+
     appointment_id = Column(INTEGER, primary_key=True, unique=True)
     time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
     user_id = Column(ForeignKey('user.user_id'), index=True)
     appointment_type = Column(INTEGER, nullable=False)
-    status = Column(String(45))
+    status = Column(INTEGER, nullable=False)
 
     customer = relationship('Customer')
     user = relationship('User')
@@ -138,9 +142,34 @@ class Appointment(Base):
             raise e
     
     @classmethod
+    def get_all_appointments_by_customer_id_and_appointment_type(cls, customer_id, appointment_type):
+        try:
+            return db.session.query(Appointment).filter_by(customer_id=customer_id, appointment_type=appointment_type).all()
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_all_appointments_by_appointment_type(cls, appointment_type):
+        try:
+            return db.session.query(Appointment).filter_by(appointment_type=appointment_type).all()
+        except Exception as e:
+            raise e
+
+    @classmethod
     def get_appointments_by_time_slot_id(cls, time_slot_id):
         try:
             return db.session.query(Appointment).filter_by(time_slot_id=time_slot_id).all()
+        except Exception as e:
+            raise e
+
+    #(maybe add cancel by user or customer)
+    @classmethod
+    def cancel_appointment(self, appointment_id):
+        try:
+            appointment = db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
+            appointment.status = 2
+            db.session.commit()
+            return appointment
         except Exception as e:
             raise e
     
