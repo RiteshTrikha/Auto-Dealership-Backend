@@ -320,6 +320,8 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`retail_item` (
   `name` VARCHAR(45) NULL,
   `price` INT NULL,
   `description` VARCHAR(254) NULL,
+  `image` VARCHAR(254) NULL,
+  `item_status` INT NULL,
   PRIMARY KEY (`retail_item_id`),
   UNIQUE INDEX `retail_item_id_UNIQUE` (`retail_item_id` ASC) VISIBLE);
 

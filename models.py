@@ -15,29 +15,6 @@ class Role(Base):
     role = Column(INTEGER, nullable=False)
 
 
-class CreditReport(Base):
-    __tablename__ = 'credit_report'
-
-    credit_report_id = Column(INTEGER, primary_key=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    score = Column(INTEGER, nullable=False)
-
-    customer = relationship('Customer')
-
-
-class CustomerVehical(Base):
-    __tablename__ = 'customer_vehical'
-
-    customer_vehical_id = Column(INTEGER, primary_key=True, unique=True)
-    vin = Column(String(45))
-    year = Column(String(4))
-    make = Column(String(254))
-    model = Column(String(254))
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-
-    customer = relationship('Customer')
-
-
 class user(Base):
     __tablename__ = 'user'
 

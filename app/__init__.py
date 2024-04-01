@@ -1,20 +1,29 @@
 from flask import Flask, current_app, g
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
-from flasgger import Swagger
-from flask_cors import CORS
+import logging
 
 db = SQLAlchemy()
-swagger = Swagger()
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
     db.init_app(app)
-    swagger.init_app(app)
+    from app.api import api
+    api.init_app(app)
+
+    # Configure logging
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
 
     # Registering Blueprints
+    from app.api import api_bp
+    app.register_blueprint(api_bp)
+
     from app.customer import customer_bp
     app.register_blueprint(customer_bp)
 

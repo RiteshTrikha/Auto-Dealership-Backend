@@ -11,6 +11,8 @@ class RetailItem(db.Model):
     name = Column(String(45))
     price = Column(INTEGER)
     description = Column(String(254))
+    image = Column(String(254))
+    item_status = Column(INTEGER)
 
 class Vehical(db.Model):
     __tablename__ = 'vehical'

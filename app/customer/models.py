@@ -1,6 +1,7 @@
 from app import db
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
-from sqlalchemy.dialects.mysql import INTEGER, TINYINT
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, TIMESTAMP, text
+from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.orm import relationship
 
 
 class Customer(db.Model):
@@ -33,3 +34,25 @@ class Customer(db.Model):
             'create_time': self.create_time,
             'status': self.status
         }
+    
+class CreditReport(db.Model):
+    __tablename__ = 'credit_report'
+
+    credit_report_id = Column(INTEGER, primary_key=True)
+    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
+    score = Column(INTEGER, nullable=False)
+
+    customer = relationship('Customer')
+
+
+class CustomerVehical(db.Model):
+    __tablename__ = 'customer_vehical'
+
+    customer_vehical_id = Column(INTEGER, primary_key=True, unique=True)
+    vin = Column(String(45))
+    year = Column(String(4))
+    make = Column(String(254))
+    model = Column(String(254))
+    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
+
+    customer = relationship('Customer')

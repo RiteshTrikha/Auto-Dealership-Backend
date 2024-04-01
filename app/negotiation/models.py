@@ -21,17 +21,6 @@ class Negotiation(db.Model):
 
     customer = relationship('app.customer.models.Customer' , backref='negotiations')
     vehical = relationship('app.inventory.models.Vehical' , backref='negotiations')
-
-    # functions
-    def serialize(self):
-        return {
-            'negotiation_id': self.negotiation_id,
-            'vehical_id': self.vehical_id,
-            'customer_id': self.customer_id,
-            'negotiation_status': self.negotiation_status,
-            'start_date': self.start_date,
-            'end_date': self.end_date,
-        }
     
     # create functions
     @classmethod
@@ -84,6 +73,17 @@ class Negotiation(db.Model):
         except Exception as e:
             raise e
     
+    # check if customer has negotiation open for vehical
+    @classmethod
+    def check_existing_negotiation(cls, vehical_id, customer_id):
+        try:
+            # check if customer has negotiation open for vehical
+            negotiation = db.session.query(Negotiation).filter(Negotiation.vehical_id == vehical_id, Negotiation.customer_id == customer_id, Negotiation.negotiation_status == 1).first()
+            if negotiation:
+                return True
+            return False
+        except Exception as e:
+            raise e
 
 class Offer(db.Model):
     __tablename__ = 'offer'

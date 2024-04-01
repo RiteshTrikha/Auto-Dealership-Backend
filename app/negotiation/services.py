@@ -5,8 +5,12 @@ class NegotiationService:
     # logic for negotiations
     
     # place offer / create negotiation
-    def create_negotiation(self, vehical_id, customer_id, offer_price):
+    @classmethod
+    def create_negotiation(cls, vehical_id, customer_id, offer_price):
         try:
+            # check for existing negotiation
+            if Negotiation.check_existing_negotiation(vehical_id, customer_id):
+                raise Exception('Negotiation already exists for customer and vehical')
             # create negotiation
             negotiation = Negotiation.create_negotiation(vehical_id, customer_id)
             # create offer
@@ -16,7 +20,8 @@ class NegotiationService:
             raise e
         
     # get negotiations for a customer
-    def get_negotiations(self, customer_id):
+    @classmethod
+    def get_negotiations(cls, customer_id):
         try:
             # get all negotiations for a customer
             negotiations = Negotiation.get_negotiations(customer_id)
@@ -25,7 +30,8 @@ class NegotiationService:
             raise e
         
     # get all negotiations
-    def get_all_negotiations(self):
+    @classmethod
+    def get_all_negotiations(cls):
         try:
             # get all negotiations
             negotiations = Negotiation.get_all_negotiations()
@@ -34,7 +40,8 @@ class NegotiationService:
             raise e
         
     # get negotiation details
-    def get_negotiation_details(self, negotiation_id):
+    @classmethod
+    def get_negotiation_details(cls, negotiation_id):
         try:
             # get negotiation
             negotiation = Negotiation.get_negotiation(negotiation_id)
@@ -44,7 +51,8 @@ class NegotiationService:
             raise e
         
     # counter offer / additional offer
-    def counter_offer(self, negotiation_id, offer_price):
+    @classmethod
+    def counter_offer(cls, negotiation_id, offer_price):
         try:
             # update current offer status
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.COUNTERED))
@@ -55,7 +63,8 @@ class NegotiationService:
             raise e
         
     # additional offer
-    def additional_offer(self, negotiation_id, offer_price):
+    @classmethod
+    def additional_offer(cls, negotiation_id, offer_price):
         try:
             # update current offer status
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.COUNTERED))
@@ -66,7 +75,8 @@ class NegotiationService:
             raise e
         
     # accept offer
-    def accept_offer(self, negotiation_id):
+    @classmethod
+    def accept_offer(cls, negotiation_id):
         try:
             # update negotiation status to 2 (accepted)
             Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.ACCEPTED)
@@ -76,7 +86,8 @@ class NegotiationService:
             raise e
         
     # reject offer
-    def reject_offer(self, negotiation_id):
+    @classmethod
+    def reject_offer(cls, negotiation_id):
         try:
             # update negotiation status to 3 (rejected)
             Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.REJECTED)
