@@ -51,8 +51,8 @@ class NegotiationService:
     # counter offer
     def counter_offer(self, negotiation_id, offer_price, message=None):
         try:
-            if Offer.is_current_offer_counter_offer(negotiation_id):
-                raise ExposedException('Most wait for additional offer before placing another counter offer')
+            if Offer.current_offer_is_counter_offer(negotiation_id):
+                raise ExposedException('Must wait for additional offer before placing another counter offer')
             # update current offer status
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.COUNTERED))
             # create offer
@@ -66,8 +66,8 @@ class NegotiationService:
     def additional_offer(self, negotiation_id, offer_price, message=None):
         try:
             # check if most recent offer is a counter offer
-            if not Offer.is_current_offer_counter_offer(negotiation_id):
-                raise ExposedException('Most wait for counter offer before placing additional offer')
+            if not Offer.current_offer_is_offer(negotiation_id):
+                raise ExposedException('Must wait for counter offer before placing additional offer')
             # update current offer status
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.COUNTERED))
             # create offer
@@ -81,9 +81,9 @@ class NegotiationService:
     def accept_offer(self, negotiation_id):
         try:
             if Offer.current_offer_is_counter_offer(negotiation_id):
-                raise Exception('Cannot accept counter offer')
+                raise ExposedException('Must wait for a response to counter offer')
             # update negotiation status to 2 (accepted)
-            Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.ACCEPTED)
+            Negotiation.update_negotiation_status(negotiation_id, int(Negotiation.NegotiationStatus.ACCEPTED))
             # update offer status to 2 (accepted)
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.ACCEPTED))
         except Exception as e:
@@ -92,9 +92,9 @@ class NegotiationService:
     def accept_counter_offer(self, negotiation_id):
         try:
             if Offer.current_offer_is_offer(negotiation_id):
-                raise Exception('Cannot accept offer')
+                raise ExposedException('Must wait for a response to offer')
             # update negotiation status to 2 (accepted)
-            Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.ACCEPTED)
+            Negotiation.update_negotiation_status(negotiation_id, int(Negotiation.NegotiationStatus.ACCEPTED))
             # update offer status to 2 (accepted)
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.ACCEPTED))
         except Exception as e:
@@ -104,9 +104,9 @@ class NegotiationService:
     def reject_offer(self, negotiation_id):
         try:
             if Offer.current_offer_is_counter_offer(negotiation_id):
-                raise ExposedException('Cannot reject counter offer')
+                raise ExposedException('Must wait for a response to counter offer')
             # update negotiation status to 3 (rejected)
-            Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.REJECTED)
+            Negotiation.update_negotiation_status(negotiation_id, int(Negotiation.NegotiationStatus.REJECTED))
             # update offer status to 3 (rejected)
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.REJECTED))
         except Exception as e:
@@ -115,9 +115,9 @@ class NegotiationService:
     def reject_counter_offer(self, negotiation_id):
         try:
             if Offer.current_offer_is_offer(negotiation_id):
-                raise ExposedException('Cannot reject offer')
+                raise ExposedException('Must wait for a response to offer')
             # update negotiation status to 3 (rejected)
-            Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.REJECTED)
+            Negotiation.update_negotiation_status(negotiation_id, int(Negotiation.NegotiationStatus.REJECTED))
             # update offer status to 3 (rejected)
             Offer.update_current_offer_status(negotiation_id, int(Offer.OfferStatus.REJECTED))
         except Exception as e:
