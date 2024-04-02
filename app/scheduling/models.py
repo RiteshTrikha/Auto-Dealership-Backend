@@ -3,13 +3,12 @@ from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, Strin
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from enum import Enum
+from enum import Enum, IntEnum
 
-Base = declarative_base()
-metadata = Base.metadata
+from app.user.models import User
 
 
-class AppointmentDetail(Base):
+class AppointmentDetail(db.Model):
     __tablename__ = 'appointment_details'
 
     appointment_details_id = Column(INTEGER, primary_key=True, unique=True)
@@ -18,8 +17,8 @@ class AppointmentDetail(Base):
     customer_message = Column(String(512))
     notes = Column(String(512))
 
-    appointment = relationship('Appointment')
-    customer_vehical = relationship('CustomerVehical')
+    appointment = relationship('Appointment' , backref='appointment_details')
+    customer_vehical = relationship('app.customer.models.CustomerVehical' , backref='appointment_details')
 
     #serialize
     def serialize(self):
@@ -80,14 +79,14 @@ class AppointmentDetail(Base):
         except Exception as e:
             raise e
 
-class Appointment(Base):
+class Appointment(db.Model):
     __tablename__ = 'appointment'
 
-    class appointmentType(Enum):
+    class appointmentType(IntEnum):
         SERVICE = 1
         TEST_DRIVE = 2
 
-    class Status(Enum):
+    class Status(IntEnum):
         CONFIRMED = 1
         CANCELLED = 2
 
@@ -98,8 +97,8 @@ class Appointment(Base):
     appointment_type = Column(INTEGER, nullable=False)
     status = Column(INTEGER, nullable=False)
 
-    customer = relationship('Customer')
-    user = relationship('User')
+    customer = relationship('app.customer.models.Customer', backref='appointment')
+    user = relationship('app.user.models.User', backref='appointment')
     time_slot = relationship('TimeSlot')
 
     #serialize
@@ -196,14 +195,14 @@ class Appointment(Base):
             raise e
 
 
-class TimeSlot(Base):
+class TimeSlot(db.Model):
     __tablename__ = 'time_slot'
 
-    class TimeSlotType(Enum):
+    class TimeSlotType(IntEnum):
         SERVICE = 1
         TEST_DRIVE = 2
 
-    class isAvailable(Enum):
+    class isAvailable(IntEnum):
         AVAILABLE = 1
         NOT_AVAILABLE = 0
 
@@ -212,8 +211,6 @@ class TimeSlot(Base):
     end_time = Column(DateTime)
     time_slot_type = Column(Integer, nullable=False)
     is_available = Column(Integer, nullable=False)
-
-    role = relationship('Role')
 
     #serialize
     def serialize(self):

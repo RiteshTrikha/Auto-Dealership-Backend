@@ -1,6 +1,5 @@
 # from flask import jsonify, request, current_app, g
 # from . import inventory_bp
-# from app import g
 # from .services import InventoryService
 # from app.exceptions import ExposedException
 

@@ -7,51 +7,6 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 metadata = Base.metadata
 
-
-class Role(Base):
-    __tablename__ = 'role'
-
-    role_id = Column(INTEGER, primary_key=True, unique=True)
-    role = Column(INTEGER, nullable=False)
-
-
-class CreditReport(Base):
-    __tablename__ = 'credit_report'
-
-    credit_report_id = Column(INTEGER, primary_key=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    score = Column(INTEGER, nullable=False)
-
-    customer = relationship('Customer')
-
-
-class CustomerVehical(Base):
-    __tablename__ = 'customer_vehical'
-
-    customer_vehical_id = Column(INTEGER, primary_key=True, unique=True)
-    vin = Column(String(45))
-    year = Column(String(4))
-    make = Column(String(254))
-    model = Column(String(254))
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-
-    customer = relationship('Customer')
-
-
-class user(Base):
-    __tablename__ = 'user'
-
-    user_id = Column(INTEGER, primary_key=True, unique=True)
-    role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
-    email = Column(String(255))
-    password = Column(String(72), nullable=False)
-    first_name = Column(String(45))
-    last_name = Column(String(45))
-    create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
-
-    role = relationship('Role')
-
-
 class Purchase(Base):
     __tablename__ = 'purchase'
 
