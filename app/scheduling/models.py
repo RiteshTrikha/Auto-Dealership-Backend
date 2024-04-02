@@ -226,6 +226,13 @@ class TimeSlot(Base):
         }
     
     @classmethod
+    def get_all_time_slots(cls):
+        try:
+            return db.session.query(TimeSlot).all()
+        except Exception as e:
+            raise e
+
+    @classmethod
     def get_available_time_slots(cls):
         try:
             return db.session.query(TimeSlot).filter_by(is_available=1).all()

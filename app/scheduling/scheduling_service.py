@@ -3,8 +3,14 @@ from app.scheduling.models import Appointment
 from app.scheduling.models import TimeSlot
 
 class ScheduleService:
-    
     #get all time slots
+    def get_all_time_slots(self):
+        try:
+            return TimeSlot.get_all_time_slots()
+        except Exception as e:
+            raise e
+    
+    #get all avialable time slots
     def get_avialable_time_slots(self):
         try:
             return TimeSlot.get_available_time_slots()
