@@ -194,6 +194,14 @@ class Appointment(db.Model):
         except Exception as e:
             raise e
 
+    def update_appointment_status(self, appointment_id, status):
+        try:
+            appointment = db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
+            appointment.status = status
+            db.session.commit()
+            return appointment
+        except Exception as e:
+            raise e
 
 class TimeSlot(db.Model):
     __tablename__ = 'time_slot'
@@ -233,6 +241,13 @@ class TimeSlot(db.Model):
     def get_available_time_slots(cls):
         try:
             return db.session.query(TimeSlot).filter_by(is_available=1).all()
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def get_time_slots_by_type_and_availability(cls, time_slot_type, is_available):
+        try:
+            return db.session.query(TimeSlot).filter_by(time_slot_type=time_slot_type, is_available=is_available).all()
         except Exception as e:
             raise e
     
