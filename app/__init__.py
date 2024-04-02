@@ -12,7 +12,6 @@ cors = CORS()
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    app.url_prefix = '/api'
     
     db.init_app(app)
     swagger.init_app(app)
@@ -22,26 +21,29 @@ def create_app(config_class=Config):
     logging.basicConfig(level=logging.DEBUG)
 
     # Registering Blueprints
+
+    api_prefix = '/api'
+
     from app.customer import customer_bp
-    app.register_blueprint(customer_bp)
+    app.register_blueprint(customer_bp, url_prefix=f"{api_prefix}/customer")
 
     from app.user import user_bp
-    app.register_blueprint(user_bp)
+    app.register_blueprint(user_bp, url_prefix=f"{api_prefix}/user")
 
     from app.scheduling import scheduling_bp
-    app.register_blueprint(scheduling_bp)
+    app.register_blueprint(scheduling_bp, url_prefix=f"{api_prefix}/scheduling")
 
     from app.negotiation import negotiation_bp
-    app.register_blueprint(negotiation_bp)
+    app.register_blueprint(negotiation_bp, url_prefix=f"{api_prefix}/negotiation")
 
     from app.purchasing import purchasing_bp
-    app.register_blueprint(purchasing_bp)
+    app.register_blueprint(purchasing_bp, url_prefix=f"{api_prefix}/purchasing")
     
     from app.auth import auth_bp
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix=f"{api_prefix}/auth")
 
     from app.inventory import inventory_bp
-    app.register_blueprint(inventory_bp)
+    app.register_blueprint(inventory_bp, url_prefix=f"{api_prefix}/inventory")
 
     # Registering Services
     from app.negotiation.services import NegotiationService

@@ -46,7 +46,8 @@ class Negotiation(db.Model):
             raise e
         
     # update functions
-    def update_negotiation_status(self, negotiation_id, negotiation_status):
+    @classmethod
+    def update_negotiation_status(cls, negotiation_id, negotiation_status):
         try:
             # update negotiation status
             negotiation = db.session.query(Negotiation).filter(Negotiation.negotiation_id == negotiation_id).first()
