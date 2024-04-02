@@ -6,3 +6,5 @@ class Config:
         'title': 'Dealership API',
         'uiversion': 3
     }
+    # debug mode
+    DEBUG = True

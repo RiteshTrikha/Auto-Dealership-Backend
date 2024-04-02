@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-user_bp = Blueprint('user', __name__, template_folder='templates', static_folder='static')
+user_bp = Blueprint('user', __name__, template_folder='templates', static_folder='static', url_prefix='/user')
 
-from . import routes  # Import routes to ensure they're registered with the blueprint
+from . import user_negotiation_rts, user_scheduling_rts
