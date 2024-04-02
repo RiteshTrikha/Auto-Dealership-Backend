@@ -83,6 +83,17 @@ class Negotiation(db.Model):
             return negotiations
         except Exception as e:
             raise e
+        
+    @classmethod
+    def negotiation_already_exists(cls, vehical_id, customer_id):
+        try:
+            # check if negotiation already exists
+            negotiation = db.session.query(Negotiation).filter(Negotiation.vehical_id == vehical_id, Negotiation.customer_id == customer_id).first()
+            if negotiation:
+                return True
+            return False
+        except Exception as e:
+            raise e
     
 
 class Offer(db.Model):
@@ -151,12 +162,35 @@ class Offer(db.Model):
             db.session.commit()
         except Exception as e:
             raise e
-    
+        
+    @classmethod
     def update_previous_offer_status(cls, negotiation_id, offer_status):
         try:
             # update previous offer status
             offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).offset(1).first()
             offer.offer_status = offer_status
             db.session.commit()
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def current_offer_is_counter_offer(cls, negotiation_id):
+        try:
+            # get current offer
+            offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).first()
+            if offer.offer_type == Offer.OfferType.COUNTER_OFFER:
+                return True
+            return False
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def current_offer_is_offer(cls, negotiation_id):
+        try:
+            # get current offer
+            offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).first()
+            if offer.offer_type == Offer.OfferType.OFFER:
+                return True
+            return False
         except Exception as e:
             raise e

@@ -3,16 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flasgger import Swagger
 from flask_cors import CORS
+import logging
 
 db = SQLAlchemy()
 swagger = Swagger()
+cors = CORS()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.url_prefix = '/api'
     
     db.init_app(app)
     swagger.init_app(app)
+    cors.init_app(app)
+
+    # log to console
+    logging.basicConfig(level=logging.DEBUG)
 
     # Registering Blueprints
     from app.customer import customer_bp
