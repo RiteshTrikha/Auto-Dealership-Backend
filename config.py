@@ -1,10 +1,22 @@
+from decouple import config
+import os
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 class Config:
-    # database configurations
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rootpassword@db/DealershipDB'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SWAGGER = {
-        'title': 'Dealership API',
-        'uiversion': 3
-    }
-    # debug mode
-    DEBUG = True
+    SECRET_KEY=config('SECRET_KEY')
+    SQLALCHEMY_TRACK_MODIFICATIONS=config('SQLALCHEMY_TRACK_MODIFICATIONS',cast=bool)
+
+
+
+
+class DevConfig(Config):
+    SQLALCHEMY_DATABASE_URI="sqlite:///"+os.path.join(BASE_DIR,"database.db")
+    DEBUG=True
+    SQLALCHEMY_ECHO=True
+
+class ProdConfig(Config):
+    pass
+
+class TestConfig(Config):
+    pass
