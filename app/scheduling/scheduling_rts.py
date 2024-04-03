@@ -65,12 +65,19 @@ def get_all_time_slots():
         return standardize_response(status='fail', message='An error occurred while retrieving time slots', code=400)
 
 # get all available time slots
-@scheduling_bp.route('/time-slots/available', methods=['GET'])
-def gevailable_time_slots():
+@scheduling_bp.route('/time-slots/availability/<is_available>', methods=['GET'])
+def get_available_time_slots():
     """
     Get all available time slots
     ---
     tags: [Scheduling]
+    parameters:
+        - in: path
+          name: is_available
+          schema:
+          type: integer
+          required: true
+          description: The availability of time slot
     responses:
         200:
             description: A list of available time slots
@@ -79,7 +86,7 @@ def gevailable_time_slots():
                     schema:
                         type: object
                         properties:
-                            status: {type: string}
+                            status: {type: string, description: 'Request status'}
                             data:
                                 type: array
                                 items:
@@ -90,19 +97,27 @@ def gevailable_time_slots():
                                         end_time: {type: string}
                                         time_slot_type: {type: integer}
                                         is_available: {type: integer}
-                            message: {type: string}
-                            code: {type: integer}
+                            message: {type: string, description: 'Request message'}
+                            code: {type: integer, description: 'HTTPS status code'}
+        404:
+            description: No available time slots
+            schema:
+                type: object
+                properties:
+                    status: {type: string, description: 'Request status'}
+                    data: {type: array, description: 'Data returned'}
+                    message: {type: string, description: 'Request message'}
+                    code: {type: integer, description: 'HTTPS status code'}
         400:
-            description: An error occurred while retrieving available time slots
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        properties:
-                            status: {type: string}
-                            message: {type: string}
-                            code: {type: integer}
-    """
+            description: Bad Request
+            schema:
+                type: object
+                properties:
+                    status: {type: string, description: 'Request status'}
+                    data: {type: array, description: 'Data returned'}
+                    message: {type: string, description: 'Request message'}
+                    code: {type: integer, description: 'HTTPS status code'}
+            """
     try:
         time_slots = TimeSlot.get_available_time_slots()
         return standardize_response(status='success', data=[time_slot.serialize() for time_slot in time_slots],
