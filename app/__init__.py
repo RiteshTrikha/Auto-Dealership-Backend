@@ -3,7 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flasgger import Swagger
 from flask_cors import CORS
+from app.error_handlers import register_error_handlers
 import logging
+
 
 db = SQLAlchemy()
 swagger = Swagger()
@@ -16,6 +18,9 @@ def create_app(config_class=Config):
     db.init_app(app)
     swagger.init_app(app)
     cors.init_app(app)
+
+    # Registering Error Handlers
+    register_error_handlers(app)
 
     # log to console
     logging.basicConfig(level=logging.DEBUG)

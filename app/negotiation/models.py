@@ -2,12 +2,12 @@ from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
-from enum import IntEnum
+from enum import Enum
 
 class Negotiation(db.Model):
     __tablename__ = 'negotiation'
 
-    class NegotiationStatus(IntEnum):
+    class NegotiationStatus(Enum):
         ACTIVE = 1
         ACCEPTED = 2
         REJECTED = 3
@@ -28,7 +28,7 @@ class Negotiation(db.Model):
             'negotiation_id': self.negotiation_id,
             'vehical_id': self.vehical_id,
             'customer_id': self.customer_id,
-            'negotiation_status': self.negotiation_status,
+            'negotiation_status': self.NegotiationStatus(self.negotiation_status).name,
             'start_date': self.start_date,
             'end_date': self.end_date,
         }
@@ -40,7 +40,7 @@ class Negotiation(db.Model):
             # create negotiation
             negotiation = Negotiation(vehical_id=vehical_id, customer_id=customer_id)
             db.session.add(negotiation)
-            db.session.commit()
+            
             return negotiation
         except Exception as e:
             raise e
@@ -52,7 +52,7 @@ class Negotiation(db.Model):
             # update negotiation status
             negotiation = db.session.query(Negotiation).filter(Negotiation.negotiation_id == negotiation_id).first()
             negotiation.negotiation_status = negotiation_status
-            db.session.commit()
+            
         except Exception as e:
             raise e
 
@@ -100,11 +100,11 @@ class Negotiation(db.Model):
 class Offer(db.Model):
     __tablename__ = 'offer'
 
-    class OfferType(IntEnum):
+    class OfferType(Enum):
         OFFER = 1
         COUNTER_OFFER = 2
 
-    class OfferStatus(IntEnum):
+    class OfferStatus(Enum):
         PENDING = 1
         ACCEPTED = 2
         REJECTED = 3
@@ -125,10 +125,10 @@ class Offer(db.Model):
         return {
             'offer_id': self.offer_id,
             'negotiation_id': self.negotiation_id,
-            'offer_type': self.offer_type,
+            'offer_type': self.OfferType(self.offer_type).name,
             'offer_price': self.offer_price,
             'offer_date': self.offer_date,
-            'offer_status': self.offer_status,
+            'offer_status': self.OfferStatus(self.offer_status).name,
             'message': self.message
         }
     
@@ -139,7 +139,7 @@ class Offer(db.Model):
             # create offer
             offer = Offer(negotiation_id=negotiation_id, offer_type=offer_type, offer_price=offer_price, message=message, offer_status=1)
             db.session.add(offer)
-            db.session.commit()
+            
             return offer
         except Exception as e:
             raise e
@@ -160,7 +160,7 @@ class Offer(db.Model):
             # update current offer status
             offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).first()
             offer.offer_status = offer_status
-            db.session.commit()
+            
         except Exception as e:
             raise e
         
@@ -170,7 +170,7 @@ class Offer(db.Model):
             # update previous offer status
             offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).offset(1).first()
             offer.offer_status = offer_status
-            db.session.commit()
+            
         except Exception as e:
             raise e
         

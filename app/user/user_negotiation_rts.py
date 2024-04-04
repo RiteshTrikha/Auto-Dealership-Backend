@@ -30,7 +30,14 @@ def get_all_negotiations():
                             type: object
                             properties:
                                 negotiation_id: { type: integer }
-                                vehical_id: { type: integer }
+                                vehical:
+                                    type: object
+                                    properties:
+                                        vehical_id: { type: integer }
+                                        year: { type: integer }
+                                        make: { type: string }
+                                        model: { type: string }
+                                        image: { type: string }
                                 customer_id: { type: integer }
                                 negotiation_status: { type: integer }
                                 start_date: { type: string }
@@ -60,12 +67,9 @@ def get_all_negotiations():
         if negotiations == []:
             return standardize_response(status='fail', message='No negotiations found', data=None, code=404)
         return standardize_response(status='success', message='Negotiations found', 
-                                    data=[negotiation.serialize() for negotiation in negotiations], code=200)
+                                    data=negotiations, code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), data=None, code=500)
-        return standardize_response(status='fail', message='Internal server error', data=None, code=500)
+        raise e
     
 # get negotiation details by negotiation id
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>', methods=['GET'])
@@ -100,18 +104,25 @@ def get_negotiation_details(negotiation_id):
                                     negotiation_status: { type: integer }
                                     start_date: { type: string }
                                     end_date: { type: string }
-                            offers: 
-                                type: array
-                                items: 
-                                    type: object
-                                    properties:
-                                        offer_id: { type: integer }
-                                        negotiation_id: { type: integer }
-                                        offer_type: { type: integer }
-                                        offer_price: { type: integer }
-                                        offer_date: { type: string }
-                                        offer_status: { type: integer }
-                                        message: { type: string }
+                                    offers:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                offer_id: { type: integer }
+                                                offer_type: { type: string }
+                                                offer_price: { type: number }
+                                                offer_date: { type: string }
+                                                offer_status: { type: string }
+                                                message: { type: string }
+                            vehicle:
+                                type: object
+                                properties:
+                                    vehical_id: { type: integer }
+                                    year: { type: integer }
+                                    make: { type: string }
+                                    model: { type: string }
+                                    image: { type: string }
                     message: { type: string }
                     code: { type: integer }
         404:
@@ -134,19 +145,15 @@ def get_negotiation_details(negotiation_id):
                     code: { type: integer }
     """
     try:
-        negotiation, offers = g.negotiation_service.get_negotiation_details(negotiation_id)
-        if negotiation is None:
+        negotiation_details = g.negotiation_service.get_negotiation_details(negotiation_id)
+        if not negotiation_details:
             return standardize_response(status='fail', message='Negotiation not found', data=None, code=404)
         return standardize_response(status='success', 
                                     message='Negotiation found', 
-                                    data={'negotiation': negotiation.serialize(), 
-                                          'offers': [offer.serialize() for offer in offers]},
+                                    data=negotiation_details,
                                     code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), data=None, code=500)
-        return standardize_response(status='fail', message='Internal server error', data=None, code=500)
+        raise e
 
 # place counter offer
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>/counter-offer', methods=['POST'])
@@ -198,12 +205,9 @@ def place_counter_offer(negotiation_id):
         message = data.get('message')
         offer_id = g.negotiation_service.counter_offer(negotiation_id=negotiation_id, offer_price=offer_price,
                                                        message=message)
-        return standardize_response(status='success', message='Counter offer placed', data={'offer_id': offer_id}, code=200)
+        return standardize_response(status='success', message='Counter offer placed', data=offer_id, code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), data=None, code=500)
-        return standardize_response(status='fail', message='Internal server error', data=None, code=500)
+        raise e
     
 # accept offer
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>/accept-offer', methods=['POST'])
@@ -242,10 +246,7 @@ def accept_offer(negotiation_id):
         g.negotiation_service.accept_offer(negotiation_id)
         return standardize_response(status='success', message='Offer accepted', data=None, code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), data=None, code=500)
-        return standardize_response(status='fail', message='Internal server error', data=None, code=500)
+        raise e
     
 # reject offer
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>/reject-offer', methods=['POST'])
@@ -284,7 +285,4 @@ def reject_offer(negotiation_id):
         g.negotiation_service.reject_offer(negotiation_id)
         return standardize_response(status='success', message='Offer rejected', data=None, code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), data=None, code=500)
-        return standardize_response(status='fail', message='Internal server error', data=None, code=500)
+        raise e

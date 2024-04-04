@@ -1,5 +1,6 @@
 from flask import jsonify, request, current_app, g
 from . import customer_bp
+from flasgger import swag_from
 from .models import Customer
 from app.negotiation.models import Negotiation, Offer
 from app.inventory.models import Vehical
@@ -13,7 +14,7 @@ standardize_response = Utilities.standardize_response
 @customer_bp.route('/negotiation/negotiation', methods=['POST'])
 def create_negotiation():
   """
-  Creates a negotiation with customer_id, vehical_id, and offer_price.
+  Creates a negotiation
   ---
   tags: [Customer Negotiation]
   consumes: [application/json]
@@ -58,80 +59,80 @@ def create_negotiation():
       vehical_id = data['vehical_id']
       offer_price = data['offer_price']
       message = data['message']
+      #check for missing fields
+      if not customer_id or not vehical_id or not offer_price:
+          raise ExposedException('Missing required fields', code=400)
       negotiation_id = g.negotiation_service.create_negotiation(vehical_id=vehical_id, customer_id=customer_id, 
                                                                 offer_price=offer_price, message=message)
-      return standardize_response(data={'negotiation_id': negotiation_id}, 
+      return standardize_response(data=negotiation_id, 
                                   message='Successfully created negotiation',
                                   code=201)
   except Exception as e:
-      current_app.logger.error(str(e))
-      if isinstance(e, ExposedException):
-          return standardize_response(status='fail', message=str(e), code=400)
-      return standardize_response(status='fail', message="Error creating negotiation", code=400)
+      raise e
 
 # get list of negotiations by customer
 @customer_bp.route('/negotiation/negotiations/<int:customer_id>', methods=['GET'])
+@swag_from({
+  'summary': 'Get list of negotiations by customer',
+  'tags': ['Customer Negotiation'],
+  'parameters': [
+    {
+      'in': 'path',
+      'name': 'customer_id',
+      'type': 'integer',
+      'required': True,
+    }
+  ],
+  'responses': {
+    '200': {
+      'description': 'Negotiations found',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'status': {'type': 'string'},
+          'data': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'negotiation_id': {'type': 'integer'},
+                'vehical': {
+                  'type': 'object',
+                  'properties': {
+                    'vehical_id': {'type': 'integer'},
+                    'year': {'type': 'integer'},
+                    'make': {'type': 'string'},
+                    'model': {'type': 'string'},
+                    'image': {'type': 'string'}
+                  }
+                },
+                'customer_id': {'type': 'integer'},
+                'negotiation_status': {'type': 'integer'},
+                'start_date': {'type': 'string'},
+                'end_date': {'type': 'string'}
+              }
+            }
+          },
+          'message': {'type': 'string'},
+          'code': {'type': 'integer'}
+        }
+      }
+    },
+    '404': {
+      'description': 'No negotiations found',
+    },
+    '400': {
+      'description': 'Bad request',
+    },
+  }
+})
 def get_negotiations(customer_id):
-    """
-    Get all negotiations
-    ---
-    tags: [Customer Negotiation]
-    parameters:
-      - in: path
-        name: customer_id
-        type: integer
-        required: true
-        description: The id of the customer
-    responses:
-      200:
-        description: Negotiations found
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: 
-              type: array
-              items:
-                type: object
-                properties:
-                  negotiation_id: {type: integer, description: 'ID of the negotiation'}
-                  vehical_id: {type: integer, description: 'ID of the vehical'}
-                  customer_id: {type: integer, description: 'ID of the customer'}
-                  negotiation_status: {type: integer, description: 'Status of the negotiation'}
-                  start_date: {type: string, description: 'Start date of the negotiation'}
-                  end_date: {type: string, description: 'End date of the negotiation'}
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      404:
-        description: No negotiations found
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: {type: array, description: 'Empty array'}
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      400:
-        description: Bad request
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: {type: array, description: 'Empty array'}
-            message: {type: string, description: 'Error message'}
-            code: {type: integer, description: 'HTTP status code'}
-    """
     try:
         negotiations = g.negotiation_service.get_negotiations(customer_id)
-        if negotiations == []:
-            return standardize_response(status='fail', message='No negotiations found', code=404)
-        return standardize_response(data=[negotiation.serialize() for negotiation in negotiations], 
-                                    message='Successfully retrieved negotiations')
+        return standardize_response(data=negotiations, message='Successfully retrieved negotiations',
+                                    code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), code=400)
-        return standardize_response(status='fail', message="Error retrieving negotiations", code=400)        
+        raise e        
 
 # get negotiation details
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>', methods=['GET'])
@@ -153,27 +154,34 @@ def get_negotiation_details(negotiation_id):
           type: object
           properties:
             status: {type: string, description: 'Request status'}
-            data: 
+            data:
               type: object
               properties:
-                negotiation: 
-                  type: object
-                  properties:
-                    negotiation_id: {type: integer, description: 'ID of the negotiation'}
-                    vehical_id: {type: integer, description: 'ID of the vehical'}
-                    customer_id: {type: integer, description: 'ID of the customer'}
-                    negotiation_status: {type: integer, description: 'Status of the negotiation'}
-                    start_date: {type: string, description: 'Start date of the negotiation'}
-                    end_date: {type: string, description: 'End date of the negotiation'}
-                offers: 
+                negotiation_id: {type: integer, description: 'ID of the negotiation'}
+                vehical_id: {type: integer, description: 'ID of the vehical'}
+                customer_id: {type: integer, description: 'ID of the customer'}
+                negotiation_status: {type: string, description: 'Status of the negotiation'}
+                start_date: {type: string, description: 'Start date of the negotiation'}
+                end_date: {type: string, description: 'End date of the negotiation'}
+                offers:
                   type: array
                   items:
                     type: object
                     properties:
                       offer_id: {type: integer, description: 'ID of the offer'}
-                      negotiation_id: {type: integer, description: 'ID of the negotiation'}
-                      offer_price: {type: integer, description: 'Offer price'}
-                      offer_status: {type: integer, description: 'Status of the offer'}
+                      offer_type: {type: string, description: 'Type of the offer'}
+                      offer_price: {type: integer, description: 'Price of the offer'}
+                      offer_date: {type: string, description: 'Date of the offer'}
+                      offer_status: {type: string, description: 'Status of the offer'}
+                      message: {type: string, description: 'Message of the offer'}
+                vehicle:
+                  type: object
+                  properties:
+                    vehical_id: {type: integer, description: 'ID of the vehical'}
+                    year: {type: integer, description: 'Year of the vehical'}
+                    make: {type: string, description: 'Make of the vehical'}
+                    model: {type: string, description: 'Model of the vehical'}
+                    image: {type: string, description: 'Image of the vehical'}
             message: {type: string, description: 'Status message'}
             code: {type: integer, description: 'HTTP status code'}
       404:
@@ -196,17 +204,13 @@ def get_negotiation_details(negotiation_id):
             code: {type: integer, description: 'HTTP status code'}
     """
     try:
-        negotiation, offers = g.negotiation_service.get_negotiation_details(negotiation_id)
-        if negotiation is None:
+        negotiation_details = g.negotiation_service.get_negotiation_details(negotiation_id)
+        if negotiation_details is None:
             return standardize_response(status='fail', message='No negotiation found', code=404)
-        return standardize_response(data={'negotiation': negotiation.serialize(),
-                                        'offers': [offer.serialize() for offer in offers]}, 
+        return standardize_response(data=negotiation_details,
                                     message='Successfully retrieved negotiation')
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), code=400)
-        return standardize_response(status='fail', message="Error retrieving negotiation", code=400)
+        raise e
 
 # place additional offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/offer', methods=['POST'])
@@ -257,16 +261,15 @@ def place_offer(negotiation_id):
         data = request.get_json()
         offer_price = data['offer_price']
         message = data['message']
+        if not offer_price:
+            raise ExposedException('Missing required fields', code=400)
         offer_id = g.negotiation_service.place_offer(negotiation_id=negotiation_id, offer_price=offer_price,
                                                     message=message)
-        return standardize_response(data={'offer_id': offer_id}, 
+        return standardize_response(data=offer_id, 
                                     message='Successfully placed offer', 
                                     code=201)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), code=400)
-        return standardize_response(status='fail', message="Error placing offer", code=400)
+        raise e
 
 # accept counter offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/accept', methods=['POST'])
@@ -305,8 +308,7 @@ def accept_offer(negotiation_id):
         g.negotiation_service.accept_counter_offer(negotiation_id)
         return standardize_response(message='Successfully accepted offer')
     except Exception as e:
-        current_app.logger.error(str(e))
-        return standardize_response(status='fail', message="Error accepting offer", code=400)
+        raise e
     
 # reject counter offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/reject', methods=['POST'])
@@ -345,7 +347,4 @@ def reject_offer(negotiation_id):
         g.negotiation_service.reject_counter_offer(negotiation_id)
         return standardize_response(message='Successfully rejected offer')
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=str(e), code=400)
-        return standardize_response(status='fail', message="Error rejecting offer", code=400)
+        raise e
