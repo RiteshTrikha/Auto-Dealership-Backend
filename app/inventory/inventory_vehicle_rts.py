@@ -142,7 +142,7 @@ def get_vehicle(vehical_id):
 
 # get top 5 vehicles
 @inventory_bp.route('/inventory/top-vehicles', methods=['GET'])
-def get_top_vehicles():
+def get_top_5_vehicles():
     """
     Get top 5 vehicles
     ---
@@ -202,7 +202,7 @@ def get_top_vehicles():
                 code: {type: integer}
     """
     try:
-        vehicles = InventoryService().get_top_vehicles()
+        vehicles = InventoryService().get_top_5_vehicles()
         return standardize_response(status='success', data=vehicles, 
                                     message='Successfully retrieved top vehicles', code=200)
     except Exception as e:

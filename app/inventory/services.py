@@ -110,7 +110,20 @@ class InventoryService:
             vehicles = Vehical.get_top_5_vehicles()
             if vehicles == []:
                 raise ExposedException('No vehicles found', code=404)
-            return vehicles
+            return [{
+                'vehicle_id': vehicle.vehical_id,
+                'price': vehicle.price,
+                'year': vehicle.year,
+                'make': vehicle.make,
+                'model': vehicle.model,
+                'miles': vehicle.miles,
+                'mpg': vehicle.mpg,
+                'color': vehicle.color,
+                'fuel_type': vehicle.fuel_type,
+                'transmission': vehicle.transmission,
+                'image': vehicle.image,
+                'vehicle_status': vehicle.vehical_status
+            } for vehicle in vehicles]
         except Exception as e:
             current_app.logger.error(str(e))
             raise ExpDatabaseException
