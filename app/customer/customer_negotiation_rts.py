@@ -263,7 +263,7 @@ def place_offer(negotiation_id):
         message = data['message']
         if not offer_price:
             raise ExposedException('Missing required fields', code=400)
-        offer_id = g.negotiation_service.place_offer(negotiation_id=negotiation_id, offer_price=offer_price,
+        offer_id = g.negotiation_service.additional_offer(negotiation_id=negotiation_id, offer_price=offer_price,
                                                     message=message)
         return standardize_response(data=offer_id, 
                                     message='Successfully placed offer', 
