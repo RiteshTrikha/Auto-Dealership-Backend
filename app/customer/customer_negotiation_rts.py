@@ -10,6 +10,54 @@ from app.exceptions import ExposedException
 from app.utilities import Utilities
 standardize_response = Utilities.standardize_response
 
+# list negotiation dict
+# {
+#     'negotiations': [{
+#         'negotiation_id': negotiation.negotiation_id,
+#         'vehical': {
+#             'vehical_id': negotiation.vehical_id,
+#             'year': negotiation.vehical.year,
+#             'make': negotiation.vehical.make,
+#             'model': negotiation.vehical.model,
+#             'image': negotiation.vehical.image
+#         },
+#         'customer_id': negotiation.customer_id,
+#         'current_offer': negotiation.offers[-1].offer_price,
+#         'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
+#         'start_date': negotiation.start_date,
+#         'end_date': negotiation.end_date
+#     } for negotiation in negotiations]
+# }
+
+# negotiation details dict
+# {
+#     'negotiation_id': negotiation.negotiation_id,
+#     'customer': {
+#         'customer_id': negotiation.customer_id,
+#         'first_name': negotiation.customer.first_name,
+#         'last_name': negotiation.customer.last_name,
+#     },
+#     'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
+#     'start_date': negotiation.start_date,
+#     'end_date': negotiation.end_date,
+#     'current_offer': negotiation.offers[-1].offer_price,
+#     'offers': [{
+#             'offer_id': offer.offer_id,
+#             'offer_type': Offer.OfferType(offer.offer_type).name,
+#             'offer_price': offer.offer_price,
+#             'offer_date': offer.offer_date,
+#             'offer_status': Offer.OfferStatus(offer.offer_status).name,
+#             'message': offer.message
+#         } for offer in offers],
+#     'vehicle': {
+#         'vehical_id': negotiation.vehical_id,
+#         'year': negotiation.vehical.year,
+#         'make': negotiation.vehical.make,
+#         'model': negotiation.vehical.model,
+#         'image': negotiation.vehical.image
+#     }
+# }
+
 # Place initial offer and create negotiation
 @customer_bp.route('/negotiation/negotiation', methods=['POST'])
 def create_negotiation():
@@ -95,21 +143,22 @@ def create_negotiation():
             'items': {
               'type': 'object',
               'properties': {
-                'negotiation_id': {'type': 'integer'},
-                'vehical': {
-                  'type': 'object',
-                  'properties': {
-                    'vehical_id': {'type': 'integer'},
-                    'year': {'type': 'integer'},
-                    'make': {'type': 'string'},
-                    'model': {'type': 'string'},
-                    'image': {'type': 'string'}
-                  }
-                },
-                'customer_id': {'type': 'integer'},
-                'negotiation_status': {'type': 'integer'},
-                'start_date': {'type': 'string'},
-                'end_date': {'type': 'string'}
+                  'negotiation_id': {'type': 'integer'},
+                  'vehical': {
+                      'type': 'object',
+                      'properties': {
+                          'vehical_id': {'type': 'integer'},
+                          'year': {'type': 'integer'},
+                          'make': {'type': 'string'},
+                          'model': {'type': 'string'},
+                          'image': {'type': 'string'}
+                      }
+                  },
+                  'customer_id': {'type': 'integer'},
+                  'current_offer': {'type': 'integer'},
+                  'negotiation_status': {'type': 'string'},
+                  'start_date': {'type': 'string'},
+                  'end_date': {'type': 'string'}
               }
             }
           },
@@ -158,30 +207,42 @@ def get_negotiation_details(negotiation_id):
               type: object
               properties:
                 negotiation_id: {type: integer, description: 'ID of the negotiation'}
-                vehical_id: {type: integer, description: 'ID of the vehical'}
-                customer_id: {type: integer, description: 'ID of the customer'}
+                customer: {
+                    type: object,
+                    properties: {
+                        customer_id: {type: integer, description: 'ID of the customer'},
+                        first_name: {type: string, description: 'First name of the customer'},
+                        last_name: {type: string, description: 'Last name of the customer'}
+                    }
+                }
                 negotiation_status: {type: string, description: 'Status of the negotiation'}
                 start_date: {type: string, description: 'Start date of the negotiation'}
                 end_date: {type: string, description: 'End date of the negotiation'}
-                offers:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      offer_id: {type: integer, description: 'ID of the offer'}
-                      offer_type: {type: string, description: 'Type of the offer'}
-                      offer_price: {type: integer, description: 'Price of the offer'}
-                      offer_date: {type: string, description: 'Date of the offer'}
-                      offer_status: {type: string, description: 'Status of the offer'}
-                      message: {type: string, description: 'Message of the offer'}
-                vehicle:
-                  type: object
-                  properties:
-                    vehical_id: {type: integer, description: 'ID of the vehical'}
-                    year: {type: integer, description: 'Year of the vehical'}
-                    make: {type: string, description: 'Make of the vehical'}
-                    model: {type: string, description: 'Model of the vehical'}
-                    image: {type: string, description: 'Image of the vehical'}
+                current_offer: {type: integer, description: 'Current offer price'}
+                offers: {
+                    type: array,
+                    items: {
+                        type: object,
+                        properties: {
+                            offer_id: {type: integer, description: 'ID of the offer'},
+                            offer_type: {type: string, description: 'Type of the offer'},
+                            offer_price: {type: integer, description: 'Offer price'},
+                            offer_date: {type: string, description: 'Date of the offer'},
+                            offer_status: {type: string, description: 'Status of the offer'},
+                            message: {type: string, description: 'Message'}
+                        }
+                    }
+                }
+                vehicle: {
+                    type: object,
+                    properties: {
+                        vehical_id: {type: integer, description: 'ID of the vehical'},
+                        year: {type: integer, description: 'Year of the vehical'},
+                        make: {type: string, description: 'Make of the vehical'},
+                        model: {type: string, description: 'Model of the vehical'},
+                        image: {type: string, description: 'Image of the vehical'}
+                    }
+                }
             message: {type: string, description: 'Status message'}
             code: {type: integer, description: 'HTTP status code'}
       404:
@@ -275,7 +336,7 @@ def place_offer(negotiation_id):
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/accept', methods=['POST'])
 def accept_offer(negotiation_id):
     """
-    Accept an offer
+    Accept counter offer
     ---
     tags: [Customer Negotiation]
     consumes: [application/json]
@@ -314,7 +375,7 @@ def accept_offer(negotiation_id):
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/reject', methods=['POST'])
 def reject_offer(negotiation_id):
     """
-    Reject an offer
+    Reject counter offer
     ---
     tags: [Customer Negotiation]
     consumes: [application/json]

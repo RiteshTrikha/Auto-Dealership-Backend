@@ -43,6 +43,7 @@ class NegotiationService:
                         'image': negotiation.vehical.image
                     },
                     'customer_id': negotiation.customer_id,
+                    'current_offer': negotiation.offers[-1].offer_price,
                     'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
                     'start_date': negotiation.start_date,
                     'end_date': negotiation.end_date
@@ -63,8 +64,15 @@ class NegotiationService:
             return {
                 'negotiations': [{
                     'negotiation_id': negotiation.negotiation_id,
-                    'vehical_id': negotiation.vehical_id,
+                    'vehical': {
+                        'vehical_id': negotiation.vehical_id,
+                        'year': negotiation.vehical.year,
+                        'make': negotiation.vehical.make,
+                        'model': negotiation.vehical.model,
+                        'image': negotiation.vehical.image
+                    },
                     'customer_id': negotiation.customer_id,
+                    'current_offer': negotiation.offers[-1].offer_price,
                     'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
                     'start_date': negotiation.start_date,
                     'end_date': negotiation.end_date
@@ -83,13 +91,16 @@ class NegotiationService:
             if negotiation is None:
                 raise ExposedException('Negotiation not found', code=404)
             return {
-                'negotiation': {
-                    'negotiation_id': negotiation.negotiation_id,
+                'negotiation_id': negotiation.negotiation_id,
+                'customer': {
                     'customer_id': negotiation.customer_id,
-                    'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
-                    'start_date': negotiation.start_date,
-                    'end_date': negotiation.end_date
+                    'first_name': negotiation.customer.first_name,
+                    'last_name': negotiation.customer.last_name,
                 },
+                'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
+                'start_date': negotiation.start_date,
+                'end_date': negotiation.end_date,
+                'current_offer': negotiation.offers[-1].offer_price,
                 'offers': [{
                         'offer_id': offer.offer_id,
                         'offer_type': Offer.OfferType(offer.offer_type).name,
