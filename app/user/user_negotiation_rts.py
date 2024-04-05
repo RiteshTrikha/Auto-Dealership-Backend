@@ -213,7 +213,7 @@ def place_counter_offer(negotiation_id):
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>/accept-offer', methods=['POST'])
 def accept_offer(negotiation_id):
     """
-    Accept counter offer
+    Accept offer
     ---
     tags: [User Negotiation]
     parameters:
@@ -252,7 +252,7 @@ def accept_offer(negotiation_id):
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>/reject-offer', methods=['POST'])
 def reject_offer(negotiation_id):
     """
-    Reject counter offer
+    Reject offer
     ---
     tags: [User Negotiation]
     parameters:

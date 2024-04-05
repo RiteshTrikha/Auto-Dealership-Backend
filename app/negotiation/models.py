@@ -21,6 +21,8 @@ class Negotiation(db.Model):
 
     customer = relationship('app.customer.models.Customer' , backref='negotiations')
     vehical = relationship('app.inventory.models.Vehical' , backref='negotiations')
+    offers = relationship('Offer', backref='negotiation')
+
 
     # functions
     def serialize(self):
@@ -117,8 +119,6 @@ class Offer(db.Model):
     offer_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     offer_status = Column(Integer, nullable=False, server_default=text("1"))
     message = Column(String(512))
-
-    negotiation = relationship('Negotiation')
 
     # functions
     def serialize(self):
