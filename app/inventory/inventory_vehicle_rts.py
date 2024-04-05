@@ -31,7 +31,6 @@ def get_all_vehicles():
                     type: object
                     properties:
                       vehicle_id: {type: integer}
-                      vin: {type: string}
                       price: {type: integer}
                       year: {type: string}
                       make: {type: string}
@@ -64,14 +63,10 @@ def get_all_vehicles():
     """
     try:
         vehicles = InventoryService().get_all_vehicles()
-        if vehicles is None:
-            return standardize_response(status='fail', message='No vehicles found', code=404)
-        return standardize_response(status='success', data=[vehicle.serialize() for vehicle in vehicles], 
+        return standardize_response(status='success', data=vehicles, 
                                     message='Successfully retrieved vehicles', code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=e.message, code=400)
+        raise e
         
 
 # get vehicle by id
@@ -140,18 +135,14 @@ def get_vehicle(vehical_id):
     """
     try:
         vehicle = InventoryService().get_vehicle(vehical_id)
-        if vehicle is None:
-            return standardize_response(status='fail', message='Vehicle not found', code=404)
-        return standardize_response(status='success', data=vehicle.serialize(), message='Successfully retrieved vehicle', code=200)
+        return standardize_response(status='success', data=vehicle,
+                                     message='Successfully retrieved vehicle', code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=e.message, code=400)
-        return standardize_response(status='fail', message='Failed to retrieve vehicle', code=500)
+        raise e
 
 # get top 5 vehicles
 @inventory_bp.route('/inventory/top-vehicles', methods=['GET'])
-def get_top_vehicles():
+def get_top_5_vehicles():
     """
     Get top 5 vehicles
     ---
@@ -170,7 +161,6 @@ def get_top_vehicles():
                 type: object
                 properties:
                   vehicle_id: {type: integer}
-                  vin: {type: string}
                   price: {type: integer}
                   year: {type: string}
                   make: {type: string}
@@ -212,13 +202,8 @@ def get_top_vehicles():
                 code: {type: integer}
     """
     try:
-        vehicles = InventoryService().get_top_vehicles()
-        if vehicles is None:
-            return standardize_response(status='fail', message='No vehicles found', code=404)
-        return standardize_response(status='success', data=[vehicle.serialize() for vehicle in vehicles], 
+        vehicles = InventoryService().get_top_5_vehicles()
+        return standardize_response(status='success', data=vehicles, 
                                     message='Successfully retrieved top vehicles', code=200)
     except Exception as e:
-        current_app.logger.error(str(e))
-        if isinstance(e, ExposedException):
-            return standardize_response(status='fail', message=e.message, code=400)
-        return standardize_response(status='fail', message='Failed to retrieve top vehicles', code=500)
+        raise e

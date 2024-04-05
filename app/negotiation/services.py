@@ -14,6 +14,7 @@ class NegotiationService:
                 raise ExposedException('Negotiation already in progress for vehical and customer', code=400)
             # create negotiation
             negotiation = Negotiation.create_negotiation(vehical_id, customer_id)
+            db.session.commit()
             # create offer
             offer = Offer.create_offer(negotiation_id=negotiation.negotiation_id, offer_type=Offer.OfferType.OFFER.value, 
                                        offer_price=offer_price, message=message)
