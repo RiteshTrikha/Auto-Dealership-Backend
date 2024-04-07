@@ -4,12 +4,14 @@ from config import Config
 from flasgger import Swagger
 from flask_cors import CORS
 from app.error_handlers import register_error_handlers
+from flask_login import LoginManager
 import logging
 
 
 db = SQLAlchemy()
 swagger = Swagger()
 cors = CORS()
+login_manager = LoginManager()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -21,6 +23,17 @@ def create_app(config_class=Config):
 
     # Registering Error Handlers
     register_error_handlers(app)
+    login_manager.init_app(app)
+
+    # login
+    from app.user.models import User
+    from app.customer.models import Customer
+
+    admin_permission = 
+
+    @login_manager.user_loader
+    def load_user(id):
+        return User.query.get(int(user_id))
 
     # log to console
     logging.basicConfig(level=logging.DEBUG)

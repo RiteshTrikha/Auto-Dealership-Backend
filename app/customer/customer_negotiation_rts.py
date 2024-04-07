@@ -1,4 +1,5 @@
 from flask import jsonify, request, current_app, g
+from flask_login import login_required, current_user
 from . import customer_bp
 from flasgger import swag_from
 from .models import Customer
@@ -59,6 +60,7 @@ standardize_response = Utilities.standardize_response
 # }
 
 # Place initial offer and create negotiation
+@login_required
 @customer_bp.route('/negotiation/negotiation', methods=['POST'])
 def create_negotiation():
   """

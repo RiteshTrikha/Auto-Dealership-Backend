@@ -2,57 +2,10 @@
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, INTEGER, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-metadata = Base.metadata
+from app import db
 
 
-class Role(Base):
-    __tablename__ = 'role'
-
-    role_id = Column(INTEGER, primary_key=True, unique=True)
-    role = Column(INTEGER, nullable=False)
-
-
-class CreditReport(Base):
-    __tablename__ = 'credit_report'
-
-    credit_report_id = Column(INTEGER, primary_key=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    score = Column(INTEGER, nullable=False)
-
-    customer = relationship('Customer')
-
-
-class CustomerVehical(Base):
-    __tablename__ = 'customer_vehical'
-
-    customer_vehical_id = Column(INTEGER, primary_key=True, unique=True)
-    vin = Column(String(45))
-    year = Column(String(4))
-    make = Column(String(254))
-    model = Column(String(254))
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-
-    customer = relationship('Customer')
-
-
-class user(Base):
-    __tablename__ = 'user'
-
-    user_id = Column(INTEGER, primary_key=True, unique=True)
-    role_id = Column(ForeignKey('role.role_id'), nullable=False, index=True)
-    email = Column(String(255))
-    password = Column(String(72), nullable=False)
-    first_name = Column(String(45))
-    last_name = Column(String(45))
-    create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
-
-    role = relationship('Role')
-
-
-class Purchase(Base):
+class Purchase(db.Model):
     __tablename__ = 'purchase'
 
     purchase_id = Column(INTEGER, primary_key=True, unique=True)
@@ -67,7 +20,7 @@ class Purchase(Base):
     customer = relationship('Customer')
 
 
-class TimeSlot(Base):
+class TimeSlot(db.Model):
     __tablename__ = 'time_slot'
 
     time_slot_id = Column(INTEGER, primary_key=True, unique=True)
@@ -77,7 +30,7 @@ class TimeSlot(Base):
     is_available = Column(INTEGER, nullable=False)
 
 
-class Log(Base):
+class Log(db.Model):
     __tablename__ = 'Log'
 
     log_id = Column(INTEGER, primary_key=True, unique=True)
@@ -91,7 +44,7 @@ class Log(Base):
     user = relationship('user')
 
 
-class Finance(Base):
+class Finance(db.Model):
     __tablename__ = 'finance'
 
     finance_id = Column(INTEGER, primary_key=True, unique=True)
@@ -104,7 +57,7 @@ class Finance(Base):
     purchase = relationship('Purchase')
 
 
-class Payment(Base):
+class Payment(db.Model):
     __tablename__ = 'payment'
 
     payment_id = Column(INTEGER, primary_key=True, unique=True)
@@ -118,7 +71,7 @@ class Payment(Base):
     purchase = relationship('Purchase')
 
 
-class PurchaseItem(Base):
+class PurchaseItem(db.Model):
     __tablename__ = 'purchase_item'
 
     purchase_item_id = Column(INTEGER, primary_key=True, unique=True)
@@ -129,7 +82,7 @@ class PurchaseItem(Base):
     purchase = relationship('Purchase')
 
 
-class Appointment(Base):
+class Appointment(db.Model):
     __tablename__ = 'appointment'
 
     appointment_id = Column(INTEGER, primary_key=True, unique=True)
@@ -155,7 +108,7 @@ class Appointment(Base):
         }
 
 
-class AppointmentDetail(Base):
+class AppointmentDetail(db.Model):
     __tablename__ = 'appointment_details'
 
     appointment_details_id = Column(INTEGER, primary_key=True, unique=True)
