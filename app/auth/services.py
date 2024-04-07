@@ -1,3 +1,4 @@
+from flask import current_app, g
 from customer.models import Customer
 from user.models import User
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -21,25 +22,23 @@ class AuthService:
     def register_customer(self, first_name, last_name, email, password, birth_date, drivers_license=None):
         try:
             # check if email exists
-            if Customer.get_by_email(email):
+            if g.customer_service.get_by_email(email):
                 return ExposedException('Email already exists', 400)
             # create customer
-            Customer = Customer.create(first_name, last_name, email, generate_password_hash(password), birth_date, drivers_license)
-            db.session.commit()
-            return Customer.customer_id
+            customer_id = g.customer_service.create(first_name, last_name, email, generate_password_hash(password), birth_date, drivers_license)
+            return customer_id
         except Exception as e:
             raise e
         
     def login_customer(self, email, password):
         try:
             # get customer by email
-            customer = Customer.get_by_email(email)
-            # check username and password
+            customer = g.customer_service.get_by_email(email)
+            # check if customer exists
             if not customer or not check_password_hash(customer.password, password):
-                return ExposedException('Please check your login details and try again.', 400)
+                return ExposedException('Invalid email or password', 400)
             # login customer
             login_user(customer)
-            return customer.customer_id
         except Exception as e:
             raise e
         

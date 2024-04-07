@@ -9,6 +9,9 @@ class NegotiationService:
     # place offer / create negotiation
     def create_negotiation(self, vehical_id, customer_id, offer_price, message):
         try:
+                  #check for missing fields
+            if not customer_id or not vehical_id or not offer_price:
+                raise ExposedException('Missing required fields', code=400)
             # check if negotiation already exists for vehical and customer
             if Negotiation.negotiation_already_exists(vehical_id, customer_id):
                 raise ExposedException('Negotiation already in progress for vehical and customer', code=400)
@@ -23,7 +26,7 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
         
     # get negotiations for a customer
     def get_negotiations(self, customer_id):
@@ -52,7 +55,7 @@ class NegotiationService:
             }
         except Exception as e:
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
         
     # get all negotiations
     def get_all_negotiations(self):
@@ -80,7 +83,7 @@ class NegotiationService:
             }
         except Exception as e:
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
         
     # get negotiation details
     def get_negotiation_details(self, negotiation_id):
@@ -119,7 +122,7 @@ class NegotiationService:
             }
         except Exception as e:
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
         
     # counter offer
     def counter_offer(self, negotiation_id, offer_price, message=None):
@@ -154,7 +157,7 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
         
     # accept offer
     def accept_offer(self, negotiation_id):
@@ -183,7 +186,7 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
         
     # reject offer
     def reject_offer(self, negotiation_id):
@@ -198,7 +201,7 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e
     
     # reject counter offer
     def reject_counter_offer(self, negotiation_id):
@@ -213,4 +216,4 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            raise e

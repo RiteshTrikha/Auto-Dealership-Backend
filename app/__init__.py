@@ -29,10 +29,8 @@ def create_app(config_class=Config):
     from app.user.models import User
     from app.customer.models import Customer
 
-    admin_permission = 
-
     @login_manager.user_loader
-    def load_user(id):
+    def load_user(user_id):
         return User.query.get(int(user_id))
 
     # log to console
@@ -70,9 +68,13 @@ def create_app(config_class=Config):
     from app.inventory.services import InventoryService
     app.inventory_service = InventoryService()
 
+    from app.customer.services import CustomerServices
+    app.customer_service = CustomerServices()
+
     @app.before_request
     def before_request():
         g.negotiation_service = current_app.negotiation_service
         g.inventory_service = current_app.inventory_service
+        g.customer_service = current_app.customer_service
 
     return app

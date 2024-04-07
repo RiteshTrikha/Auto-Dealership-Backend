@@ -109,9 +109,6 @@ def create_negotiation():
       vehical_id = data['vehical_id']
       offer_price = data['offer_price']
       message = data['message']
-      #check for missing fields
-      if not customer_id or not vehical_id or not offer_price:
-          raise ExposedException('Missing required fields', code=400)
       negotiation_id = g.negotiation_service.create_negotiation(vehical_id=vehical_id, customer_id=customer_id, 
                                                                 offer_price=offer_price, message=message)
       return standardize_response(data=negotiation_id, 
