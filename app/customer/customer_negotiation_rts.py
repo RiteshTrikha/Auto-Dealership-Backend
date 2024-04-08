@@ -1,5 +1,5 @@
 from flask import jsonify, request, current_app, g
-from flask_login import login_required, current_user
+from flask_jwt_extended import jwt_required
 from . import customer_bp
 from flasgger import swag_from
 from .models import Customer
@@ -60,49 +60,42 @@ standardize_response = Utilities.standardize_response
 # }
 
 # Place initial offer and create negotiation
-@login_required
 @customer_bp.route('/negotiation/negotiation', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Create negotiation',
+    'tags': ['Customer Negotiation'],
+    'requestBody': {
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'customer_id': {'type': 'integer'},
+                        'vehical_id': {'type': 'integer'},
+                        'offer_price': {'type': 'integer'},
+                        'message': {'type': 'string'}
+                    }
+                }
+            }
+        }
+    },
+    'responses': {
+        '201': {
+            'description': 'Negotiation created',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'negotiation_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
 def create_negotiation():
-  """
-  Creates a negotiation
-  ---
-  tags: [Customer Negotiation]
-  consumes: [application/json]
-  parameters:
-    - in: body
-      name: body
-      required: true
-      schema:
-        type: object
-        required: [customer_id, vehical_id, offer_price]
-        properties:
-          customer_id: {type: integer, description: 'ID of the customer'}
-          vehical_id: {type: integer, description: 'ID of the vehical'}
-          offer_price: {type: integer, description: 'Offer price'}
-          message: {type: string, description: 'customer message'}
-  responses:
-    201:
-      description: Negotiation created
-      schema:
-        type: object
-        properties:
-          status: {type: string, description: 'Request status'}
-          data: 
-            type: object
-            properties:
-            negotiation_id: {type: integer, description: 'ID of the negotiation'}
-          message: {type: string, description: 'Status message'}
-          code: {type: integer, description: 'HTTP status code'}
-
-    400:
-      description: Bad request
-      schema:
-        type: object
-        properties:
-          status: {type: string, description: 'Request status'}
-          message: {type: string, description: 'Error message'}
-          code: {type: integer, description: 'HTTP status code'}
-  """
   try:
       data = request.get_json()
       customer_id = data['customer_id']
@@ -118,6 +111,7 @@ def create_negotiation():
       raise e
 
 # get list of negotiations by customer
+@jwt_required()
 @customer_bp.route('/negotiation/negotiations/<int:customer_id>', methods=['GET'])
 @swag_from({
   'summary': 'Get list of negotiations by customer',
@@ -128,6 +122,7 @@ def create_negotiation():
       'name': 'customer_id',
       'type': 'integer',
       'required': True,
+      'description': 'The id of the customer'
     }
   ],
   'responses': {
@@ -184,85 +179,82 @@ def get_negotiations(customer_id):
 
 # get negotiation details
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>', methods=['GET'])
-def get_negotiation_details(negotiation_id):
-    """
-    Get negotiation details
-    ---
-    tags: [Customer Negotiation]
-    parameters:
-      - in: path
-        name: negotiation_id
-        type: integer
-        required: true
-        description: The id of the negotiation
-    responses:
-      200:
-        description: Negotiation found
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data:
-              type: object
-              properties:
-                negotiation_id: {type: integer, description: 'ID of the negotiation'}
-                customer: {
-                    type: object,
-                    properties: {
-                        customer_id: {type: integer, description: 'ID of the customer'},
-                        first_name: {type: string, description: 'First name of the customer'},
-                        last_name: {type: string, description: 'Last name of the customer'}
-                    }
-                }
-                negotiation_status: {type: string, description: 'Status of the negotiation'}
-                start_date: {type: string, description: 'Start date of the negotiation'}
-                end_date: {type: string, description: 'End date of the negotiation'}
-                current_offer: {type: integer, description: 'Current offer price'}
-                offers: {
-                    type: array,
-                    items: {
-                        type: object,
-                        properties: {
-                            offer_id: {type: integer, description: 'ID of the offer'},
-                            offer_type: {type: string, description: 'Type of the offer'},
-                            offer_price: {type: integer, description: 'Offer price'},
-                            offer_date: {type: string, description: 'Date of the offer'},
-                            offer_status: {type: string, description: 'Status of the offer'},
-                            message: {type: string, description: 'Message'}
+@jwt_required()
+@swag_from({
+    'summary': 'Get negotiation details',
+    'tags': ['Customer Negotiation'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'negotiation_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the negotiation'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Negotiation found',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'object',
+                        'properties': {
+                            'negotiation_id': {'type': 'integer'},
+                            'customer': {
+                                'type': 'object',
+                                'properties': {
+                                    'customer_id': {'type': 'integer'},
+                                    'first_name': {'type': 'string'},
+                                    'last_name': {'type': 'string'}
+                                }
+                            },
+                            'negotiation_status': {'type': 'string'},
+                            'start_date': {'type': 'string'},
+                            'end_date': {'type': 'string'},
+                            'current_offer': {'type': 'integer'},
+                            'offers': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'offer_id': {'type': 'integer'},
+                                        'offer_type': {'type': 'string'},
+                                        'offer_price': {'type': 'integer'},
+                                        'offer_date': {'type': 'string'},
+                                        'offer_status': {'type': 'string'},
+                                        'message': {'type': 'string'}
+                                    }
+                                }
+                            },
+                            'vehicle': {
+                                'type': 'object',
+                                'properties': {
+                                    'vehical_id': {'type': 'integer'},
+                                    'year': {'type': 'integer'},
+                                    'make': {'type': 'string'},
+                                    'model': {'type': 'string'},
+                                    'image': {'type': 'string'}
+                                }
+                            }
                         }
-                    }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
                 }
-                vehicle: {
-                    type: object,
-                    properties: {
-                        vehical_id: {type: integer, description: 'ID of the vehical'},
-                        year: {type: integer, description: 'Year of the vehical'},
-                        make: {type: string, description: 'Make of the vehical'},
-                        model: {type: string, description: 'Model of the vehical'},
-                        image: {type: string, description: 'Image of the vehical'}
-                    }
-                }
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      404:
-        description: No negotiation found
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: {type: object, description: 'Empty object'}
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      400:
-        description: Bad request
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: {type: object, description: 'Empty object'}
-            message: {type: string, description: 'Error message'}
-            code: {type: integer, description: 'HTTP status code'}
-    """
+            }
+        },
+        '404': {
+            'description': 'No negotiation found',
+        },
+        '400': {
+            'description': 'Bad request',
+        },
+    }
+})
+def get_negotiation_details(negotiation_id):
     try:
         negotiation_details = g.negotiation_service.get_negotiation_details(negotiation_id)
         if negotiation_details is None:
@@ -274,49 +266,60 @@ def get_negotiation_details(negotiation_id):
 
 # place additional offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/offer', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Place additional offer',
+    'tags': ['Customer Negotiation'],
+    'consumes': 'application/json',
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'negotiation_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the negotiation'
+        }
+    ],
+    'requestBody': {
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'offer_price': {'type': 'integer'},
+                        'message': {'type': 'string'}
+                    }
+                }
+            }
+        }
+    },
+    'responses': {
+        '201': {
+            'description': 'Offer placed',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string', 'description': 'Request status'},
+                    'data': {'type': 'integer', 'description': 'Offer id'},
+                    'message': {'type': 'string', 'description': 'Status message'},
+                    'code': {'type': 'integer', 'description': 'HTTP status code'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string', 'description': 'Request status'},
+                    'message': {'type': 'string', 'description': 'Error message'},
+                    'code': {'type': 'integer', 'description': 'HTTP status code'}
+                }
+            }
+        }
+    }
+})
 def place_offer(negotiation_id):
-    """
-    Place additional offer
-    ---
-    tags: [Customer Negotiation]
-    consumes: [application/json]
-    parameters:
-      - in: path
-        name: negotiation_id
-        type: integer
-        required: true
-        description: The id of the negotiation
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required: [offer_price]
-          properties:
-            offer_price: {type: integer, description: 'Offer price'}
-            message: {type: string, description: 'customer message'}
-    responses:
-      201:
-        description: Offer placed
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: 
-              type: object
-              properties:
-                offer_id: {type: integer, description: 'ID of the offer'}
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      400:
-        description: Bad request
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            message: {type: string, description: 'Error message'}
-            code: {type: integer, description: 'HTTP status code'}
-    """
     try:
         data = request.get_json()
         offer_price = data['offer_price']
@@ -333,37 +336,46 @@ def place_offer(negotiation_id):
 
 # accept counter offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/accept', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Accept counter offer',
+    'tags': ['Customer Negotiation'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'negotiation_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the negotiation'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Offer accepted',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string', 'description': 'Request status'},
+                    'data': {'type': 'object', 'description': 'Empty object'},
+                    'message': {'type': 'string', 'description': 'Status message'},
+                    'code': {'type': 'integer', 'description': 'HTTP status code'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string', 'description': 'Request status'},
+                    'message': {'type': 'string', 'description': 'Error message'},
+                    'code': {'type': 'integer', 'description': 'HTTP status code'}
+                }
+            }
+        }
+    }
+})
 def accept_offer(negotiation_id):
-    """
-    Accept counter offer
-    ---
-    tags: [Customer Negotiation]
-    consumes: [application/json]
-    parameters:
-      - in: path
-        name: negotiation_id
-        type: integer
-        required: true
-        description: The id of the negotiation
-    responses:
-      200:
-        description: Offer accepted
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: {type: object, description: 'Empty object'}
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      400:
-        description: Bad request
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            message: {type: string, description: 'Error message'}
-            code: {type: integer, description: 'HTTP status code'}
-    """
     try:
         g.negotiation_service.accept_counter_offer(negotiation_id)
         return standardize_response(message='Successfully accepted offer')
@@ -372,37 +384,46 @@ def accept_offer(negotiation_id):
     
 # reject counter offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/reject', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Reject counter offer',
+    'tags': ['Customer Negotiation'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'negotiation_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the negotiation'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Offer rejected',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string', 'description': 'Request status'},
+                    'data': {'type': 'object', 'description': 'Empty object'},
+                    'message': {'type': 'string', 'description': 'Status message'},
+                    'code': {'type': 'integer', 'description': 'HTTP status code'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string', 'description': 'Request status'},
+                    'message': {'type': 'string', 'description': 'Error message'},
+                    'code': {'type': 'integer', 'description': 'HTTP status code'}
+                }
+            }
+        }
+    }
+})
 def reject_offer(negotiation_id):
-    """
-    Reject counter offer
-    ---
-    tags: [Customer Negotiation]
-    consumes: [application/json]
-    parameters:
-      - in: path
-        name: negotiation_id
-        type: integer
-        required: true
-        description: The id of the negotiation
-    responses:
-      200:
-        description: Offer rejected
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            data: {type: object, description: 'Empty object'}
-            message: {type: string, description: 'Status message'}
-            code: {type: integer, description: 'HTTP status code'}
-      400:
-        description: Bad request
-        schema:
-          type: object
-          properties:
-            status: {type: string, description: 'Request status'}
-            message: {type: string, description: 'Error message'}
-            code: {type: integer, description: 'HTTP status code'}
-    """
     try:
         g.negotiation_service.reject_counter_offer(negotiation_id)
         return standardize_response(message='Successfully rejected offer')

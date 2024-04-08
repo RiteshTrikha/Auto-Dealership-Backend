@@ -4,14 +4,14 @@ from config import Config
 from flasgger import Swagger
 from flask_cors import CORS
 from app.error_handlers import register_error_handlers
-from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
 import logging
 
 
 db = SQLAlchemy()
 swagger = Swagger()
 cors = CORS()
-login_manager = LoginManager()
+jwt = JWTManager()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -20,18 +20,11 @@ def create_app(config_class=Config):
     db.init_app(app)
     swagger.init_app(app)
     cors.init_app(app)
+    jwt.init_app(app)
+    
 
     # Registering Error Handlers
     register_error_handlers(app)
-    login_manager.init_app(app)
-
-    # login
-    from app.user.models import User
-    from app.customer.models import Customer
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
 
     # log to console
     logging.basicConfig(level=logging.DEBUG)

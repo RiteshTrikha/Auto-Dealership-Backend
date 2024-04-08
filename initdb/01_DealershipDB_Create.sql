@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer` (
   `first_name` VARCHAR(32) NOT NULL,
   `last_name` VARCHAR(32) NULL,
   `email` VARCHAR(254) NULL,
-  `password` VARCHAR(72) NOT NULL,
+  `password` VARCHAR(256) NOT NULL,
   `ssn` VARCHAR(11) NULL,
   `birth_date` DATE NULL,
   `drivers_license` VARCHAR(16) NULL,
