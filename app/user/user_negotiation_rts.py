@@ -1,8 +1,10 @@
 from flask import jsonify, request, current_app, g
+from flask_jwt_extended import jwt_required
 from . import user_bp
 from app.negotiation.models import Negotiation, Offer
 from app.inventory.models import Vehical
 from app.exceptions import ExposedException
+from app.auth.auth_decorators import manager_required
 
 # import utilities
 from app.utilities import Utilities
@@ -10,12 +12,14 @@ standardize_response = Utilities.standardize_response
 
 # get all negotiations
 @user_bp.route('/negotiation/negotiations', methods=['GET'])
+@jwt_required()
+@manager_required
 def get_all_negotiations():
     """
     Get all negotiations
     ---
-    tags:
-      - User Negotiation
+    tags: [User Negotiation]
+    security: [{'BearerAuth': []}]
     responses:
         200:
             description: Negotiations found

@@ -4,12 +4,14 @@ from config import Config
 from flasgger import Swagger
 from flask_cors import CORS
 from app.error_handlers import register_error_handlers
+from flask_jwt_extended import JWTManager
 import logging
 
 
 db = SQLAlchemy()
 swagger = Swagger()
 cors = CORS()
+jwt = JWTManager()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -18,6 +20,8 @@ def create_app(config_class=Config):
     db.init_app(app)
     swagger.init_app(app)
     cors.init_app(app)
+    jwt.init_app(app)
+    
 
     # Registering Error Handlers
     register_error_handlers(app)
@@ -57,9 +61,17 @@ def create_app(config_class=Config):
     from app.inventory.services import InventoryService
     app.inventory_service = InventoryService()
 
+    from app.customer.services import CustomerServices
+    app.customer_service = CustomerServices()
+
+    from app.user.services import UserServices
+    app.user_service = UserServices()
+
     @app.before_request
     def before_request():
         g.negotiation_service = current_app.negotiation_service
         g.inventory_service = current_app.inventory_service
+        g.customer_service = current_app.customer_service
+        g.user_service = current_app.user_service
 
     return app
