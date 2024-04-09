@@ -11,7 +11,7 @@ charset-normalizer==3.3.2
 click==8.1.7
 cookiecutter==2.6.0
 cryptography==42.0.5
-flasgger==0.9.7.1
+flasgger==0.9.7b2
 Flask==3.0.2
 Flask-Cors==4.0.0
 Flask-JWT-Extended==4.6.0

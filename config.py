@@ -26,5 +26,5 @@ class Config:
                 }
             }
         },
-        'security': [{'BearerAuth': []}],
+        "security": [{"BearerAuth": []}]
     }

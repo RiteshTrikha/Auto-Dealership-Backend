@@ -206,7 +206,7 @@ DROP TABLE IF EXISTS `DealershipDB`.`role` ;
 
 CREATE TABLE IF NOT EXISTS `DealershipDB`.`role` (
   `role_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `role` INT UNSIGNED NOT NULL,
+  `role` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`role_id`),
   UNIQUE INDEX `role_id_UNIQUE` (`role_id` ASC) VISIBLE);
 

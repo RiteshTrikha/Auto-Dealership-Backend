@@ -11,60 +11,13 @@ from app.exceptions import ExposedException
 from app.utilities import Utilities
 standardize_response = Utilities.standardize_response
 
-# list negotiation dict
-# {
-#     'negotiations': [{
-#         'negotiation_id': negotiation.negotiation_id,
-#         'vehical': {
-#             'vehical_id': negotiation.vehical_id,
-#             'year': negotiation.vehical.year,
-#             'make': negotiation.vehical.make,
-#             'model': negotiation.vehical.model,
-#             'image': negotiation.vehical.image
-#         },
-#         'customer_id': negotiation.customer_id,
-#         'current_offer': negotiation.offers[-1].offer_price,
-#         'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
-#         'start_date': negotiation.start_date,
-#         'end_date': negotiation.end_date
-#     } for negotiation in negotiations]
-# }
-
-# negotiation details dict
-# {
-#     'negotiation_id': negotiation.negotiation_id,
-#     'customer': {
-#         'customer_id': negotiation.customer_id,
-#         'first_name': negotiation.customer.first_name,
-#         'last_name': negotiation.customer.last_name,
-#     },
-#     'negotiation_status': Negotiation.NegotiationStatus(negotiation.negotiation_status).name,
-#     'start_date': negotiation.start_date,
-#     'end_date': negotiation.end_date,
-#     'current_offer': negotiation.offers[-1].offer_price,
-#     'offers': [{
-#             'offer_id': offer.offer_id,
-#             'offer_type': Offer.OfferType(offer.offer_type).name,
-#             'offer_price': offer.offer_price,
-#             'offer_date': offer.offer_date,
-#             'offer_status': Offer.OfferStatus(offer.offer_status).name,
-#             'message': offer.message
-#         } for offer in offers],
-#     'vehicle': {
-#         'vehical_id': negotiation.vehical_id,
-#         'year': negotiation.vehical.year,
-#         'make': negotiation.vehical.make,
-#         'model': negotiation.vehical.model,
-#         'image': negotiation.vehical.image
-#     }
-# }
-
 # Place initial offer and create negotiation
 @customer_bp.route('/negotiation/negotiation', methods=['POST'])
 @jwt_required()
 @swag_from({
     'summary': 'Create negotiation',
     'tags': ['Customer Negotiation'],
+    'security': [{'BearerAuth': []}],
     'requestBody': {
         'content': {
             'application/json': {
@@ -99,7 +52,7 @@ def create_negotiation():
   try:
       data = request.get_json()
       customer_id = data['customer_id']
-      vehical_id = data['vehical_id']
+      vehical_id = data['vehical_id'] 
       offer_price = data['offer_price']
       message = data['message']
       negotiation_id = g.negotiation_service.create_negotiation(vehical_id=vehical_id, customer_id=customer_id, 
@@ -111,11 +64,12 @@ def create_negotiation():
       raise e
 
 # get list of negotiations by customer
-@jwt_required()
 @customer_bp.route('/negotiation/negotiations/<int:customer_id>', methods=['GET'])
+@jwt_required()
 @swag_from({
   'summary': 'Get list of negotiations by customer',
   'tags': ['Customer Negotiation'],
+  'security': [{'BearerAuth': []}],
   'parameters': [
     {
       'in': 'path',
@@ -183,6 +137,7 @@ def get_negotiations(customer_id):
 @swag_from({
     'summary': 'Get negotiation details',
     'tags': ['Customer Negotiation'],
+    'security': [{'BearerAuth': []}],
     'parameters': [
         {
             'in': 'path',
@@ -271,6 +226,7 @@ def get_negotiation_details(negotiation_id):
     'summary': 'Place additional offer',
     'tags': ['Customer Negotiation'],
     'consumes': 'application/json',
+    'security': [{'BearerAuth': []}],
     'parameters': [
         {
             'in': 'path',
@@ -340,6 +296,7 @@ def place_offer(negotiation_id):
 @swag_from({
     'summary': 'Accept counter offer',
     'tags': ['Customer Negotiation'],
+    'security': [{'BearerAuth': []}],
     'parameters': [
         {
             'in': 'path',
@@ -388,6 +345,7 @@ def accept_offer(negotiation_id):
 @swag_from({
     'summary': 'Reject counter offer',
     'tags': ['Customer Negotiation'],
+    'security': [{'BearerAuth': []}],
     'parameters': [
         {
             'in': 'path',

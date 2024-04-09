@@ -1,12 +1,11 @@
 from app import db
-from flask_login import UserMixin
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from enum import Enum
 
 
-class Customer(UserMixin, db.Model):
+class Customer(db.Model):
     __tablename__ = 'customer'
 
     class CustomerStatus(Enum):
@@ -24,13 +23,6 @@ class Customer(UserMixin, db.Model):
     address_id = Column(Integer)
     create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
     status = Column(Integer, nullable=False)
-
-    # flask login required functions and properties
-    def is_active(self):
-        return self.status == 1
-    
-    def get_id(self):
-        return self.email
 
     # create customer
     @classmethod

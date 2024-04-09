@@ -64,10 +64,14 @@ def create_app(config_class=Config):
     from app.customer.services import CustomerServices
     app.customer_service = CustomerServices()
 
+    from app.user.services import UserServices
+    app.user_service = UserServices()
+
     @app.before_request
     def before_request():
         g.negotiation_service = current_app.negotiation_service
         g.inventory_service = current_app.inventory_service
         g.customer_service = current_app.customer_service
+        g.user_service = current_app.user_service
 
     return app

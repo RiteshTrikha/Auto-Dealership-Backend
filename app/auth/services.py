@@ -42,7 +42,23 @@ class AuthService:
             if not customer or not check_password_hash(customer.password, password):
                 raise ExposedException('Invalid email or password', 400)
             # create jwt token
-            access_token = create_access_token(identity=customer.customer_id)
+            access_token = create_access_token(identity={'user_type': 'customer', 'user_id': customer.customer_id})
+            return {'access_token': access_token}
+        except ExposedException as e:
+            raise e
+        except Exception as e:
+            current_app.logger.error(str(e))
+            raise e
+        
+    def login_user(self, email, password):
+        try:
+            # get user by email
+            user = g.user_service.get_by_email(email)
+            # check if user exists
+            if not user or not password == user.password:
+                raise ExposedException('Invalid email or password', 400)
+            # create jwt token
+            access_token = create_access_token(identity={'user_type': 'user', 'user_id': user.user_id, 'role': user.role.role})
             return {'access_token': access_token}
         except ExposedException as e:
             raise e
