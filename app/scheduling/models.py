@@ -141,13 +141,6 @@ class Appointment(db.Model):
             raise e
     
     @classmethod
-    def get_all_appointments_by_customer_id_and_appointment_type(cls, customer_id, appointment_type):
-        try:
-            return db.session.query(Appointment).filter_by(customer_id=customer_id, appointment_type=appointment_type).all()
-        except Exception as e:
-            raise e
-    
-    @classmethod
     def get_all_appointments_by_appointment_type(cls, appointment_type):
         try:
             return db.session.query(Appointment).filter_by(appointment_type=appointment_type).all()
@@ -160,17 +153,6 @@ class Appointment(db.Model):
             return db.session.query(Appointment).filter_by(time_slot_id=time_slot_id).all()
         except Exception as e:
             raise e
-
-    #(maybe add cancel by user or customer)
-    @classmethod
-    def cancel_appointment(self, appointment_id):
-        try:
-            appointment = db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
-            appointment.status = 2
-            db.session.commit()
-            return appointment
-        except Exception as e:
-            raise e
     
     def create_appointment(self, time_slot_id, customer_id, user_id, appointment_type, status):
         try:
@@ -179,20 +161,7 @@ class Appointment(db.Model):
             db.session.commit()
             return appointment
         except Exception as e:
-            raise e
-    
-    def update_appointment(self, appointment_id, time_slot_id, customer_id, user_id, appointment_type, status):
-        try:
-            appointment = db.session.query(Appointment).filter_by(appointment_id=appointment_id).first()
-            appointment.time_slot_id = time_slot_id
-            appointment.customer_id = customer_id
-            appointment.user_id = user_id
-            appointment.appointment_type = appointment_type
-            appointment.status = status
-            db.session.commit()
-            return appointment  
-        except Exception as e:
-            raise e
+            raise e 
 
     def update_appointment_status(self, appointment_id, status):
         try:
