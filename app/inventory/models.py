@@ -27,10 +27,31 @@ class Vehical(db.Model):
     vehical_status = Column(INTEGER)
     
     @classmethod
-    def get_all_vehicles(cls):
+    def get_vehicles(cls, page=1, limit=10, query=None):
         try:
-            vehicles = db.session.query(Vehical).all()
-            return vehicles
+            query_obj = db.session.query(Vehical)
+            if query:
+                query_obj = query_obj.filter(
+                    Vehical.year.like(f'%{query}%') | 
+                    Vehical.make.like(f'%{query}%') | 
+                    Vehical.model.like(f'%{query}%') | 
+                    Vehical.color.like(f'%{query}%') | 
+                    Vehical.fuel_type.like(f'%{query}%') | 
+                    Vehical.transmission.like(f'%{query}%')
+                )
+            
+            num_of_records = query_obj.count()
+            num_of_pages = num_of_records // limit
+            if num_of_records % limit > 0:
+                num_of_pages += 1
+            
+            if page > num_of_pages:
+                page = max(1, num_of_pages)
+            
+            start_index = (page - 1) * limit
+            vehicles = query_obj.slice(start_index, start_index + limit).all()
+
+            return vehicles, num_of_pages
         except Exception as e:
             raise e
         

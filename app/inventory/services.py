@@ -82,27 +82,33 @@ class InventoryService:
             raise ExpDatabaseException
             
     
-    def get_all_vehicles(self):
+    def get_vehicles(self, page, limit, query):
         try:
-            vehicles = Vehical.get_all_vehicles()
+            vehicles, num_of_pages = Vehical.get_vehicles(page=page, limit=limit, query=query)
             if vehicles == []:
                 raise ExposedException('No vehicles found', code=404)
-            return [{
-                'vehicle_id': vehicle.vehical_id,
-                'price': vehicle.price,
-                'year': vehicle.year,
-                'make': vehicle.make,
-                'model': vehicle.model,
-                'miles': vehicle.miles,
-                'mpg': vehicle.mpg,
-                'color': vehicle.color,
-                'fuel_type': vehicle.fuel_type,
-                'transmission': vehicle.transmission,
-                'image': vehicle.image,
-                'vehicle_status': vehicle.vehical_status
-            } for vehicle in vehicles]
+            json_dict = {
+                    'num_of_pages': num_of_pages,
+                    'page': page,
+                    'vehicles': 
+                    [{
+                        'vehicle_id': vehicle.vehical_id,
+                        'price': vehicle.price,
+                        'year': vehicle.year,
+                        'make': vehicle.make,
+                        'model': vehicle.model,
+                        'miles': vehicle.miles,
+                        'mpg': vehicle.mpg,
+                        'color': vehicle.color,
+                        'fuel_type': vehicle.fuel_type,
+                        'transmission': vehicle.transmission,
+                        'image': vehicle.image,
+                        'vehicle_status': vehicle.vehical_status
+                    } for vehicle in vehicles],
+                }
+            return json_dict
         except Exception as e:
-            current_app.logger.error(str(e))
+            current_app.logger.exception(e) # TODO: switch all loggers to exception instead of error and remove the str()
             raise ExpDatabaseException
         
     def get_top_5_vehicles(self):
