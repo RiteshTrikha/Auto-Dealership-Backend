@@ -212,21 +212,6 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`role` (
 
 
 -- -----------------------------------------------------
--- Table `DealershipDB`.`time_slot`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`time_slot` ;
-
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`time_slot` (
-  `time_slot_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `start_time` DATETIME NULL,
-  `end_time` DATETIME NULL,
-  `time_slot_type` INT NOT NULL,
-  `is_available` INT NOT NULL,
-  PRIMARY KEY (`time_slot_id`),
-  UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC) VISIBLE);
-
-
--- -----------------------------------------------------
 -- Table `DealershipDB`.`user`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `DealershipDB`.`user` ;
@@ -248,6 +233,20 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`user` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
+-- -----------------------------------------------------
+-- Table `DealershipDB`.`time_slot`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `DealershipDB`.`time_slot` ;
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`time_slot` (
+  `time_slot_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `start_time` DATETIME NULL,
+  `end_time` DATETIME NULL,
+  `time_slot_type` INT NOT NULL,
+  `is_available` INT NOT NULL,
+  PRIMARY KEY (`time_slot_id`),
+  UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC) VISIBLE);
+
 
 -- -----------------------------------------------------
 -- Table `DealershipDB`.`appointment`
@@ -258,14 +257,12 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`appointment` (
   `appointment_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `time_slot_id` INT UNSIGNED NOT NULL,
   `customer_id` INT UNSIGNED NOT NULL,
-  `user_id` INT UNSIGNED NULL,
   `appointment_type` INT NOT NULL,
   `status` INT NOT NULL,
   PRIMARY KEY (`appointment_id`),
   UNIQUE INDEX `appointment_id_UNIQUE` (`appointment_id` ASC) VISIBLE,
   INDEX `fk_customer_appointment_idx` (`customer_id` ASC) VISIBLE,
   INDEX `fk_time_slot_idx` (`time_slot_id` ASC) VISIBLE,
-  INDEX `fk_user_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_appointment_customer`
     FOREIGN KEY (`customer_id`)
     REFERENCES `DealershipDB`.`customer` (`customer_id`)
@@ -275,39 +272,84 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`appointment` (
     FOREIGN KEY (`time_slot_id`)
     REFERENCES `DealershipDB`.`time_slot` (`time_slot_id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+
+-- -----------------------------------------------------
+-- Table `DealershipDB`.`service_ticket`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `DealershipDB`.`service_ticket` ;
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`service_ticket` (
+  `service_ticket_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `customer_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `customer_vehicle_id` INT UNSIGNED NOT NULL,
+  `time_slot_id` INT UNSIGNED NOT NULL,
+  `customer_note` VARCHAR(512) NULL,
+  `technician_note` VARCHAR(512) NULL,
+  `status` INT NOT NULL,
+  PRIMARY KEY (`service_ticket_id`),
+  UNIQUE INDEX `service_ticket_id_UNIQUE` (`service_ticket_id` ASC) VISIBLE,
+  INDEX `fk_customer_service_ticket_idx` (`customer_id` ASC) VISIBLE,
+  INDEX `fk_customer_vehicle_service_ticket_idx` (`customer_vehicle_id` ASC) VISIBLE,
+  INDEX `fk_time_slot_service_ticket_idx` (`time_slot_id` ASC) VISIBLE,
+  INDEX `fk_user_service_ticket_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_service_ticket_customer`
+    FOREIGN KEY (`customer_id`)
+    REFERENCES `DealershipDB`.`customer` (`customer_id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_appointment_user`
+  CONSTRAINT `fk_service_ticket_customer_vehicle`
+    FOREIGN KEY (`customer_vehicle_id`)
+    REFERENCES `DealershipDB`.`customer_vehical` (`customer_vehical_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_ticket_time_slot`
+    FOREIGN KEY (`time_slot_id`)
+    REFERENCES `DealershipDB`.`time_slot` (`time_slot_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_ticket_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `DealershipDB`.`user` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
-
 -- -----------------------------------------------------
--- Table `DealershipDB`.`appointment_details`
+-- Table `DealershipDB`.`service_ticket_service`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`appointment_details` ;
+DROP TABLE IF EXISTS `DealershipDB`.`service_ticket_service` ;
 
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`appointment_details` (
-  `appointment_details_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `appointment_id` INT UNSIGNED NOT NULL,
-  `customer_vehical_id` INT UNSIGNED NOT NULL,
-  `customer_message` VARCHAR(512) NULL,
-  `notes` VARCHAR(512) NULL,
-  PRIMARY KEY (`appointment_details_id`),
-  UNIQUE INDEX `appointment_details_id_UNIQUE` (`appointment_details_id` ASC) VISIBLE,
-  INDEX `fk_appointment_details_customer_vehical_idx` (`customer_vehical_id` ASC) VISIBLE,
-  INDEX `fk_appointment_details_appointment_idx` (`appointment_id` ASC) VISIBLE,
-  CONSTRAINT `fk_appointment_details_appointment`
-    FOREIGN KEY (`appointment_id`)
-    REFERENCES `DealershipDB`.`appointment` (`appointment_id`)
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`service_ticket_service` (
+  `service_ticket_id` INT UNSIGNED NOT NULL,
+  `service_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`service_ticket_id`, `service_id`),
+  INDEX `fk_service_ticket_service_idx` (`service_id` ASC) VISIBLE,
+  CONSTRAINT `fk_service_ticket_service_service_ticket`
+    FOREIGN KEY (`service_ticket_id`)
+    REFERENCES `DealershipDB`.`service_ticket` (`service_ticket_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_appointment_details_customer_vehical`
-    FOREIGN KEY (`customer_vehical_id`)
-    REFERENCES `DealershipDB`.`customer_vehical` (`customer_vehical_id`)
+  CONSTRAINT `fk_service_ticket_service_service`
+    FOREIGN KEY (`service_id`)
+    REFERENCES `DealershipDB`.`service` (`service_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
+
+
+-- -----------------------------------------------------
+-- Table `DealershipDB`.`service'
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `DealershipDB`.`service` ;
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`service` (
+  `service_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `service_type` VARCHAR(45) NULL,
+  `price` INT NULL,
+  `description` VARCHAR(254) NULL,
+  PRIMARY KEY (`service_id`),
+  UNIQUE INDEX `service_id_UNIQUE` (`service_id` ASC) VISIBLE);
 
 
 -- -----------------------------------------------------
