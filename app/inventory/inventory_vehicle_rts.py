@@ -48,6 +48,7 @@ standardize_response = Utilities.standardize_response
                                     'type': 'object',
                                     'properties': {
                                         'num_of_pages': { 'type': 'integer' },
+                                        'num_of_results': { 'type': 'integer' },
                                         'page': { 'type': 'integer' },
                                         'vehicles': {
                                             'type': 'array',

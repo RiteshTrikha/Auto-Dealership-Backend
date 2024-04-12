@@ -84,11 +84,12 @@ class InventoryService:
     
     def get_vehicles(self, page, limit, query):
         try:
-            vehicles, num_of_pages = Vehical.get_vehicles(page=page, limit=limit, query=query)
+            vehicles, num_of_pages, num_of_records = Vehical.get_vehicles(page=page, limit=limit, query=query)
             if vehicles == []:
                 raise ExposedException('No vehicles found', code=404)
             json_dict = {
                     'num_of_pages': num_of_pages,
+                    'num_of_results': num_of_records,
                     'page': page,
                     'vehicles': 
                     [{

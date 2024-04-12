@@ -51,7 +51,7 @@ class Vehical(db.Model):
             start_index = (page - 1) * limit
             vehicles = query_obj.slice(start_index, start_index + limit).all()
 
-            return vehicles, num_of_pages
+            return vehicles, num_of_pages, num_of_records
         except Exception as e:
             raise e
         
