@@ -1,6 +1,6 @@
 from flask import request, jsonify, current_app
-from .models import Vehical
-from app.exceptions import ExposedException, ExpDatabaseException
+from .models import Vehical, Service
+from app.exceptions import ExposedException
 from app import db
 
 class InventoryService:
@@ -18,6 +18,76 @@ class InventoryService:
     # transmission = Column(String(45))
     # image = Column(String(254))
     # vehical_status = Column(INTEGER)
+
+    # service services
+
+    def create_service(self, service_type, price, description):
+        try:
+            service = Service.create_service(service_type=service_type, price=price, description=description)
+            db.session.commit()
+            return { 'service_id': service.service_id }
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+    def update_service(self, service_id, service_type, price, description):
+        try:
+            service = Service.update_service(service_id=service_id, service_type=service_type, 
+                                             price=price, description=description)
+            db.session.commit()
+            return { 'service_id': service.service_id }
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+    
+    def change_service_status(self, service_id, status):
+        try:
+            if status not in [status.value for status in Service.ServiceStatus]:
+                raise ExposedException('Invalid service status', code=400)
+            service = Service.update_service_status(service_id, status)
+            db.session.commit()
+            return { 'service_id': service.service_id }
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_service(self, service_id):
+        try:
+            service = Service.get_service(service_id)
+            if not service:
+                raise ExposedException('Service not found', code=404)
+            return {
+                'service_id': service.service_id,
+                'service_type': service.service_type,
+                'price': service.price,
+                'description': service.description,
+                'status': Service.ServiceStatus(service.status).name
+            }
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_services(self):
+        try:
+            services = Service.get_services()
+            if services == []:
+                raise ExposedException('No services found', code=404)
+            return [{
+                'service_id': service.service_id,
+                'service_type': service.service_type,
+                'price': service.price,
+                'description': service.description,
+                'status': Service.ServiceStatus(service.status).name
+            } for service in services]
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+
+
+    # vehicle services
     
     def create_vehicle(self, vin, price, year, make, model, miles, mpg, color, fuel_type, 
                        transmission, image, vehical_status=Vehical.VehicalStatus.AVAILABLE.value):
@@ -30,8 +100,8 @@ class InventoryService:
             return { 'vehicle_id': vehicle.vehical_id }
         except Exception as e:
             db.session.rollback()
-            current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            current_app.logger.exception(e)
+            raise e
         
     def update_vehicle(self, vehical_id, vin, price, year, make, model, miles, mpg, 
                        color, fuel_type, transmission, image):
@@ -42,8 +112,8 @@ class InventoryService:
             return { 'vehicle_id': vehicle.vehical_id }
         except Exception as e:
             db.session.rollback()
-            current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            current_app.logger.exception(e)
+            raise e
         
     def change_vehicle_status(self, vehical_id, vehical_status):
         try:
@@ -54,8 +124,8 @@ class InventoryService:
             return { 'vehicle_id': vehicle.vehical_id }
         except Exception as e:
             db.session.rollback()
-            current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            current_app.logger.exception(e)
+            raise e
            
     def get_vehicle(self, vehical_id):
         try:
@@ -78,8 +148,8 @@ class InventoryService:
                 'vehical_status': vehicle.vehical_status
             }
         except Exception as e:
-            current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            current_app.logger.exception(e)
+            raise e
             
     
     def get_vehicles(self, page, limit, query):
@@ -110,7 +180,7 @@ class InventoryService:
             return json_dict
         except Exception as e:
             current_app.logger.exception(e) # TODO: switch all loggers to exception instead of error and remove the str()
-            raise ExpDatabaseException
+            raise e
         
     def get_top_5_vehicles(self):
         try:
@@ -132,5 +202,5 @@ class InventoryService:
                 'vehicle_status': vehicle.vehical_status
             } for vehicle in vehicles]
         except Exception as e:
-            current_app.logger.error(str(e))
-            raise ExpDatabaseException
+            current_app.logger.exception(e)
+            raise e
