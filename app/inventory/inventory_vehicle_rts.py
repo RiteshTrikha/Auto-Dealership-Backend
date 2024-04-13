@@ -1,9 +1,7 @@
-from flask import jsonify, request, current_app, g
+from flask import request
 from flasgger import swag_from
 from . import inventory_bp
-from app import g
 from .services import InventoryService
-from app.exceptions import ExposedException
 
 # import utilities
 from app.utilities import Utilities

@@ -4,6 +4,67 @@ from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from enum import Enum
 
+class Service(db.Model):
+    __tablename__ = 'service'
+
+    class ServiceStatus(Enum):
+        INACTIVE = 0
+        ACTIVE = 1
+
+    service_id = Column(INTEGER, primary_key=True, unique=True)
+    service_type = Column(String(45))
+    price = Column(INTEGER)
+    description = Column(String(254))
+    status = Column(INTEGER, server_default=text("'1'"))
+
+    @classmethod
+    def get_services(cls):
+        try:
+            services = db.session.query(Service).all()
+            return services
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def get_service(cls, service_id):
+        try:
+            service = db.session.query(Service).filter_by(service_id=service_id).first()
+            return service
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def create_service(cls, service_type, price, description):
+        try:
+            service = Service(service_type=service_type, price=price, description=description)
+            db.session.add(service)
+            return service
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def update_service(cls, service_id, service_type=None, price=None, description=None):
+        try:
+            service = db.session.query(Service).filter_by(service_id=service_id).first()
+            if service_type:
+                service.service_type = service_type
+            if price:
+                service.price = price
+            if description:
+                service.description = description
+            return service
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def update_service_status(cls, service_id, status):
+        try:
+            service = db.session.query(Service).filter_by(service_id=service_id).first()
+            service.status = status
+            return service
+        except Exception as e:
+            raise e
+
 class Vehical(db.Model):
     __tablename__ = 'vehical'
 

@@ -348,6 +348,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`service` (
   `service_type` VARCHAR(45) NULL,
   `price` INT NULL,
   `description` VARCHAR(254) NULL,
+  `status` INT NULL DEFAULT 1,
   PRIMARY KEY (`service_id`),
   UNIQUE INDEX `service_id_UNIQUE` (`service_id` ASC) VISIBLE);
 
