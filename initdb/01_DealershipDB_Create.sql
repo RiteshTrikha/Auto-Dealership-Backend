@@ -317,7 +317,6 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase` (
   `customer_id` INT UNSIGNED NOT NULL,
   `open_date` DATETIME NULL DEFAULT NOW(),
   `close_date` DATETIME NULL,
-  `purchase_final_date` DATETIME NULL,
   `purchase_type` INT NULL,
   `tax` FLOAT NULL,
   PRIMARY KEY (`purchase_id`),

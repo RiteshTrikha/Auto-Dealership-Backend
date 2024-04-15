@@ -55,7 +55,6 @@ class Purchase(db.Model):
     customer_id = Column(INTEGER, ForeignKey('customer.customer_id'))
     open_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     close_date = Column(DateTime)
-    purchase_final_date = Column(DateTime)
     purchase_type = Column(INTEGER)
     tax = Column(Float)
 
