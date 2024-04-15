@@ -154,52 +154,6 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`offer` (
 
 
 -- -----------------------------------------------------
--- Table `DealershipDB`.`purchase`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`purchase` ;
-
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase` (
-  `purchase_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `customer_id` INT UNSIGNED NOT NULL,
-  `purchase_date` DATETIME NULL,
-  `purchase_type` INT NULL,
-  `payment_method` INT NULL,
-  `sub_total` INT NULL,
-  `tax` FLOAT NULL,
-  `total` INT NULL,
-  PRIMARY KEY (`purchase_id`),
-  UNIQUE INDEX `purchase_id_UNIQUE` (`purchase_id` ASC) VISIBLE,
-  INDEX `fk_customer_idx` (`customer_id` ASC) VISIBLE,
-  CONSTRAINT `fk_purchase_customer`
-    FOREIGN KEY (`customer_id`)
-    REFERENCES `DealershipDB`.`customer` (`customer_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-
--- -----------------------------------------------------
--- Table `DealershipDB`.`finance`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`finance` ;
-
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`finance` (
-  `finance_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `purchase_id` INT UNSIGNED NOT NULL,
-  `apy` FLOAT NULL,
-  `term` INT NULL,
-  `paid` INT NULL,
-  `finance_status` INT NULL,
-  PRIMARY KEY (`finance_id`),
-  UNIQUE INDEX `finance_id_UNIQUE` (`finance_id` ASC) VISIBLE,
-  UNIQUE INDEX `financecol_UNIQUE` (`purchase_id` ASC) VISIBLE,
-  CONSTRAINT `fk_finance_purchase`
-    FOREIGN KEY (`purchase_id`)
-    REFERENCES `DealershipDB`.`purchase` (`purchase_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-
--- -----------------------------------------------------
 -- Table `DealershipDB`.`role`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `DealershipDB`.`role` ;
@@ -354,17 +308,52 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`service` (
 
 
 -- -----------------------------------------------------
--- Table `DealershipDB`.`retail_item`
+-- Table `DealershipDB`.`purchase`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`retail_item` ;
+DROP TABLE IF EXISTS `DealershipDB`.`purchase` ;
 
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`retail_item` (
-  `retail_item_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NULL,
-  `price` INT NULL,
-  `description` VARCHAR(254) NULL,
-  PRIMARY KEY (`retail_item_id`),
-  UNIQUE INDEX `retail_item_id_UNIQUE` (`retail_item_id` ASC) VISIBLE);
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase` (
+  `purchase_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `customer_id` INT UNSIGNED NOT NULL,
+  `open_date` DATETIME NULL DEFAULT NOW(),
+  `close_date` DATETIME NULL,
+  `purchase_final_date` DATETIME NULL,
+  `purchase_type` INT NULL,
+  `tax` FLOAT NULL,
+  PRIMARY KEY (`purchase_id`),
+  UNIQUE INDEX `purchase_id_UNIQUE` (`purchase_id` ASC) VISIBLE,
+  INDEX `fk_customer_idx` (`customer_id` ASC) VISIBLE,
+  CONSTRAINT `fk_purchase_customer`
+    FOREIGN KEY (`customer_id`)
+    REFERENCES `DealershipDB`.`customer` (`customer_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+
+-- -----------------------------------------------------
+-- Table `DealershipDB`.`finance`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `DealershipDB`.`finance` ;
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`finance` (
+  `finance_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `purchase_id` INT UNSIGNED NOT NULL,
+  `start_date` DATETIME NULL DEFAULT NOW(),
+  `end_date` DATETIME NULL,
+  `down_payment` INT NULL,
+  `loan_amount` INT NULL,
+  `apy` FLOAT NULL,
+  `term` INT NULL,
+  `paid` INT NULL,
+  `finance_status` INT NULL,
+  PRIMARY KEY (`finance_id`),
+  UNIQUE INDEX `finance_id_UNIQUE` (`finance_id` ASC) VISIBLE,
+  UNIQUE INDEX `financecol_UNIQUE` (`purchase_id` ASC) VISIBLE,
+  CONSTRAINT `fk_finance_purchase`
+    FOREIGN KEY (`purchase_id`)
+    REFERENCES `DealershipDB`.`purchase` (`purchase_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
 
 
 -- -----------------------------------------------------
@@ -375,11 +364,10 @@ DROP TABLE IF EXISTS `DealershipDB`.`payment` ;
 CREATE TABLE IF NOT EXISTS `DealershipDB`.`payment` (
   `payment_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `purchase_id` INT UNSIGNED NOT NULL,
-  `ccv` VARCHAR(45) NULL,
-  `expiration` VARCHAR(45) NULL,
-  `card_number` VARCHAR(45) NULL,
+  `finance_id` INT UNSIGNED NULL,
   `routing_number` VARCHAR(45) NULL,
   `account_number` VARCHAR(45) NULL,
+  `payment_amount` INT NULL,
   PRIMARY KEY (`payment_id`),
   UNIQUE INDEX `payment_id_UNIQUE` (`payment_id` ASC) VISIBLE,
   INDEX `fk_purchase_idx` (`purchase_id` ASC) VISIBLE,
@@ -389,6 +377,54 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`payment` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
+-- -----------------------------------------------------
+-- Table `DealershipDB`.`purchase_service`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `DealershipDB`.`purchase_item` ;
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase_item` (
+  `purchase_service_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `purchase_id` INT UNSIGNED NOT NULL,
+  `service_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`purchase_service_id`),
+  UNIQUE INDEX `purchase_service_id_UNIQUE` (`purchase_service_id` ASC) VISIBLE,
+  INDEX `fk_purchase_service_purchase_idx` (`purchase_id` ASC) VISIBLE,
+  INDEX `fk_purchase_service_service_idx` (`service_id` ASC) VISIBLE,
+  CONSTRAINT `fk_purchase_service_purchase`
+    FOREIGN KEY (`purchase_id`)
+    REFERENCES `DealershipDB`.`purchase` (`purchase_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_purchase_service_service`
+    FOREIGN KEY (`service_id`)
+    REFERENCES `DealershipDB`.`service` (`service_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+-- -----------------------------------------------------
+-- Table `DealershipDB`.`purchase_vehical`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `DealershipDB`.`purchase_vehical` ;
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase_vehical` (
+  `purchase_vehical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `purchase_id` INT UNSIGNED NOT NULL,
+  `vehical_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`purchase_vehical_id`),
+  UNIQUE INDEX `purchase_vehical_id_UNIQUE` (`purchase_vehical_id` ASC) VISIBLE,
+  INDEX `fk_purchase_vehical_purchase_idx` (`purchase_id` ASC) VISIBLE,
+  INDEX `fk_purchase_vehical_vehical_idx` (`vehical_id` ASC) VISIBLE,
+  CONSTRAINT `fk_purchase_vehical_purchase`
+    FOREIGN KEY (`purchase_id`)
+    REFERENCES `DealershipDB`.`purchase` (`purchase_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_purchase_vehical_vehical`
+    FOREIGN KEY (`vehical_id`)
+    REFERENCES `DealershipDB`.`vehical` (`vehical_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+  
 
 -- -----------------------------------------------------
 -- Table `DealershipDB`.`Log`
@@ -414,27 +450,6 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`Log` (
   CONSTRAINT `fk_log_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `DealershipDB`.`user` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-
--- -----------------------------------------------------
--- Table `DealershipDB`.`purchase_item`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`purchase_item` ;
-
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase_item` (
-  `purchase_item_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `purchase_id` INT UNSIGNED NOT NULL,
-  `item_id` INT UNSIGNED NOT NULL,
-  `price` INT NULL,
-  PRIMARY KEY (`purchase_item_id`),
-  UNIQUE INDEX `finance_id_UNIQUE` (`purchase_item_id` ASC) VISIBLE,
-  UNIQUE INDEX `financecol_UNIQUE` (`purchase_id` ASC) VISIBLE,
-  UNIQUE INDEX `item_id_UNIQUE` (`item_id` ASC) VISIBLE,
-  CONSTRAINT `fk_purchase_item_purchase`
-    FOREIGN KEY (`purchase_id`)
-    REFERENCES `DealershipDB`.`purchase` (`purchase_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
