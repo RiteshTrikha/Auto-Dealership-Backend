@@ -351,7 +351,6 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`service` (
   PRIMARY KEY (`service_id`),
   UNIQUE INDEX `service_id_UNIQUE` (`service_id` ASC) VISIBLE);
 
-
 -- -----------------------------------------------------
 -- Table `DealershipDB`.`retail_item`
 -- -----------------------------------------------------

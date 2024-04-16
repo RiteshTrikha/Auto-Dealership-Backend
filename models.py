@@ -78,35 +78,6 @@ class PurchaseItem(db.Model):
     purchase = relationship('Purchase')
 
 
-class Appointment(db.Model):
-    __tablename__ = 'appointment'
-
-    appointment_id = Column(INTEGER, primary_key=True, unique=True)
-    time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    user_id = Column(ForeignKey('user.user_id'), index=True)
-    appointment_type = Column(INTEGER, nullable=False)
-    status = Column(INTEGER, nullable=False)
-
-    customer = relationship('Customer')
-    user = relationship('user')
-    time_slot = relationship('TimeSlot')
-
-    # functions
-    def serialize(self):
-        return {
-            'appointment_id': self.appointment_id,
-            'time_slot_id': self.time_slot_id,
-            'customer_id': self.customer_id,
-            'user_id': self.user_id,
-            'appointment_type': self.appointment_type,
-            'status': self.status
-        }
-
-
-
-
-
 class CounterOffer(Base):
     __tablename__ = 'counter_offer'
 
