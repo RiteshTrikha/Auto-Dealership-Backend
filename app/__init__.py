@@ -45,6 +45,9 @@ def create_app(config_class=Config):
     from app.services import services_bp
     app.register_blueprint(services_bp)
 
+    from app.services import services_bp
+    app.register_blueprint(services_bp)
+
     from app.negotiation import negotiation_bp
     app.register_blueprint(negotiation_bp, url_prefix=f"{api_prefix}/negotiation")
 

@@ -38,6 +38,10 @@ class Log(db.Model):
 
 
 
+    employee = relationship('Employee')
+
+
+
 
 
 class Finance(db.Model):
