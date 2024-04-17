@@ -14,15 +14,19 @@ class ScheduleService:
     #pick a time slot for a test drive and create a test drive appointment with the status pending(3) and appointment type test drive(2) and update time slot is_available to unavailable(0)
     def schedule_test_drive(self, customer_id, time_slot_id):
         try:
+            #check for missing fields
+            if customer_id is None or time_slot_id is None:
+                raise ExposedException("Missing fields", code = 400)
+            
             #create test drive appointment
-            appointment = Appointment.create_appointment(customer_id, time_slot_id, Appointment.appointmentType.TEST_DRIVE.value, Appointment.Status.PENDING.value)
+            appointment = Appointment.create_appointment(time_slot_id, customer_id, Appointment.appointmentType.TEST_DRIVE.value, Appointment.Status.PENDING.value)
             
             #update time slot
             time_slot = TimeSlot.get_time_slot_by_time_slot_id(time_slot_id)
             time_slot.is_available = 0
             db.session.commit()
-            
-            return appointment.appointment_id
+
+            return {'appointment': appointment.appointment_id}
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
@@ -32,6 +36,10 @@ class ScheduleService:
     #pick a time slot for a service appointment and create a service appointment with the status pending(3) and appointment type service(1) and update time slot is_available to unavailable(0) and create service ticket with the services selected
     def schedule_service(self, user_id, customer_id, time_slot_id, customer_vehicle_id, customer_notes, technician_notes, services):
         try:
+            #check for missing fields
+            if user_id is None or customer_id is None or time_slot_id is None or customer_vehicle_id is None or customer_notes is None or technician_notes is None or services is None:
+                raise ExposedException("Missing fields", code = 400)
+
             #create service appointment
             appointment = Appointment.create_appointment(customer_id, time_slot_id, Appointment.appointmentType.SERVICE.value, Appointment.Status.PENDING.value)
             
@@ -51,7 +59,7 @@ class ScheduleService:
                 Service_Ticket_Service.create_service_ticket_service(service_ticket_id=service_ticket.service_ticket_id, service_id=service.service_id)
 
             db.session.commit()
-            return appointment.appointment_id
+            return {'appointment': appointment.appointment_id}
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
@@ -100,7 +108,22 @@ class ScheduleService:
             return {
                 'appointments': [{
                     'appointment_id': appointment.appointment_id,
+                    'customer': {
+                        'type': 'object',
+                        'properties':{
+                            'customer_id': appointment.customer.customer_id,
+                            'first_name': appointment.customer.first_name,
+                            'last_name': appointment.customer.last_name
+                        }
+                    },
                     'customer_id': appointment.customer_id,
+                    'time_slot': {
+                        'type': 'object',
+                        'properties':{
+                            'start_time': appointment.time_slot.start_time,
+                            'end_time': appointment.time_slot.end_time
+                        }
+                    },
                     'time_slot_id': appointment.time_slot_id,
                     'appointment_type': Appointment.appointmentType(appointment.appointment_type).name,
                     'status': Appointment.Status(appointment.status).name,
@@ -159,7 +182,22 @@ class ScheduleService:
             return {
                 'appointments': [{
                     'appointment_id': appointment.appointment_id,
+                    'customer': {
+                        'type': 'object',
+                        'properties':{
+                            'customer_id': appointment.customer.customer_id,
+                            'first_name': appointment.customer.first_name,
+                            'last_name': appointment.customer.last_name
+                        }
+                    },
                     'customer_id': appointment.customer_id,
+                    'time_slot': {
+                        'type': 'object',
+                        'properties':{
+                            'start_time': appointment.time_slot.start_time,
+                            'end_time': appointment.time_slot.end_time
+                        }
+                    },
                     'time_slot_id': appointment.time_slot_id,
                     'appointment_type': Appointment.appointmentType(appointment.appointment_type).name,
                     'status': Appointment.Status(appointment.status).name,
@@ -178,7 +216,22 @@ class ScheduleService:
             return {
                 'appointments': [{
                     'appointment_id': appointment.appointment_id,
+                    'customer': {
+                        'type': 'object',
+                        'properties':{
+                            'customer_id': appointment.customer.customer_id,
+                            'first_name': appointment.customer.first_name,
+                            'last_name': appointment.customer.last_name
+                        }
+                    },
                     'customer_id': appointment.customer_id,
+                    'time_slot': {
+                        'type': 'object',
+                        'properties':{
+                            'start_time': appointment.time_slot.start_time,
+                            'end_time': appointment.time_slot.end_time
+                        }
+                    },
                     'time_slot_id': appointment.time_slot_id,
                     'appointment_type': Appointment.appointmentType(appointment.appointment_type).name,
                     'status': Appointment.Status(appointment.status).name,
@@ -197,7 +250,22 @@ class ScheduleService:
             return {
                 'appointments': [{
                     'appointment_id': appointment.appointment_id,
+                    'customer': {
+                        'type': 'object',
+                        'properties':{
+                            'customer_id': appointment.customer.customer_id,
+                            'first_name': appointment.customer.first_name,
+                            'last_name': appointment.customer.last_name
+                        }
+                    },
                     'customer_id': appointment.customer_id,
+                    'time_slot': {
+                        'type': 'object',
+                        'properties':{
+                            'start_time': appointment.time_slot.start_time,
+                            'end_time': appointment.time_slot.end_time
+                        }
+                    },
                     'time_slot_id': appointment.time_slot_id,
                     'appointment_type': Appointment.appointmentType(appointment.appointment_type).name,
                     'status': Appointment.Status(appointment.status).name,
@@ -217,7 +285,22 @@ class ScheduleService:
             return {
                 'appointments': [{
                     'appointment_id': appointment.appointment_id,
+                    'customer': {
+                        'type': 'object',
+                        'properties':{
+                            'customer_id': appointment.customer.customer_id,
+                            'first_name': appointment.customer.first_name,
+                            'last_name': appointment.customer.last_name
+                        }
+                    },                    
                     'customer_id': appointment.customer_id,
+                    'time_slot': {
+                        'type': 'object',
+                        'properties':{
+                            'start_time': appointment.time_slot.start_time,
+                            'end_time': appointment.time_slot.end_time
+                        }
+                    },
                     'time_slot_id': appointment.time_slot_id,
                     'appointment_type': Appointment.appointmentType(appointment.appointment_type).name,
                     'status': Appointment.Status(appointment.status).name,
@@ -237,11 +320,28 @@ class ScheduleService:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
+        
+############## Update Appointment Status to Confirmed (Manager Approves) ####################
+
+    #update appointment status to confirmed
+    def confirm_appointment(self, appointment_id):
+        try:
+            #get appointment
+            appointment = Appointment.get_appointment_by_appointment_id(appointment_id)
+            if appointment is None:
+                raise ExposedException("Appointment not found", code = 404)
+            #confirm appointment
+            Appointment.update_appointment_status(appointment_id, Appointment.Status.CONFIRMED.value)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
 
 ############## Assign Technician to Service Ticket ####################
 
     #assign technician to service ticket
-    def assign_technician(self, user_id, service_ticket_id):
+    def assign_technician(self, service_ticket_id, user_id):
         try:
             #get service ticket
             service_ticket = Service_Ticket.get_service_ticket_by_service_ticket_id(service_ticket_id)
