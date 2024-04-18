@@ -45,6 +45,14 @@ class Customer(db.Model):
             return customer
         except Exception as e:
             raise e
+    
+    @classmethod
+    def get_customer(cls, customer_id):
+        try:
+            customer = db.session.query(Customer).filter(Customer.customer_id == customer_id).first()
+            return customer
+        except Exception as e:
+            raise e
 
         
 class CreditReport(db.Model):
