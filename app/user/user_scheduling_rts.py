@@ -11,7 +11,7 @@ from app.utilities import Utilities
 standardize_response = Utilities.standardize_response
 
 #get all appointments
-@user_bp.route('/appointments', methods=['GET'])
+@user_bp.route('/appointments', methods=['GET'], endpoint='get_all_appointments_for_user')
 @jwt_required
 @user_required
 @swag_from({
@@ -64,7 +64,7 @@ standardize_response = Utilities.standardize_response
         '404': {
             'description': 'No appointments found'
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -72,12 +72,14 @@ standardize_response = Utilities.standardize_response
 def get_all_appointments():
     try:
         appointments = g.scheduling_service.get_all_appointments()
-        return standardize_response(data=appointments, message='Appointments retrieved successfully', code = 200)
+        if appointments == []:
+            return standardize_response(status= 'fail', data=None, message='No appointments found', code = 404)
+        return standardize_response(status='success', data=appointments, message='Appointments retrieved successfully', code = 200)
     except Exception as e:
         raise e
     
 # get all test drive appointments
-@user_bp.route('/appointments/test_drive', methods=['GET'])
+@user_bp.route('/appointments/test_drive', methods=['GET'], endpoint='get_test_drive_appointments')
 @jwt_required
 @user_required
 @swag_from({
@@ -130,7 +132,7 @@ def get_all_appointments():
         '404': {
             'description': 'No test drive appointments found'
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -138,12 +140,14 @@ def get_all_appointments():
 def get_test_drive_appointments():
     try:
         appointments = g.scheduling_service.get_test_drive_appointments()
+        if appointments == []:
+            return standardize_response(status= 'fail', data=None, message='No test drive appointments found', code = 404)
         return standardize_response(data=appointments, message='Test drive appointments retrieved successfully', code = 200)
     except Exception as e:
         raise e
     
 # get all service appointments
-@user_bp.route('/appointments/service', methods=['GET'])
+@user_bp.route('/appointments/service', methods=['GET'], endpoint='get_service_appointments')
 @jwt_required
 @user_required
 @swag_from({
@@ -196,7 +200,7 @@ def get_test_drive_appointments():
         '404': {
             'description': 'No service appointments found'
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -204,12 +208,14 @@ def get_test_drive_appointments():
 def get_service_appointments():
     try:
         appointments = g.scheduling_service.get_service_appointments()
+        if appointments == []:
+            return standardize_response(status= 'fail', data=None, message='No service appointments found', code = 404)
         return standardize_response(data=appointments, message='Service appointments retrieved successfully', code = 200)
     except Exception as e:
         raise e
     
 #get all appoinntments with service tickets
-@user_bp.route('/appointments/service_tickets', methods=['GET'])
+@user_bp.route('/appointments/service_tickets', methods=['GET'], endpoint='get_all_appointments_with_service_ticket')
 @jwt_required
 @user_required
 @swag_from({
@@ -275,7 +281,7 @@ def get_service_appointments():
         '404': {
             'description': 'No service appointments with service tickets found'
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -283,13 +289,15 @@ def get_service_appointments():
 def get_all_appointments_with_service_ticket():
     try:
         appointments = g.scheduling_service.get_all_appointments_with_service_ticket()
+        if appointments == []:
+            return standardize_response(status= 'fail', data=None, message='No service appointments with service tickets found', code = 404)
         return standardize_response(data=appointments, message='Appointments with service tickets retrieved successfully', code = 200)
     except Exception as e:
         raise e
 
 
 #cancel appointment
-@user_bp.route('/appointment/<int:appointment_id>/cancel', methods=['POST'])
+@user_bp.route('/appointment/<int:appointment_id>/cancel', methods=['POST'], endpoint='cancel_appointment')
 @jwt_required()
 @manager_required
 @swag_from({
@@ -315,7 +323,7 @@ def get_all_appointments_with_service_ticket():
                 }
             }
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -323,12 +331,12 @@ def get_all_appointments_with_service_ticket():
 def cancel_appointment(appointment_id):
     try:
         g.scheduling_service.cancel_appointment(appointment_id)
-        return standardize_response(data=appointment_id, message='Appointment cancelled successfully', code = 201)
+        return standardize_response(status='success' ,data=None, message='Appointment cancelled successfully', code = 201)
     except Exception as e:
         raise e
     
 # update appointment status to confirmed
-@user_bp.route('/appointment/<int:appointment_id>/confirm', methods=['POST'])
+@user_bp.route('/appointment/<int:appointment_id>/confirm', methods=['POST'], endpoint='confirm_appointment')
 @jwt_required()
 @manager_required
 @swag_from({
@@ -354,7 +362,7 @@ def cancel_appointment(appointment_id):
                 }
             }
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -362,12 +370,12 @@ def cancel_appointment(appointment_id):
 def confirm_appointment(appointment_id):
     try:
         g.scheduling_service.confirm_appointment(appointment_id)
-        return standardize_response(data=appointment_id, message='Appointment confirmed successfully', code = 201)
+        return standardize_response(status='success', data=None, message='Appointment confirmed successfully', code = 201)
     except Exception as e:
         raise e
     
 # assign technician to service ticket
-@user_bp.route('/service_ticket/<int:service_ticket_id>/assign_technician', methods=['POST'])
+@user_bp.route('/service_ticket/<int:service_ticket_id>/assign_technician', methods=['POST'], endpoint='assign_technician_to_service_ticket')
 @jwt_required()
 @manager_required
 @swag_from({
@@ -403,7 +411,7 @@ def confirm_appointment(appointment_id):
                 }
             }
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -413,12 +421,12 @@ def assign_technician_to_service_ticket(service_ticket_id):
         data = request.get_json()
         user_id = data.get('user_id')
         g.scheduling_service.assign_technician(service_ticket_id, user_id=user_id)
-        return standardize_response(data=service_ticket_id, message='Technician assigned to service ticket successfully', code = 201)
+        return standardize_response(status='success', data=None, message='Technician assigned to service ticket successfully', code = 201)
     except Exception as e:
         raise e
     
 # add technician notes to service ticket
-@user_bp.route('/service_ticket/<int:service_ticket_id>/add_technician_notes', methods=['POST'])
+@user_bp.route('/service_ticket/<int:service_ticket_id>/add_technician_notes', methods=['POST'], endpoint='add_technician_notes_to_service_ticket')
 @jwt_required()
 @user_required
 @swag_from({
@@ -454,7 +462,7 @@ def assign_technician_to_service_ticket(service_ticket_id):
                 }
             }
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }
@@ -464,12 +472,12 @@ def add_technician_notes_to_service_ticket(service_ticket_id):
         data = request.get_json()
         technician_notes = data.get('technician_notes')
         g.scheduling_service.add_technician_notes(service_ticket_id, technician_notes=technician_notes)
-        return standardize_response(data=service_ticket_id, message='Technician notes added to service ticket successfully', code = 201)
+        return standardize_response(status='success', data=None, message='Technician notes added to service ticket successfully', code = 201)
     except Exception as e:
         raise e
     
 #Update service ticket status to closed
-@user_bp.route('/service_ticket/<int:service_ticket_id>/close', methods=['POST'])
+@user_bp.route('/service_ticket/<int:service_ticket_id>/close', methods=['POST'], endpoint='close_service_ticket')
 @jwt_required()
 @user_required
 @swag_from({
@@ -495,7 +503,7 @@ def add_technician_notes_to_service_ticket(service_ticket_id):
                 }
             }
         },
-        '500': {
+        '400': {
             'description': 'Bad request'
         }
     }

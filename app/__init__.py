@@ -67,11 +67,15 @@ def create_app(config_class=Config):
     from app.user.services import UserServices
     app.user_service = UserServices()
 
+    from app.scheduling.scheduling_service import ScheduleService
+    app.scheduling_service = ScheduleService()
+
     @app.before_request
     def before_request():
         g.negotiation_service = current_app.negotiation_service
         g.inventory_service = current_app.inventory_service
         g.customer_service = current_app.customer_service
         g.user_service = current_app.user_service
+        g.scheduling_service = current_app.scheduling_service
 
     return app

@@ -30,7 +30,7 @@ class Appointment(db.Model):
     @classmethod
     def get_test_drive_appointments_by_customer_id(cls, customer_id):
         try:
-            return db.session.query(Appointment).filter_by(Appointment.customer_id == customer_id, Appointment.appointment_type == 2).all()
+            return db.session.query(Appointment).filter(Appointment.customer_id == customer_id, Appointment.appointment_type == 2).all()
         except Exception as e:
             raise e
         
@@ -38,7 +38,7 @@ class Appointment(db.Model):
     @classmethod
     def get_service_appointments_by_customer_id(cls, customer_id):
         try:
-            return db.session.query(Appointment).filter_by(Appointment.customer_id == customer_id, Appointment.appointment_type == 1).all()
+            return db.session.query(Appointment).filter(Appointment.customer_id == customer_id, Appointment.appointment_type == 1).all()
         except Exception as e:
             raise e
         
@@ -46,7 +46,7 @@ class Appointment(db.Model):
     @classmethod
     def get_all_appointments_by_customer_id(cls, customer_id):
         try:
-            return db.session.query(Appointment).filter_by(Appointment.customer_id == customer_id).all()
+            return db.session.query(Appointment).filter(Appointment.customer_id == customer_id).all()
         except Exception as e:
             raise e
 
@@ -54,7 +54,7 @@ class Appointment(db.Model):
     @classmethod
     def get_test_drive_appointments(cls):
         try:
-            return db.session.query(Appointment).filter_by(Appointment.appointment_type == 2).all()
+            return db.session.query(Appointment).filter(Appointment.appointment_type == 2).all()
         except Exception as e:
             raise e
         
@@ -62,7 +62,7 @@ class Appointment(db.Model):
     @classmethod
     def get_service_appointments(cls):
         try:
-            return db.session.query(Appointment).filter_by(Appointment.appointment_type == 1).all()
+            return db.session.query(Appointment).filter(Appointment.appointment_type == 1).all()
         except Exception as e:
             raise e
 
@@ -70,7 +70,7 @@ class Appointment(db.Model):
     @classmethod
     def get_appointment_by_appointment_id(cls, appointment_id):
         try:
-            return db.session.query(Appointment).filter_by(Appointment.appointment_id == appointment_id).first()
+            return db.session.query(Appointment).filter(Appointment.appointment_id == appointment_id).first()
         except Exception as e:
             raise e
 
@@ -96,7 +96,7 @@ class Appointment(db.Model):
     @classmethod
     def update_appointment_status(self, appointment_id, status):
         try:
-            appointment = db.session.query(Appointment).filter_by(Appointment.appointment_id == appointment_id).first()
+            appointment = db.session.query(Appointment).filter(Appointment.appointment_id == appointment_id).first()
             appointment.status = status
             return appointment
         except Exception as e:
@@ -127,7 +127,7 @@ class TimeSlot(db.Model):
     @classmethod
     def get_test_drive_time_slots(cls):
         try:
-            return db.session.query(TimeSlot).filter_by(TimeSlot.time_slot_type == 2).all()
+            return db.session.query(TimeSlot).filter(TimeSlot.time_slot_type == 2).all()
         except Exception as e:
             raise e
         
@@ -135,7 +135,7 @@ class TimeSlot(db.Model):
     @classmethod
     def get_service_time_slots(cls):
         try:
-            return db.session.query(TimeSlot).filter_by(TimeSlot.time_slot_type == 1).all()
+            return db.session.query(TimeSlot).filter(TimeSlot.time_slot_type == 1).all()
         except Exception as e:
             raise e
 
@@ -151,7 +151,7 @@ class TimeSlot(db.Model):
     @classmethod
     def get_available_time_slots(cls):
         try:
-            return db.session.query(TimeSlot).filter_by(TimeSlot.is_available == 1).all()
+            return db.session.query(TimeSlot).filter(TimeSlot.is_available == 1).all()
         except Exception as e:
             raise e
         
@@ -159,7 +159,7 @@ class TimeSlot(db.Model):
     @classmethod
     def get_time_slot_by_time_slot_id(cls, time_slot_id):
         try:
-            return db.session.query(TimeSlot).filter_by(TimeSlot.time_slot_id == time_slot_id).first()
+            return db.session.query(TimeSlot).filter(TimeSlot.time_slot_id == time_slot_id).first()
         except Exception as e:
             raise e
         
@@ -167,7 +167,7 @@ class TimeSlot(db.Model):
     @classmethod
     def is_time_slot_available(cls, time_slot_id):
         try:
-            time_slot = db.session.query(TimeSlot).filter_by(TimeSlot.time_slot_id == time_slot_id).first()
+            time_slot = db.session.query(TimeSlot).filter(TimeSlot.time_slot_id == time_slot_id).first()
             return time_slot.is_available
         except Exception as e:
             raise e
@@ -186,7 +186,7 @@ class TimeSlot(db.Model):
     @classmethod
     def update_time_slot_availability(self, time_slot_id, is_available):
         try:
-            time_slot = db.session.query(TimeSlot).filter_by(TimeSlot.time_slot_id == time_slot_id).first()
+            time_slot = db.session.query(TimeSlot).filter(TimeSlot.time_slot_id == time_slot_id).first()
             time_slot.is_available = is_available
             return time_slot
         except Exception as e:
@@ -215,14 +215,14 @@ class Service_Ticket(db.Model):
     vehical = relationship('app.customer.models.CustomerVehical' , backref='service_ticket')
     user = relationship('app.user.models.User' , backref='service_ticket')
     time_slot = relationship('app.scheduling.models.TimeSlot' , backref='service_ticket')
-    services = relationship('Service_Ticket_Service', backref='service_ticket')
+    services = relationship('Service_Ticket_Service', backref='service_ticket', overlaps='service_ticket')
 
     
     #get service ticket by service ticket id
     @classmethod
     def get_service_ticket_by_service_ticket_id(cls, service_ticket_id):
         try:
-            return db.session.query(Service_Ticket).filter_by(Service_Ticket.service_ticket_id == service_ticket_id).first()
+            return db.session.query(Service_Ticket).filter(Service_Ticket.service_ticket_id == service_ticket_id).first()
         except Exception as e:
             raise e
 
@@ -230,7 +230,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def get_all_service_tickets_by_customer_id(cls, customer_id):
         try:
-            return db.session.query(Service_Ticket).filter_by(Service_Ticket.customer_id == customer_id).all()
+            return db.session.query(Service_Ticket).filter(Service_Ticket.customer_id == customer_id).all()
         except Exception as e:
             raise e
         
@@ -238,7 +238,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def get_all_service_tickets_by_user_id(cls, user_id):
         try:
-            return db.session.query(Service_Ticket).filter_by(Service_Ticket.user_id == user_id).all()
+            return db.session.query(Service_Ticket).filter(Service_Ticket.user_id == user_id).all()
         except Exception as e:
             raise e
         
@@ -246,7 +246,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def get_all_service_tickets_by_customer_vehical_id(cls, customer_vehical_id):
         try:
-            return db.session.query(Service_Ticket).filter_by(Service_Ticket.customer_vehical_id == customer_vehical_id).all()
+            return db.session.query(Service_Ticket).filter(Service_Ticket.customer_vehical_id == customer_vehical_id).all()
         except Exception as e:
             raise e
         
@@ -254,7 +254,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def get_all_service_tickets_by_time_slot_id(cls, time_slot_id):
         try:
-            return db.session.query(Service_Ticket).filter_by(Service_Ticket.time_slot_id == time_slot_id).all()
+            return db.session.query(Service_Ticket).filter(Service_Ticket.time_slot_id == time_slot_id).all()
         except Exception as e:
             raise e
 
@@ -280,7 +280,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def add_technician_notes_to_service_ticket(self, service_ticket_id, technician_notes):
         try:
-            service_ticket = db.session.query(Service_Ticket).filter_by(Service_Ticket.service_ticket_id == service_ticket_id).first()
+            service_ticket = db.session.query(Service_Ticket).filter(Service_Ticket.service_ticket_id == service_ticket_id).first()
             service_ticket.technician_notes = technician_notes
             return service_ticket
         except Exception as e:
@@ -290,7 +290,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def add_customer_notes_to_service_ticket(self, service_ticket_id, customer_notes):
         try:
-            service_ticket = db.session.query(Service_Ticket).filter_by(Service_Ticket.service_ticket_id == service_ticket_id).first()
+            service_ticket = db.session.query(Service_Ticket).filter(Service_Ticket.service_ticket_id == service_ticket_id).first()
             service_ticket.customer_notes = customer_notes
             return service_ticket
         except Exception as e:
@@ -300,7 +300,7 @@ class Service_Ticket(db.Model):
     @classmethod
     def update_service_ticket_status(self, service_ticket_id, status):
         try:
-            service_ticket = db.session.query(Service_Ticket).filter_by(Service_Ticket.service_ticket_id == service_ticket_id).first()
+            service_ticket = db.session.query(Service_Ticket).filter(Service_Ticket.service_ticket_id == service_ticket_id).first()
             service_ticket.status = status
             return service_ticket
         except Exception as e:
@@ -319,7 +319,7 @@ class Service(db.Model):
     @classmethod
     def get_service_by_service_id(cls, service_id):
         try:
-            return db.session.query(Service).filter_by(Service.service_id == service_id).first()
+            return db.session.query(Service).filter(Service.service_id == service_id).first()
         except Exception as e:
             raise e
     
@@ -327,7 +327,7 @@ class Service(db.Model):
     @classmethod
     def get_service_by_service_type(cls, service_type):
         try:
-            return db.session.query(Service).filter_by(Service.service_type == service_type).first()
+            return db.session.query(Service).filter(Service.service_type == service_type).first()
         except Exception as e:
             raise e
 
@@ -353,7 +353,7 @@ class Service(db.Model):
     @classmethod
     def update_service(self, service_id, service_type, price, description):
         try:
-            service = db.session.query(Service).filter_by(Service.service_id == service_id).first()
+            service = db.session.query(Service).filter(Service.service_id == service_id).first()
             service.service_type = service_type
             service.price = price
             service.description = description
@@ -369,14 +369,14 @@ class Service_Ticket_Service(db.Model):
     service_id = Column(ForeignKey('service.service_id'), primary_key=True, nullable=False)
 
     service = relationship('Service', backref='service_ticket_services')
-    ticket = relationship('Service_Ticket', backref='service_ticket_services')
+    ticket = relationship('Service_Ticket', backref='service_ticket_services', overlaps='services')
 
     
     #get all services by service ticket id
     @classmethod
     def get_all_services_by_service_ticket_id(cls, service_ticket_id):
         try:
-            return db.session.query(Service_Ticket_Service).filter_by(Service_Ticket_Service.service_ticket_id == service_ticket_id).all()
+            return db.session.query(Service_Ticket_Service).filter(Service_Ticket_Service.service_ticket_id == service_ticket_id).all()
         except Exception as e:
             raise e
     
@@ -384,7 +384,7 @@ class Service_Ticket_Service(db.Model):
     @classmethod
     def get_all_service_tickets_by_service_id(cls, service_id):
         try:
-            return db.session.query(Service_Ticket_Service).filter_by(Service_Ticket_Service.service_id == service_id).all()
+            return db.session.query(Service_Ticket_Service).filter(Service_Ticket_Service.service_id == service_id).all()
         except Exception as e:
             raise e
     
@@ -410,7 +410,7 @@ class Service_Ticket_Service(db.Model):
     @classmethod
     def update_service_ticket_service(self, service_ticket_id, service_id):
         try:
-            service_ticket_service = db.session.query(Service_Ticket_Service).filter_by(Service_Ticket_Service.service_ticket_id == service_ticket_id, Service_Ticket_Service.service_id == service_id).first()
+            service_ticket_service = db.session.query(Service_Ticket_Service).filter(Service_Ticket_Service.service_ticket_id == service_ticket_id, Service_Ticket_Service.service_id == service_id).first()
             return service_ticket_service
         except Exception as e:
             raise e
