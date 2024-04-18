@@ -42,12 +42,6 @@ def create_app(config_class=Config):
     from app.scheduling import scheduling_bp
     app.register_blueprint(scheduling_bp, url_prefix=f"{api_prefix}/scheduling")
 
-    from app.services import services_bp
-    app.register_blueprint(services_bp)
-
-    from app.services import services_bp
-    app.register_blueprint(services_bp)
-
     from app.negotiation import negotiation_bp
     app.register_blueprint(negotiation_bp, url_prefix=f"{api_prefix}/negotiation")
 

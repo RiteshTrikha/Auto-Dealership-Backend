@@ -64,7 +64,7 @@ standardize_response = Utilities.standardize_response
         '404': {
             'description': 'No appointments found'
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -130,7 +130,7 @@ def get_all_appointments():
         '404': {
             'description': 'No test drive appointments found'
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -196,7 +196,7 @@ def get_test_drive_appointments():
         '404': {
             'description': 'No service appointments found'
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -275,7 +275,7 @@ def get_service_appointments():
         '404': {
             'description': 'No service appointments with service tickets found'
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -315,7 +315,7 @@ def get_all_appointments_with_service_ticket():
                 }
             }
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -354,7 +354,7 @@ def cancel_appointment(appointment_id):
                 }
             }
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -403,7 +403,7 @@ def confirm_appointment(appointment_id):
                 }
             }
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -454,7 +454,7 @@ def assign_technician_to_service_ticket(service_ticket_id):
                 }
             }
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
@@ -495,7 +495,7 @@ def add_technician_notes_to_service_ticket(service_ticket_id):
                 }
             }
         },
-        '400': {
+        '500': {
             'description': 'Bad request'
         }
     }
