@@ -11,6 +11,85 @@ standardize_response = Utilities.standardize_response
 #NEED TO MOVE THE THESE ROUTES TO EITHER CUSTOMER OR USER OR LEAVE IT HERE
 #ALSO NOT ALL OF THESE WILL BE USED
 
+# get all time slots
+@scheduling_bp.route('/time-slots', methods=['GET'])
+@swag_from({
+    'summary': 'Get all time slots',
+    'tags': ['Scheduling'],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'time_slot_id': {'type': 'integer'},
+                                        'start_time': {'type': 'datetime'},
+                                        'end_time': {'type': 'datetime'},
+                                        'time_slot_type': {'type': 'integer'},
+                                        'is_available': {'type': 'integer'}
+                                    }
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while retrieving time slots',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def get_all_time_slots():
+    try:
+        time_slots = TimeSlot.get_all_time_slots()
+        if time_slots is None:
+            return standardize_response(status='fail', data=[], message='No time slots found', code=404)
+        return standardize_response(status='success', data=[time_slot.serialize() for time_slot in time_slots],
+                                    message='Time slots retrieved successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message='An error occurred while retrieving time slots', code=400)
 
 # get all available time slots
 @scheduling_bp.route('/time-slots/availability/<is_available>', methods=['GET'])
@@ -593,6 +672,7 @@ def update_time_slot(time_slot_id):
                                         'appointment_id': {'type': 'integer'},
                                         'time_slot_id': {'type': 'integer'},
                                         'customer_id': {'type': 'integer'},
+                                        'user_id': {'type': 'integer'},
                                         'appointment_type': {'type': 'integer'},
                                         'status': {'type': 'integer'}
                                     }
@@ -681,6 +761,7 @@ def get_all_appointments():
                                     'appointment_id': {'type': 'integer'},
                                     'time_slot_id': {'type': 'integer'},
                                     'customer_id': {'type': 'integer'},
+                                    'user_id': {'type': 'integer'},
                                     'appointment_type': {'type': 'integer'},
                                     'status': {'type': 'integer'}
                                 }
@@ -736,7 +817,96 @@ def get_appointment(appointment_id):
         current_app.logger.error(str(e))
         return standardize_response(status='fail', message=str(e), code=400)
     
-  
+#get appointment by user id
+@scheduling_bp.route('/appointments/user/<user_id>', methods=['GET'])
+@swag_from({
+    'summary': 'Get appointment by user id',
+    'tags': ['Scheduling'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'user_id',
+            'schema': {
+                'type': 'integer'
+            },
+            'required': True,
+            'description': 'The id of the user'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'A list of appointments',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'appointment_id': {'type': 'integer'},
+                                        'time_slot_id': {'type': 'integer'},
+                                        'customer_id': {'type': 'integer'},
+                                        'user_id': {'type': 'integer'},
+                                        'appointment_type': {'type': 'integer'},
+                                        'status': {'type': 'integer'}
+                                    }
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while retrieving appointments',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'No appointments found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def get_appointment_by_user_id(user_id):
+    try:
+        appointments = Appointment.get_appointment_by_user_id(user_id)
+        return standardize_response(status='success', data=[appointment.serialize() for appointment in appointments],
+                                    message='Appointments retrieved successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message='An error occurred while retrieving appointments', code=400)
+    
 #get appointment by customer id
 @scheduling_bp.route('/appointments/customer/<customer_id>', methods=['GET'])
 @swag_from({
@@ -770,6 +940,7 @@ def get_appointment(appointment_id):
                                         'appointment_id': {'type': 'integer'},
                                         'time_slot_id': {'type': 'integer'},
                                         'customer_id': {'type': 'integer'},
+                                        'user_id': {'type': 'integer'},
                                         'appointment_type': {'type': 'integer'},
                                         'status': {'type': 'integer'}
                                     }
@@ -859,6 +1030,7 @@ def get_appointment_by_customer_id(customer_id):
                                         'appointment_id': {'type': 'integer'},
                                         'time_slot_id': {'type': 'integer'},
                                         'customer_id': {'type': 'integer'},
+                                        'user_id': {'type': 'integer'},
                                         'appointment_type': {'type': 'integer'},
                                         'status': {'type': 'integer'}
                                     }
@@ -948,6 +1120,7 @@ def get_all_appointments_by_appointment_type(appointment_type):
                                         'appointment_id': {'type': 'integer'},
                                         'time_slot_id': {'type': 'integer'},
                                         'customer_id': {'type': 'integer'},
+                                        'user_id': {'type': 'integer'},
                                         'appointment_type': {'type': 'integer'},
                                         'status': {'type': 'integer'}
                                     }
@@ -1019,6 +1192,7 @@ def get_appointments_by_time_slot_id(time_slot_id):
                 'properties': {
                     'time_slot_id': {'type': 'integer'},
                     'customer_id': {'type': 'integer'},
+                    'user_id': {'type': 'integer'},
                     'appointment_type': {'type': 'integer'},
                     'status': {'type': 'integer'}
                 }
@@ -1040,6 +1214,7 @@ def get_appointments_by_time_slot_id(time_slot_id):
                                     'appointment_id': {'type': 'integer'},
                                     'time_slot_id': {'type': 'integer'},
                                     'customer_id': {'type': 'integer'},
+                                    'user_id': {'type': 'integer'},
                                     'appointment_type': {'type': 'integer'},
                                     'status': {'type': 'integer'}
                                 }
@@ -1125,6 +1300,7 @@ def create_appointment():
                                     'appointment_id': {'type': 'integer'},
                                     'time_slot_id': {'type': 'integer'},
                                     'customer_id': {'type': 'integer'},
+                                    'user_id': {'type': 'integer'},
                                     'appointment_type': {'type': 'integer'},
                                     'status': {'type': 'integer'}
                                 }
@@ -1182,3 +1358,531 @@ def update_appointment_status(appointment_id):
         return standardize_response(status='fail', message=str(e), code=400)
 
 ####################################################################################################################
+        
+#get all appointment details
+@scheduling_bp.route('/appointment-details', methods=['GET'])
+@swag_from({
+    'summary': 'Get all appointment details',
+    'tags': ['Scheduling'],
+    'responses': {
+        '200': {
+            'description': 'A list of appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'appointment_details_id': {'type': 'integer'},
+                                        'appointment_id': {'type': 'integer'},
+                                        'customer_vehical_id': {'type': 'integer'},
+                                        'customer_message': {'type': 'string'},
+                                        'notes': {'type': 'string'}
+                                    }
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while retrieving appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404':{
+                'description': 'No appointment details found',
+                'content': {
+                    'application/json': {
+                        'schema': {
+                            'type': 'object',
+                            'properties': {
+                                'status': {'type': 'string'},
+                                'data': {'type': 'array'},
+                                'message': {'type': 'string'},
+                                'code': {'type': 'integer'}
+                            }
+                        }
+                    }
+                }
+            }
+    }   
+})
+def get_all_appointment_details():
+    try:
+        appointment_details = AppointmentDetail.get_all_appointment_details()
+        return standardize_response(status='success', data=[appointment_detail.serialize() for appointment_detail in appointment_details],
+                                    message='Appointment details retrieved successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message='An error occurred while retrieving appointment details', code=400)
+
+
+# get appointment details by appointment id
+@scheduling_bp.route('/appointments/<appointment_id>/appointment-details', methods=['GET'])
+@swag_from({
+    'summary': 'Get appointment details by appointment id',
+    'tags': ['Scheduling'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'appointment_id',
+            'schema': {
+                'type': 'integer'
+            },
+            'required': True,
+            'description': 'The id of the appointment'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'A list of appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'appointment_details_id': {'type': 'integer'},
+                                        'appointment_id': {'type': 'integer'},
+                                        'customer_vehical_id': {'type': 'integer'},
+                                        'customer_message': {'type': 'string'},
+                                        'notes': {'type': 'string'}
+                                    }
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while retrieving appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'Appointment details not found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def get_appointment_details_by_appointment_id(appointment_id):
+    try:
+        appointment_details = AppointmentDetail.get_appointment_details_by_appointment_id(appointment_id)
+        if appointment_details == []:
+            return standardize_response(status='fail', data=[], message='Appointment details not found', code=404)
+        return standardize_response(status='success', data=[appointment_detail.serialize() for appointment_detail in appointment_details],
+                                    message='Appointment details retrieved successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message="Error retrieving appointment details", code=400)
+
+# get appointment details by appointment details id
+@scheduling_bp.route('/appointment-details/<appointment_details_id>', methods=['GET'])
+@swag_from({
+    'summary': 'Get appointment details by appointment details id',
+    'tags': ['Scheduling'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'appointment_details_id',
+            'schema': {
+                'type': 'integer'
+            },
+            'required': True,
+            'description': 'The id of the appointment details'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'The appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'object',
+                                'properties': {
+                                    'appointment_details_id': {'type': 'integer'},
+                                    'appointment_id': {'type': 'integer'},
+                                    'customer_vehical_id': {'type': 'integer'},
+                                    'customer_message': {'type': 'string'},
+                                    'notes': {'type': 'string'}
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while retrieving appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'Appointment details not found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }   
+})
+def get_appointment_detail(appointment_details_id):
+    try:
+        appointment_details = AppointmentDetail.get_appointment_details_by_appointment_details_id(appointment_details_id)
+        if appointment_details is None:
+            return standardize_response(status='fail', data=[], message='Appointment details not found', code=404)
+        return standardize_response(status='success', data=appointment_details.serialize(),
+                                    message='Appointment details retrieved successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message="Error retrieving appointment details", code=400)
+
+#Get appoinment details by customer vehicle id
+@scheduling_bp.route('/appointment-details/customer-vehicle/<customer_vehicle_id>', methods=['GET'])
+@swag_from({
+    'summary': 'Get appointment details by customer vehicle id',
+    'tags': ['Scheduling'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'customer_vehicle_id',
+            'schema': {
+                'type': 'integer'
+            },
+            'required': True,
+            'description': 'The id of the customer vehicle'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'A list of appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'appointment_details_id': {'type': 'integer'},
+                                        'appointment_id': {'type': 'integer'},
+                                        'customer_vehical_id': {'type': 'integer'},
+                                        'customer_message': {'type': 'string'},
+                                        'notes': {'type': 'string'}
+                                    }
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while retrieving appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'Appointment details not found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def get_appointment_details_by_customer_vehicle_id(customer_vehicle_id):
+    try:
+        appointment_details = AppointmentDetail.get_appointment_details_by_customer_vehicle_id(customer_vehicle_id)
+        if appointment_details is None:
+            return standardize_response(status='fail', data=[], message='Appointment details not found', code=404)
+        return standardize_response(status='success', data=[appointment_detail.serialize() for appointment_detail in appointment_details],
+                                    message='Appointment details retrieved successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message="Error retrieving appointment details", code=400)
+
+#Create appointment details
+@scheduling_bp.route('/appointment-details', methods=['POST'])
+@swag_from({
+    'summary': 'Create appointment details',
+    'tags': ['Scheduling'],
+    'parameters': [
+        {
+            'in': 'body',
+            'name': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'appointment_id': {'type': 'integer'},
+                    'customer_vehical_id': {'type': 'integer'},
+                    'customer_message': {'type': 'string'},
+                    'notes': {'type': 'string'}
+                }
+            }
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'The created appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'object',
+                                'properties': {
+                                    'appointment_details_id': {'type': 'integer'},
+                                    'appointment_id': {'type': 'integer'},
+                                    'customer_vehical_id': {'type': 'integer'},
+                                    'customer_message': {'type': 'string'},
+                                    'notes': {'type': 'string'}
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while creating appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'Appointment details not found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def create_appointment_detail():
+    try:
+        data = request.get_json()
+        appointment_details = AppointmentDetail.create_appointment_details(data)
+        return standardize_response(status='success', data=appointment_details.serialize(),
+                                    message='Appointment details created successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        if isinstance(e, ExposedException):
+            return standardize_response(status='fail', message=str(e), code=400)
+        return standardize_response(status='fail', message="Error creating appointment details", code=400)
+
+#Update appointment details
+@scheduling_bp.route('/appointment-details/<appointment_details_id>', methods=['PUT'])
+@swag_from({
+    'summary': 'Update appointment details by appointment details id',
+    'tags': ['Scheduling'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'appointment_details_id',
+            'schema': {
+                'type': 'integer'
+            },
+            'required': True,
+            'description': 'The id of the appointment details'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'The updated appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'object',
+                                'properties': {
+                                    'appointment_details_id': {'type': 'integer'},
+                                    'appointment_id': {'type': 'integer'},
+                                    'customer_vehical_id': {'type': 'integer'},
+                                    'customer_message': {'type': 'string'},
+                                    'notes': {'type': 'string'}
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            'description': 'An error occurred while updating appointment details',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            'description': 'Appointment details not found',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {'type': 'array'},
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def update_appointment_detail(appointment_details_id):
+    try:
+        data = request.get_json()
+        appointment_details = AppointmentDetail.update_appointment_details(appointment_details_id, data)
+        if appointment_details is None:
+            return standardize_response(status='fail', data=[], message='Appointment details not found', code=404)
+        return standardize_response(status='success', data=appointment_details.serialize(),
+                                    message='Appointment details updated successfully', code=200)
+    except Exception as e:
+        current_app.logger.error(str(e))
+        return standardize_response(status='fail', message=str(e), code=400)

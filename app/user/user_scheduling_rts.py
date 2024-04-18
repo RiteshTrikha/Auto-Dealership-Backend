@@ -1,0 +1,509 @@
+from flask import jsonify, request, current_app, g
+from flask_jwt_extended import jwt_required
+from . import user_bp
+from flasgger import swag_from
+from app.scheduling.models import Appointment, TimeSlot, Service, Service_Ticket, Service_Ticket_Service
+from app.exceptions import ExposedException
+from app.auth.auth_decorators import user_required, manager_required
+
+# import utilities
+from app.utilities import Utilities
+standardize_response = Utilities.standardize_response
+
+#get all appointments
+@user_bp.route('/appointments', methods=['GET'])
+@jwt_required
+@user_required
+@swag_from({
+    'summary': 'Get all appointments',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of appointments',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'appointment_id': {'type': 'integer'},
+                                'customer': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'customer_id': {'type': 'integer'},
+                                        'first_name': {'type': 'string'},
+                                        'last_name': {'type': 'string'}
+                                    }
+                                },
+                                'customer_id': {'type': 'integer'},
+                                'time_slot': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'start_time': {'type': 'DateTime'},
+                                        'end_time': {'type': 'DateTime'}
+                                    }
+                                },
+                                'time_slot_id': {'type': 'integer'},
+                                'appointment_type': {'type': 'integer'},
+                                'status': {'type': 'integer'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '401': {
+            'description': 'Unauthorized'
+        },
+        '404': {
+            'description': 'No appointments found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_all_appointments():
+    try:
+        appointments = g.scheduling_service.get_all_appointments()
+        return standardize_response(data=appointments, message='Appointments retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+# get all test drive appointments
+@user_bp.route('/appointments/test_drive', methods=['GET'])
+@jwt_required
+@user_required
+@swag_from({
+    'summary': 'Get all test drive appointments',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of test drive appointments',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'appointment_id': {'type': 'integer'},
+                                'customer': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'customer_id': {'type': 'integer'},
+                                        'first_name': {'type': 'string'},
+                                        'last_name': {'type': 'string'}
+                                    }
+                                },
+                                'customer_id': {'type': 'integer'},
+                                'time_slot': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'start_time': {'type': 'DateTime'},
+                                        'end_time': {'type': 'DateTime'}
+                                    }
+                                },
+                                'time_slot_id': {'type': 'integer'},
+                                'appointment_type': {'type': 'integer'},
+                                'status': {'type': 'integer'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '401': {
+            'description': 'Unauthorized'
+        },
+        '404': {
+            'description': 'No test drive appointments found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_test_drive_appointments():
+    try:
+        appointments = g.scheduling_service.get_test_drive_appointments()
+        return standardize_response(data=appointments, message='Test drive appointments retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+# get all service appointments
+@user_bp.route('/appointments/service', methods=['GET'])
+@jwt_required
+@user_required
+@swag_from({
+    'summary': 'Get all service appointments',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of service appointments',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'appointment_id': {'type': 'integer'},
+                                'customer': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'customer_id': {'type': 'integer'},
+                                        'first_name': {'type': 'string'},
+                                        'last_name': {'type': 'string'}
+                                    }
+                                },
+                                'customer_id': {'type': 'integer'},
+                                'time_slot': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'start_time': {'type': 'DateTime'},
+                                        'end_time': {'type': 'DateTime'}
+                                    }
+                                },
+                                'time_slot_id': {'type': 'integer'},
+                                'appointment_type': {'type': 'integer'},
+                                'status': {'type': 'integer'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '401': {
+            'description': 'Unauthorized'
+        },
+        '404': {
+            'description': 'No service appointments found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_service_appointments():
+    try:
+        appointments = g.scheduling_service.get_service_appointments()
+        return standardize_response(data=appointments, message='Service appointments retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+#get all appoinntments with service tickets
+@user_bp.route('/appointments/service_tickets', methods=['GET'])
+@jwt_required
+@user_required
+@swag_from({
+    'summary': 'Get all appointments with service tickets',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of service appointments with service tickets',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'appointment_id': {'type': 'integer'},
+                                'customer': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'customer_id': {'type': 'integer'},
+                                        'first_name': {'type': 'string'},
+                                        'last_name': {'type': 'string'}
+                                    }
+                                },
+                                'customer_id': {'type': 'integer'},
+                                'time_slot': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'start_time': {'type': 'DateTime'},
+                                        'end_time': {'type': 'DateTime'}
+                                    }
+                                },
+                                'time_slot_id': {'type': 'integer'},
+                                'appointment_type': {'type': 'string'},
+                                'status': {'type': 'string'},
+                                'service_ticket': {
+                                    'type': 'array',
+                                    'items': {
+                                        'type': 'object',
+                                        'properties': {
+                                            'service_ticket_id': {'type': 'integer'},
+                                            'customer_id': {'type': 'integer'},
+                                            'user_id': {'type': 'integer'},
+                                            'customer_vehicle_id': {'type': 'integer'},
+                                            'time_slot_id': {'type': 'integer'},
+                                            'customer_notes': {'type': 'string'},
+                                            'technician_notes': {'type': 'string'},
+                                            'status': {'type': 'string'}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No service appointments with service tickets found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_all_appointments_with_service_ticket():
+    try:
+        appointments = g.scheduling_service.get_all_appointments_with_service_ticket()
+        return standardize_response(data=appointments, message='Appointments with service tickets retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+
+
+#cancel appointment
+@user_bp.route('/appointment/<int:appointment_id>/cancel', methods=['POST'])
+@jwt_required()
+@manager_required
+@swag_from({
+    'summary': 'Cancel an appointment',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'appointment_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the appointment'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Appointment cancelled successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'appointment_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def cancel_appointment(appointment_id):
+    try:
+        g.scheduling_service.cancel_appointment(appointment_id)
+        return standardize_response(data=appointment_id, message='Appointment cancelled successfully', code = 201)
+    except Exception as e:
+        raise e
+    
+# update appointment status to confirmed
+@user_bp.route('/appointment/<int:appointment_id>/confirm', methods=['POST'])
+@jwt_required()
+@manager_required
+@swag_from({
+    'summary': 'Confirm an appointment',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'appointment_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the appointment'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Appointment confirmed successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'appointment_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def confirm_appointment(appointment_id):
+    try:
+        g.scheduling_service.confirm_appointment(appointment_id)
+        return standardize_response(data=appointment_id, message='Appointment confirmed successfully', code = 201)
+    except Exception as e:
+        raise e
+    
+# assign technician to service ticket
+@user_bp.route('/service_ticket/<int:service_ticket_id>/assign_technician', methods=['POST'])
+@jwt_required()
+@manager_required
+@swag_from({
+    'summary': 'Assign a technician to a service ticket',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'service_ticket_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the service ticket'
+        },
+        {
+            'in': 'body',
+            'name': 'body',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'user_id': {'type': 'integer'}
+                }
+            }
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Technician assigned to service ticket successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'service_ticket_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def assign_technician_to_service_ticket(service_ticket_id):
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        g.scheduling_service.assign_technician(service_ticket_id, user_id=user_id)
+        return standardize_response(data=service_ticket_id, message='Technician assigned to service ticket successfully', code = 201)
+    except Exception as e:
+        raise e
+    
+# add technician notes to service ticket
+@user_bp.route('/service_ticket/<int:service_ticket_id>/add_technician_notes', methods=['POST'])
+@jwt_required()
+@user_required
+@swag_from({
+    'summary': 'Add technician notes to a service ticket',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'service_ticket_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the service ticket'
+        },
+        {
+            'in': 'body',
+            'name': 'body',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'technician_notes': {'type': 'string'}
+                }
+            }
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Technician notes added to service ticket successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'service_ticket_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def add_technician_notes_to_service_ticket(service_ticket_id):
+    try:
+        data = request.get_json()
+        technician_notes = data.get('technician_notes')
+        g.scheduling_service.add_technician_notes(service_ticket_id, technician_notes=technician_notes)
+        return standardize_response(data=service_ticket_id, message='Technician notes added to service ticket successfully', code = 201)
+    except Exception as e:
+        raise e
+    
+#Update service ticket status to closed
+@user_bp.route('/service_ticket/<int:service_ticket_id>/close', methods=['POST'])
+@jwt_required()
+@user_required
+@swag_from({
+    'summary': 'Close a service ticket',
+    'tags': ['User Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'service_ticket_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the service ticket'
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Service ticket closed successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'service_ticket_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def close_service_ticket(service_ticket_id):
+    try:
+        g.scheduling_service.close_service_ticket(service_ticket_id)
+        return standardize_response(data=service_ticket_id, message='Service ticket closed successfully', code = 201)
+    except Exception as e:
+        raise e
+
