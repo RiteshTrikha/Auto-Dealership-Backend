@@ -19,117 +19,117 @@ class InventoryService:
     # image = Column(String(254))
     # vehical_status = Column(INTEGER)
     
-    def create_vehicle(self, vin, price, year, make, model, miles, mpg, color, fuel_type, 
+    def create_vehical(self, vin, price, year, make, model, miles, mpg, color, fuel_type, 
                        transmission, image, vehical_status=Vehical.VehicalStatus.AVAILABLE.value):
         try:
-            vehicle = Vehical.create_vehicle(vin=vin, price=price, year=year, make=make, 
+            vehical = Vehical.create_vehical(vin=vin, price=price, year=year, make=make, 
                                              model=model, miles=miles, mpg=mpg, color=color, 
                                              fuel_type=fuel_type, transmission=transmission,
                                              image=image, vehical_status=vehical_status)
             db.session.commit()
-            return { 'vehicle_id': vehicle.vehical_id }
+            return { 'vehical_id': vehical.vehical_id }
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
             raise ExpDatabaseException
         
-    def update_vehicle(self, vehical_id, vin, price, year, make, model, miles, mpg, 
+    def update_vehical(self, vehical_id, vin, price, year, make, model, miles, mpg, 
                        color, fuel_type, transmission, image):
         try:
-            vehicle = Vehical.update_vehicle(vehical_id, vin, price, year, make, model, miles, mpg, 
+            vehical = Vehical.update_vehical(vehical_id, vin, price, year, make, model, miles, mpg, 
                                              color, fuel_type, transmission, image)
             db.session.commit()
-            return { 'vehicle_id': vehicle.vehical_id }
+            return { 'vehical_id': vehical.vehical_id }
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
             raise ExpDatabaseException
         
-    def change_vehicle_status(self, vehical_id, vehical_status):
+    def change_vehical_status(self, vehical_id, vehical_status):
         try:
             if vehical_status not in [status.value for status in Vehical.VehicalStatus]:
-                raise ExposedException('Invalid vehicle status', code=400)
-            vehicle = Vehical.update_vehicle(vehical_id, vehical_status=vehical_status)
+                raise ExposedException('Invalid vehical status', code=400)
+            vehical = Vehical.update_vehical(vehical_id, vehical_status=vehical_status)
             db.session.commit()
-            return { 'vehicle_id': vehicle.vehical_id }
+            return { 'vehical_id': vehical.vehical_id }
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
             raise ExpDatabaseException
            
-    def get_vehicle(self, vehical_id):
+    def get_vehical(self, vehical_id):
         try:
-            vehicle = Vehical.get_vehicle(vehical_id)
-            if not vehicle:
-                raise ExposedException('Vehicle not found', code=404)
+            vehical = Vehical.get_vehical(vehical_id)
+            if not vehical:
+                raise ExposedException('vehical not found', code=404)
             return {
-                'vehicle_id': vehicle.vehical_id,
-                'vin': vehicle.vin,
-                'price': vehicle.price,
-                'year': vehicle.year,
-                'make': vehicle.make,
-                'model': vehicle.model,
-                'miles': vehicle.miles,
-                'mpg': vehicle.mpg,
-                'color': vehicle.color,
-                'fuel_type': vehicle.fuel_type,
-                'transmission': vehicle.transmission,
-                'image': vehicle.image,
-                'vehical_status': vehicle.vehical_status
+                'vehical_id': vehical.vehical_id,
+                'vin': vehical.vin,
+                'price': vehical.price,
+                'year': vehical.year,
+                'make': vehical.make,
+                'model': vehical.model,
+                'miles': vehical.miles,
+                'mpg': vehical.mpg,
+                'color': vehical.color,
+                'fuel_type': vehical.fuel_type,
+                'transmission': vehical.transmission,
+                'image': vehical.image,
+                'vehical_status': vehical.vehical_status
             }
         except Exception as e:
             current_app.logger.error(str(e))
             raise ExpDatabaseException
             
     
-    def get_vehicles(self, page, limit, query):
+    def get_vehicals(self, page, limit, query):
         try:
-            vehicles, num_of_pages = Vehical.get_vehicles(page=page, limit=limit, query=query)
-            if vehicles == []:
-                raise ExposedException('No vehicles found', code=404)
+            vehicals, num_of_pages = Vehical.get_vehicals(page=page, limit=limit, query=query)
+            if vehicals == []:
+                raise ExposedException('No vehicals found', code=404)
             json_dict = {
                     'num_of_pages': num_of_pages,
                     'page': page,
-                    'vehicles': 
+                    'vehicals': 
                     [{
-                        'vehicle_id': vehicle.vehical_id,
-                        'price': vehicle.price,
-                        'year': vehicle.year,
-                        'make': vehicle.make,
-                        'model': vehicle.model,
-                        'miles': vehicle.miles,
-                        'mpg': vehicle.mpg,
-                        'color': vehicle.color,
-                        'fuel_type': vehicle.fuel_type,
-                        'transmission': vehicle.transmission,
-                        'image': vehicle.image,
-                        'vehicle_status': vehicle.vehical_status
-                    } for vehicle in vehicles],
+                        'vehical_id': vehical.vehical_id,
+                        'price': vehical.price,
+                        'year': vehical.year,
+                        'make': vehical.make,
+                        'model': vehical.model,
+                        'miles': vehical.miles,
+                        'mpg': vehical.mpg,
+                        'color': vehical.color,
+                        'fuel_type': vehical.fuel_type,
+                        'transmission': vehical.transmission,
+                        'image': vehical.image,
+                        'vehical_status': vehical.vehical_status
+                    } for vehical in vehicals],
                 }
             return json_dict
         except Exception as e:
             current_app.logger.exception(e) # TODO: switch all loggers to exception instead of error and remove the str()
             raise ExpDatabaseException
         
-    def get_top_5_vehicles(self):
+    def get_top_5_vehicals(self):
         try:
-            vehicles = Vehical.get_top_5_vehicles()
-            if vehicles == []:
-                raise ExposedException('No vehicles found', code=404)
+            vehicals = Vehical.get_top_5_vehicals()
+            if vehicals == []:
+                raise ExposedException('No vehicals found', code=404)
             return [{
-                'vehicle_id': vehicle.vehical_id,
-                'price': vehicle.price,
-                'year': vehicle.year,
-                'make': vehicle.make,
-                'model': vehicle.model,
-                'miles': vehicle.miles,
-                'mpg': vehicle.mpg,
-                'color': vehicle.color,
-                'fuel_type': vehicle.fuel_type,
-                'transmission': vehicle.transmission,
-                'image': vehicle.image,
-                'vehicle_status': vehicle.vehical_status
-            } for vehicle in vehicles]
+                'vehical_id': vehical.vehical_id,
+                'price': vehical.price,
+                'year': vehical.year,
+                'make': vehical.make,
+                'model': vehical.model,
+                'miles': vehical.miles,
+                'mpg': vehical.mpg,
+                'color': vehical.color,
+                'fuel_type': vehical.fuel_type,
+                'transmission': vehical.transmission,
+                'image': vehical.image,
+                'vehical_status': vehical.vehical_status
+            } for vehical in vehicals]
         except Exception as e:
             current_app.logger.error(str(e))
             raise ExpDatabaseException

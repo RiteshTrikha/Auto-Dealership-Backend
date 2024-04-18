@@ -8,11 +8,11 @@ from flasgger import swag_from
 from app.utilities import Utilities
 standardize_response = Utilities.standardize_response
 
-# create vehicle
+# create vehical
 @user_bp.route('/inventory/', methods=['POST'])
 @swag_from({
-    'summary': 'Create vehicle',
-    'tags': ['User Vehicle'],
+    'summary': 'Create vehical',
+    'tags': ['User vehical'],
     'parameters': [
         {
             'in': 'body',
@@ -38,7 +38,7 @@ standardize_response = Utilities.standardize_response
     ],
     'responses': {
         201: {
-            'description': 'Vehicle created successfully',
+            'description': 'vehical created successfully',
             'content': {
                 'application/json': {
                     'schema': {
@@ -48,7 +48,7 @@ standardize_response = Utilities.standardize_response
                             'data': {
                                 'type': 'object',
                                 'properties': {
-                                    'vehicle_id': {'type': 'integer'}
+                                    'vehical_id': {'type': 'integer'}
                                 }
                             },
                             'message': {'type': 'string'},
@@ -75,7 +75,7 @@ standardize_response = Utilities.standardize_response
         }
     }
 })
-def create_vehicle():
+def create_vehical():
     try:
         data = request.get_json()
         vin = data.get('vin')
@@ -89,23 +89,23 @@ def create_vehicle():
         fuel_type = data.get('fuel_type')
         image = data.get('image')
         transmission = data.get('transmission')
-        vehicle_id = g.inventory_service.create_vehicle(vin=vin, price=price, year=year, make=make, 
+        vehical_id = g.inventory_service.create_vehical(vin=vin, price=price, year=year, make=make, 
                                                      model=model, miles=miles, mpg=mpg, color=color, 
                                                      fuel_type=fuel_type, image=image, 
                                                      transmission=transmission)
-        return standardize_response(data=vehicle_id, message='Vehicle created successfully', code=201)
+        return standardize_response(data=vehical_id, message='vehical created successfully', code=201)
     except Exception as e:
         raise e
     
-# update vehicle
-@user_bp.route('/inventory/vehicle/<int:vehicle_id>', methods=['PUT'])
+# update vehical
+@user_bp.route('/inventory/vehical/<int:vehical_id>', methods=['PUT'])
 @swag_from({
-    'summary': 'Update vehicle',
-    'tags': ['User Vehicle'],
+    'summary': 'Update vehical',
+    'tags': ['User vehical'],
     'parameters': [
         {
             'in': 'path',
-            'name': 'vehicle_id',
+            'name': 'vehical_id',
             'required': True,
             'schema': {
                 'type': 'integer'
@@ -135,7 +135,7 @@ def create_vehicle():
     ],
     'responses': {
         200: {
-            'description': 'Vehicle updated successfully',
+            'description': 'vehical updated successfully',
             'content': {
                 'application/json': {
                     'schema': {
@@ -145,7 +145,7 @@ def create_vehicle():
                             'data': {
                                 'type': 'object',
                                 'properties': {
-                                    'vehicle_id': {'type': 'integer'}
+                                    'vehical_id': {'type': 'integer'}
                                 }
                             },
                             'message': {'type': 'string'},
@@ -172,7 +172,7 @@ def create_vehicle():
         }
     }
 })
-def update_vehicle(vehicle_id):
+def update_vehical(vehical_id):
     try:
         data = request.get_json()
         vin = data.get('vin')
@@ -186,23 +186,23 @@ def update_vehicle(vehicle_id):
         fuel_type = data.get('fuel_type')
         image = data.get('image')
         transmission = data.get('transmission')
-        vehicle_id = g.inventory_service.update_vehicle(vehicle_id, vin=vin, price=price, year=year, 
+        vehical_id = g.inventory_service.update_vehical(vehical_id, vin=vin, price=price, year=year, 
                                                      make=make, model=model, miles=miles, mpg=mpg, 
                                                      color=color, fuel_type=fuel_type, image=image, 
                                                      transmission=transmission)
-        return standardize_response(data=vehicle_id, message='Vehicle updated successfully', code=200)
+        return standardize_response(data=vehical_id, message='vehical updated successfully', code=200)
     except Exception as e:
         raise e
     
-# set vehicle status
-@user_bp.route('/inventory/vehicle/<int:vehicle_id>/status', methods=['PUT'])
+# set vehical status
+@user_bp.route('/inventory/vehical/<int:vehical_id>/status', methods=['PUT'])
 @swag_from({
-    'summary': 'Set vehicle status',
-    'tags': ['User Vehicle'],
+    'summary': 'Set vehical status',
+    'tags': ['User vehical'],
     'parameters': [
         {
             'in': 'path',
-            'name': 'vehicle_id',
+            'name': 'vehical_id',
             'required': True,
             'schema': {
                 'type': 'integer'
@@ -215,14 +215,14 @@ def update_vehicle(vehicle_id):
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'vehicle_status': {'type': 'integer'}
+                    'vehical_status': {'type': 'integer'}
                 }
             }
         }
     ],
     'responses': {
         200: {
-            'description': 'Vehicle status updated successfully',
+            'description': 'vehical status updated successfully',
             'content': {
                 'application/json': {
                     'schema': {
@@ -232,7 +232,7 @@ def update_vehicle(vehicle_id):
                             'data': {
                                 'type': 'object',
                                 'properties': {
-                                    'vehicle_id': {'type': 'integer'}
+                                    'vehical_id': {'type': 'integer'}
                                 }
                             },
                             'message': {'type': 'string'},
@@ -259,11 +259,11 @@ def update_vehicle(vehicle_id):
         }
     }
 })
-def set_vehicle_status(vehicle_id):
+def set_vehical_status(vehical_id):
     try:
         data = request.get_json()
-        vehicle_status = data.get('vehicle_status')
-        vehicle_id = g.inventory_service.change_vehicle_status(vehicle_id, vehicle_status)
-        return standardize_response(data=vehicle_id, message='Vehicle status updated successfully', code=200)
+        vehical_status = data.get('vehical_status')
+        vehical_id = g.inventory_service.change_vehical_status(vehical_id, vehical_status)
+        return standardize_response(data=vehical_id, message='vehical status updated successfully', code=200)
     except Exception as e:
         raise e

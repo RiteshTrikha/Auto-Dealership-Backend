@@ -71,7 +71,7 @@ def schedule_test_drive():
                         'user_id': {'type': 'integer'},
                         'customer_id': {'type': 'integer'},
                         'time_slot_id': {'type': 'integer'},
-                        'customer_vehicle_id': {'type': 'integer'},
+                        'customer_vehical_id': {'type': 'integer'},
                         'customer_notes': {'type': 'string'},
                         'technician_notes': {'type': 'string'},
                         'services': {
@@ -109,11 +109,11 @@ def schedule_service():
         user_id = data.get('user_id')
         customer_id = data.get('customer_id')
         time_slot_id = data.get('time_slot_id')
-        customer_vehicle_id = data.get('customer_vehicle_id')
+        customer_vehical_id = data.get('customer_vehical_id')
         customer_notes = data.get('customer_notes')
         technician_notes = data.get('technician_notes')
         services = data.get('services')
-        service_ticket_id = g.scheduling_service.schedule_service(user_id=user_id, customer_id=customer_id, time_slot_id=time_slot_id, customer_vehicle_id=customer_vehicle_id, customer_notes=customer_notes, technician_notes=technician_notes, services=services)
+        service_ticket_id = g.scheduling_service.schedule_service(user_id=user_id, customer_id=customer_id, time_slot_id=time_slot_id, customer_vehical_id=customer_vehical_id, customer_notes=customer_notes, technician_notes=technician_notes, services=services)
         return standardize_response(data=service_ticket_id, message='Service scheduled successfully', code = 201)
     except Exception as e:
         raise e

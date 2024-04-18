@@ -112,7 +112,7 @@ class NegotiationService:
                         'offer_status': Offer.OfferStatus(offer.offer_status).name,
                         'message': offer.message
                     } for offer in offers],
-                'vehicle': {
+                'vehical': {
                     'vehical_id': negotiation.vehical_id,
                     'year': negotiation.vehical.year,
                     'make': negotiation.vehical.make,

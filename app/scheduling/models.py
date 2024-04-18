@@ -22,9 +22,9 @@ class Appointment(db.Model):
     appointment_type = Column(INTEGER, nullable=False)
     status = Column(INTEGER, nullable=False, server_default=text("3"))
 
-    customer = relationship('app.customer.models.Customer', backref='appointments')
-    user = relationship('app.user.models.User', backref='appointments')
-    time_slot = relationship('TimeSlot' , backref='appointments')
+    customer = relationship('app.customer.models.Customer', backref='appointment')
+   # user = relationship('app.user.models.User', backref='appointment')
+    time_slot = relationship('TimeSlot' , backref='appointment')
     
     #get test drive appointments by customer id
     @classmethod
@@ -121,7 +121,7 @@ class TimeSlot(db.Model):
     time_slot_type = Column(Integer, nullable=False)
     is_available = Column(Integer, nullable=False)
 
-    role = relationship('Role')
+    #role = relationship('Role')
 
     #get test drive time slots
     @classmethod
@@ -205,16 +205,16 @@ class Service_Ticket(db.Model):
     service_ticket_id = Column(INTEGER, primary_key=True, unique=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
     user_id = Column(ForeignKey('user.user_id'), nullable=False, index=True)
-    customer_vehicle_id = Column(ForeignKey('customer_vehicle.customer_vehicle_id'), nullable=False, index=True)
+    customer_vehical_id = Column(ForeignKey('customer_vehical.customer_vehical_id'), nullable=False, index=True)
     time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
     customer_notes = Column(String(255))
     technician_notes = Column(String(255))
     status = Column(INTEGER, nullable=False)
 
-    customer = relationship('app.customer.models.Customer' , backref='negotiations')
-    vehical = relationship('app.inventory.models.Vehical' , backref='negotiations')
-    user = relationship('app.user.models.User' , backref='negotiations')
-    time_slot_id = relationship('app.scheduling.models.TimeSlot' , backref='negotiations')
+    customer = relationship('app.customer.models.Customer' , backref='service_ticket')
+    vehical = relationship('app.customer.models.CustomerVehical' , backref='service_ticket')
+    user = relationship('app.user.models.User' , backref='service_ticket')
+    time_slot = relationship('app.scheduling.models.TimeSlot' , backref='service_ticket')
     services = relationship('Service_Ticket_Service', backref='service_ticket')
 
     
@@ -242,11 +242,11 @@ class Service_Ticket(db.Model):
         except Exception as e:
             raise e
         
-    #get all service tickets by customer vehicle id
+    #get all service tickets by customer vehical id
     @classmethod
-    def get_all_service_tickets_by_customer_vehicle_id(cls, customer_vehicle_id):
+    def get_all_service_tickets_by_customer_vehical_id(cls, customer_vehical_id):
         try:
-            return db.session.query(Service_Ticket).filter_by(Service_Ticket.customer_vehicle_id == customer_vehicle_id).all()
+            return db.session.query(Service_Ticket).filter_by(Service_Ticket.customer_vehical_id == customer_vehical_id).all()
         except Exception as e:
             raise e
         
@@ -268,9 +268,9 @@ class Service_Ticket(db.Model):
 
     #create service ticket
     @classmethod
-    def create_service_ticket(self, customer_id, user_id, customer_vehicle_id, time_slot_id, customer_notes, technician_notes, status):
+    def create_service_ticket(self, customer_id, user_id, customer_vehical_id, time_slot_id, customer_notes, technician_notes, status):
         try:
-            service_ticket = Service_Ticket(customer_id=customer_id, user_id=user_id, customer_vehicle_id=customer_vehicle_id, time_slot_id=time_slot_id, customer_notes=customer_notes, technician_notes=technician_notes, status=status)
+            service_ticket = Service_Ticket(customer_id=customer_id, user_id=user_id, customer_vehical_id=customer_vehical_id, time_slot_id=time_slot_id, customer_notes=customer_notes, technician_notes=technician_notes, status=status)
             db.session.add(service_ticket)
             return service_ticket
         except Exception as e:
