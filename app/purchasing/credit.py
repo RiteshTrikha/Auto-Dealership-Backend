@@ -1,11 +1,12 @@
-import requests
-from flask import jsonify, request, current_app, g
+from flask import jsonify, request, current_app, g, request
 from flask_jwt_extended import jwt_required
 from flasgger import swag_from
 from . import purchasing_bp
 from .services import LoanService
+from app import db  # Import database context
 from app.utilities import Utilities
 from app.customer.models import Customer, CreditReport
+import requests
 
 standardize_response = Utilities.standardize_response
 
@@ -47,21 +48,36 @@ standardize_response = Utilities.standardize_response
 def get_and_save_credit_score():
     try:
         data = request.get_json()
-        first_name = data.get('first_name')
-        last_name = data.get('last_name')
-        ssn = data.get('ssn')
-        birth_date = data.get('birth_date')
-        address = data.get('address')
+        first_name = data['first_name']
+        last_name = data['last_name']
+        ssn = data['ssn']
+        birth_date = data['birth_date']
+        address = data['address']
 
+        # Assuming you have a valid external service to fetch the credit score
         credit_score = request_credit_score(first_name, last_name, ssn, birth_date, address)
 
-        customer = Customer(first_name=first_name, last_name=last_name, ssn=ssn, birth_date=birth_date)
-        credit_report = CreditReport(customer_id=customer.customer_id, score=credit_score)
-        credit_report.save_credit_score()
+        # Check if customer exists or create new
+        customer = Customer.query.filter_by(ssn=ssn).first()
+        if not customer:
+            customer = Customer(first_name=first_name, last_name=last_name, ssn=ssn, birth_date=birth_date)
+            db.session.add(customer)
+            db.session.commit()
+
+        # Create or update the credit report
+        credit_report = CreditReport.query.filter_by(customer_id=customer.id).first()
+        if not credit_report:
+            credit_report = CreditReport(customer_id=customer.id, score=credit_score)
+        else:
+            credit_report.score = credit_score
+
+        db.session.add(credit_report)
+        db.session.commit()
 
         return standardize_response(data={'credit_score': credit_score}, message='Credit score saved successfully', code=201)
     except Exception as e:
-        raise e
+        current_app.logger.error(f"Error saving credit score: {str(e)}")
+        return jsonify({"error": "An error occurred processing your request"}), 500
 
 def request_credit_score(first_name, last_name, ssn, birth_date, address):
     credit_score_api_url = 'http://127.0.0.1:5000/customer/credit-score'  # Update with actual URL
