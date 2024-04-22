@@ -283,7 +283,7 @@ DROP TABLE IF EXISTS `DealershipDB`.`service_ticket` ;
 CREATE TABLE IF NOT EXISTS `DealershipDB`.`service_ticket` (
   `service_ticket_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `customer_id` INT UNSIGNED NOT NULL,
-  `user_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NULL,
   `customer_vehical_id` INT UNSIGNED NOT NULL,
   `time_slot_id` INT UNSIGNED NOT NULL,
   `customer_note` VARCHAR(512) NULL,

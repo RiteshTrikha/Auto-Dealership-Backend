@@ -68,12 +68,11 @@ def schedule_test_drive():
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'user_id': {'type': 'integer'},
                         'customer_id': {'type': 'integer'},
                         'time_slot_id': {'type': 'integer'},
                         'customer_vehical_id': {'type': 'integer'},
-                        'customer_notes': {'type': 'string'},
-                        'technician_notes': {'type': 'string'},
+                        'customer_note': {'type': 'string'},
+                        'technician_note': {'type': 'string'},
                         'services': {
                             'type': 'array',
                             'items': {
@@ -106,14 +105,13 @@ def schedule_test_drive():
 def schedule_service():
     try:
         data = request.get_json()
-        user_id = data.get('user_id')
         customer_id = data.get('customer_id')
         time_slot_id = data.get('time_slot_id')
         customer_vehical_id = data.get('customer_vehical_id')
-        customer_notes = data.get('customer_notes')
-        technician_notes = data.get('technician_notes')
+        customer_note = data.get('customer_note')
+        technician_note = data.get('technician_note')
         services = data.get('services')
-        service_ticket_id = g.scheduling_service.schedule_service(user_id=user_id, customer_id=customer_id, time_slot_id=time_slot_id, customer_vehical_id=customer_vehical_id, customer_notes=customer_notes, technician_notes=technician_notes, services=services)
+        service_ticket_id = g.scheduling_service.schedule_service(customer_id=customer_id, time_slot_id=time_slot_id, customer_vehical_id=customer_vehical_id, customer_note=customer_note, technician_note=technician_note, services=services)
         return standardize_response(data=service_ticket_id, message='Service scheduled successfully', code = 201)
     except Exception as e:
         raise e
@@ -251,7 +249,7 @@ def get_appointments_by_customer_id(customer_id):
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'customer_notes': {'type': 'string'}
+                        'customer_note': {'type': 'string'}
                     }
                 }
             }
@@ -284,11 +282,11 @@ def get_appointments_by_customer_id(customer_id):
         }
     }
 })
-def add_customer_notes_to_service_ticket(service_ticket_id):
+def add_customer_note_to_service_ticket(service_ticket_id):
     try:
         data = request.get_json()
-        customer_notes = data.get['customer_notes']
-        customer_note = g.scheduling_service.add_customer_notes(customer_notes=customer_notes, service_ticket_id=service_ticket_id)
+        customer_note = data.get('customer_note')
+        customer_note = g.scheduling_service.add_customer_note(customer_note=customer_note, service_ticket_id=service_ticket_id)
         return standardize_response(data=customer_note, message='Customer notes added successfully', code = 201)
     except Exception as e:
         raise e

@@ -207,8 +207,8 @@ class Service_Ticket(db.Model):
     user_id = Column(ForeignKey('user.user_id'), nullable=False, index=True)
     customer_vehical_id = Column(ForeignKey('customer_vehical.customer_vehical_id'), nullable=False, index=True)
     time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
-    customer_notes = Column(String(255))
-    technician_notes = Column(String(255))
+    customer_note = Column(String(255))
+    technician_note = Column(String(255))
     status = Column(INTEGER, nullable=False)
 
     customer = relationship('app.customer.models.Customer' , backref='service_ticket')
@@ -258,6 +258,14 @@ class Service_Ticket(db.Model):
         except Exception as e:
             raise e
 
+    #get service ticket by time slot id
+    @classmethod
+    def get_service_ticket_by_time_slot_id(cls, time_slot_id):
+        try:
+            return db.session.query(Service_Ticket).filter(Service_Ticket.time_slot_id == time_slot_id).first()
+        except Exception as e:
+            raise e
+
     #get all service tickets
     @classmethod
     def get_all_service_tickets(cls):
@@ -268,30 +276,31 @@ class Service_Ticket(db.Model):
 
     #create service ticket
     @classmethod
-    def create_service_ticket(self, customer_id, user_id, customer_vehical_id, time_slot_id, customer_notes, technician_notes, status):
+    def create_service_ticket(self, customer_id, user_id, customer_vehical_id, time_slot_id, customer_note, technician_note, status):
         try:
-            service_ticket = Service_Ticket(customer_id=customer_id, user_id=user_id, customer_vehical_id=customer_vehical_id, time_slot_id=time_slot_id, customer_notes=customer_notes, technician_notes=technician_notes, status=status)
+            service_ticket = Service_Ticket(customer_id=customer_id, user_id=user_id, customer_vehical_id=customer_vehical_id, time_slot_id=time_slot_id, customer_note=customer_note, technician_note=technician_note, status=status)
             db.session.add(service_ticket)
+            db.session.commit()
             return service_ticket
         except Exception as e:
             raise e
         
     #add technician notes to service ticket
     @classmethod
-    def add_technician_notes_to_service_ticket(self, service_ticket_id, technician_notes):
+    def add_technician_note_to_service_ticket(self, service_ticket_id, technician_note):
         try:
             service_ticket = db.session.query(Service_Ticket).filter(Service_Ticket.service_ticket_id == service_ticket_id).first()
-            service_ticket.technician_notes = technician_notes
+            service_ticket.technician_note = technician_note
             return service_ticket
         except Exception as e:
             raise e
         
     #add customer notes to service ticket
     @classmethod
-    def add_customer_notes_to_service_ticket(self, service_ticket_id, customer_notes):
+    def add_customer_note_to_service_ticket(self, service_ticket_id, customer_note):
         try:
             service_ticket = db.session.query(Service_Ticket).filter(Service_Ticket.service_ticket_id == service_ticket_id).first()
-            service_ticket.customer_notes = customer_notes
+            service_ticket.customer_note = customer_note
             return service_ticket
         except Exception as e:
             raise e

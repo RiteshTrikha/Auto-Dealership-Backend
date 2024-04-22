@@ -34,21 +34,21 @@ class ScheduleService:
 
 
     #pick a time slot for a service appointment and create a service appointment with the status pending(3) and appointment type service(1) and update time slot is_available to unavailable(0) and create service ticket with the services selected
-    def schedule_service(self, user_id, customer_id, time_slot_id, customer_vehical_id, customer_notes, technician_notes, services):
+    def schedule_service(self, customer_id, time_slot_id, customer_vehical_id, customer_note, technician_note, services):
         try:
             #check for missing fields
-            if user_id is None or customer_id is None or time_slot_id is None or customer_vehical_id is None or customer_notes is None or technician_notes is None or services is None:
+            if customer_id is None or time_slot_id is None or customer_vehical_id is None or services is None:
                 raise ExposedException("Missing fields", code = 400)
 
             #create service appointment
-            appointment = Appointment.create_appointment(customer_id, time_slot_id, Appointment.appointmentType.SERVICE.value, Appointment.Status.PENDING.value)
+            appointment = Appointment.create_appointment(time_slot_id, customer_id, Appointment.appointmentType.SERVICE.value, Appointment.Status.PENDING.value)
             
             #update time slot
             time_slot = TimeSlot.get_time_slot_by_time_slot_id(time_slot_id)
             time_slot.is_available = 0
             
             #create service ticket
-            service_ticket = Service_Ticket.create_service_ticket(customer_id=customer_id, user_id=user_id, customer_vehical_id=customer_vehical_id, time_slot_id=time_slot_id, customer_notes=customer_notes, technician_notes=technician_notes, status=Service_Ticket.Status.OPEN.value)
+            service_ticket = Service_Ticket.create_service_ticket(customer_id=customer_id, user_id= None, customer_vehical_id=customer_vehical_id, time_slot_id=time_slot_id, customer_note=customer_note, technician_note=technician_note, status=Service_Ticket.Status.OPEN.value)
 
             #get service by service_id
             for service in services:
@@ -95,7 +95,6 @@ class ScheduleService:
             current_app.logger.exception(e)
             raise e
  
-
 
 ############## GET APPOINTMENTS FOR CUSTOMERS#################### 
 
@@ -281,9 +280,11 @@ class ScheduleService:
             appointments = Appointment.get_service_appointments()
             if appointments is None:
                 raise ExposedException("No service appointments found", code = 404)
-            service_ticket = Service_Ticket.get_all_service_tickets_by_time_slot_id(appointments.time_slot_id)            
-            return {
-                'appointments': [{
+            
+            appointments_with_tickets = []
+            for appointment in appointments:
+                service_ticket = Service_Ticket.get_all_service_tickets_by_time_slot_id(appointment.time_slot_id)
+                appointment_data = {            
                     'appointment_id': appointment.appointment_id,
                     'customer': {
                         'type': 'object',
@@ -310,11 +311,14 @@ class ScheduleService:
                         'user_id': service.user_id,
                         'customer_vehical_id': service.customer_vehical_id,
                         'time_slot_id': service.time_slot_id,
-                        'customer_notes': service.customer_notes,
-                        'technician_notes': service.technician_notes,
+                        'customer_note': service.customer_note,
+                        'technician_note': service.technician_note,
                         'status': Service_Ticket.Status(service.status).name,
                     } for service in service_ticket]
-                } for appointment in appointments]
+                }
+                appointments_with_tickets.append(appointment_data)
+            return {
+                'appointments': appointments_with_tickets
             }
         except Exception as e:
             db.session.rollback()
@@ -348,7 +352,7 @@ class ScheduleService:
             if service_ticket is None:
                 raise ExposedException("Service ticket not found", code = 404)
             #assign technician
-            service_ticket.technician_id = user_id
+            service_ticket.user_id = user_id
             db.session.commit()
         except Exception as e:
             db.session.rollback()
@@ -358,14 +362,14 @@ class ScheduleService:
 ############## Add Customer Notes to Service Ticket ####################
 
     #add customer notes to service ticket
-    def add_customer_notes(self, customer_notes, service_ticket_id):
+    def add_customer_note(self, customer_note, service_ticket_id):
         try:
             #get service ticket
             service_ticket = Service_Ticket.get_service_ticket_by_service_ticket_id(service_ticket_id)
             if service_ticket is None:
                 raise ExposedException("Service ticket not found", code = 404)
             #add customer notes
-            Service_Ticket.add_customer_notes_to_service_ticket(service_ticket_id, customer_notes)
+            Service_Ticket.add_customer_note_to_service_ticket(service_ticket_id, customer_note)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
@@ -375,14 +379,14 @@ class ScheduleService:
 ############## Add Technician Notes to Service Ticket ####################
     
     #add technician notes to service ticket
-    def add_technician_notes(self, technician_notes, service_ticket_id):
+    def add_technician_note(self, technician_note, service_ticket_id):
         try:
             #get service ticket
             service_ticket = Service_Ticket.get_service_ticket_by_service_ticket_id(service_ticket_id)
             if service_ticket is None:
                 raise ExposedException("Service ticket not found", code = 404)
             #add technician notes
-            Service_Ticket.add_technician_notes_to_service_ticket(service_ticket_id, technician_notes)
+            Service_Ticket.add_technician_note_to_service_ticket(service_ticket_id, technician_note)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
