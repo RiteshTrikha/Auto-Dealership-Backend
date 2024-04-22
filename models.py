@@ -20,14 +20,7 @@ class Purchase(db.Model):
     customer = relationship('Customer')
 
 
-class TimeSlot(db.Model):
-    __tablename__ = 'time_slot'
 
-    time_slot_id = Column(INTEGER, primary_key=True, unique=True)
-    start_time = Column(DateTime)
-    end_time = Column(DateTime)
-    time_slot_type = Column(INTEGER, nullable=False)
-    is_available = Column(INTEGER, nullable=False)
 
 
 class Log(db.Model):
@@ -41,7 +34,14 @@ class Log(db.Model):
     user_id = Column(ForeignKey('user.user_id'), index=True)
 
     customer = relationship('Customer')
-    user = relationship('user')
+    employee = relationship('Employee')
+
+
+
+    employee = relationship('Employee')
+
+
+
 
 
 class Finance(db.Model):
@@ -82,40 +82,13 @@ class PurchaseItem(db.Model):
     purchase = relationship('Purchase')
 
 
-class Appointment(db.Model):
-    __tablename__ = 'appointment'
+class CounterOffer(Base):
+    __tablename__ = 'counter_offer'
 
-    appointment_id = Column(INTEGER, primary_key=True, unique=True)
-    time_slot_id = Column(ForeignKey('time_slot.time_slot_id'), nullable=False, index=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-    user_id = Column(ForeignKey('user.user_id'), index=True)
-    appointment_type = Column(INTEGER, nullable=False)
-    status = Column(INTEGER, nullable=False)
+    counter_offer_id = Column(INTEGER, primary_key=True, unique=True)
+    offer_id = Column(ForeignKey('offer.offer_id'), nullable=False, unique=True)
+    counter_price = Column(Integer, nullable=False)
+    counter_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+    counter_status = Column(String(45))
 
-    customer = relationship('Customer')
-    user = relationship('user')
-    time_slot = relationship('TimeSlot')
-
-    # functions
-    def serialize(self):
-        return {
-            'appointment_id': self.appointment_id,
-            'time_slot_id': self.time_slot_id,
-            'customer_id': self.customer_id,
-            'user_id': self.user_id,
-            'appointment_type': self.appointment_type,
-            'status': self.status
-        }
-
-
-class AppointmentDetail(db.Model):
-    __tablename__ = 'appointment_details'
-
-    appointment_details_id = Column(INTEGER, primary_key=True, unique=True)
-    appointment_id = Column(ForeignKey('appointment.appointment_id'), nullable=False, index=True)
-    customer_vehical_id = Column(ForeignKey('customer_vehical.customer_vehical_id'), nullable=False, index=True)
-    customer_message = Column(String(512))
-    notes = Column(String(512))
-
-    appointment = relationship('Appointment')
-    customer_vehical = relationship('CustomerVehical')
+    offer = relationship('Offer')

@@ -88,7 +88,7 @@ class Vehical(db.Model):
     vehical_status = Column(INTEGER)
     
     @classmethod
-    def get_vehicles(cls, page=1, limit=10, query=None):
+    def get_vehicals(cls, page=1, limit=10, query=None):
         try:
             query_obj = db.session.query(Vehical)
             if query:
@@ -110,72 +110,72 @@ class Vehical(db.Model):
                 page = max(1, num_of_pages)
             
             start_index = (page - 1) * limit
-            vehicles = query_obj.slice(start_index, start_index + limit).all()
+            vehicals = query_obj.slice(start_index, start_index + limit).all()
 
-            return vehicles, num_of_pages, num_of_records
+            return vehicals, num_of_pages
         except Exception as e:
             raise e
         
     @classmethod
-    def get_vehicle(cls, vehical_id):
+    def get_vehical(cls, vehical_id):
         try:
-            vehicle = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
-            return vehicle
+            vehical = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
+            return vehical
         except Exception as e:
             raise e
         
     @classmethod    
-    def get_top_5_vehicles(cls):
+    def get_top_5_vehicals(cls):
         try:
-            vehicles = db.session.query(Vehical).limit(5).all()
-            return vehicles
+            vehicals = db.session.query(Vehical).limit(5).all()
+            return vehicals
         except Exception as e:
             raise e
     
     @classmethod
-    def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
+    def create_vehical(cls, vin, price, year, make, model, miles, mpg, color, 
                        fuel_type, transmission, image, vehical_status):
         try:
-            vehicle = Vehical(vin=vin, price=price, year=year, make=make, 
+            vehical = Vehical(vin=vin, price=price, year=year, make=make, 
                               model=model, miles=miles, mpg=mpg, color=color, 
                               fuel_type=fuel_type, transmission=transmission, image=image, 
                               vehical_status=vehical_status)
-            db.session.add(vehicle)
-            return vehicle
+            db.session.add(vehical)
+            return vehical
         except Exception as e:
             raise e
     
     @classmethod
-    def update_vehicle(cls, vehical_id, vin=None, price=None, year=None, 
+    def update_vehical(cls, vehical_id, vin=None, price=None, year=None, 
                        make=None, model=None, miles=None, mpg=None, color=None, 
                        fuel_type=None, transmission=None, image=None, vehical_status=None):
         try:
-            vehicle = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
+            vehical = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
             if vin:
-                vehicle.vin = vin
+                vehical.vin = vin
             if price: 
-                vehicle.price = price
+                vehical.price = price
             if year:
-                vehicle.year = year
+                vehical.year = year
             if make:
-                vehicle.make = make
+                vehical.make = make
             if model:
-                vehicle.model = model
+                vehical.model = model
             if miles:
-                vehicle.miles = miles
+                vehical.miles = miles
             if mpg:
-                vehicle.mpg = mpg
+                vehical.mpg = mpg
             if color:
-                vehicle.color = color
+                vehical.color = color
             if fuel_type:
-                vehicle.fuel_type = fuel_type
+                vehical.fuel_type = fuel_type
             if transmission:
-                vehicle.transmission = transmission
+                vehical.transmission = transmission
             if image:
-                vehicle.image = image
+                vehical.image = image
             if vehical_status:
-                vehicle.vehical_status = vehical_status
-            return vehicle
+                vehical.vehical_status = vehical_status
+            return vehical
         except Exception as e:
             raise e
         

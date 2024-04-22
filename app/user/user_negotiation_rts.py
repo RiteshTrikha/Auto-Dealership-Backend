@@ -119,7 +119,7 @@ def get_negotiation_details(negotiation_id):
                                                 offer_date: { type: string }
                                                 offer_status: { type: string }
                                                 message: { type: string }
-                            vehicle:
+                            vehical:
                                 type: object
                                 properties:
                                     vehical_id: { type: integer }
