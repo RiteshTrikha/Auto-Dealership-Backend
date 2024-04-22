@@ -2,12 +2,15 @@ from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
-metadata = Base.metadata
+class Role(db.Model):
+    __tablename__ = 'role'
 
-class User(Base):
+    role_id = Column(INTEGER, primary_key=True, unique=True)
+    role = Column(INTEGER, nullable=False)
+
+
+class User(db.Model):
     __tablename__ = 'user'
 
     user_id = Column(INTEGER, primary_key=True, unique=True)
@@ -20,14 +23,11 @@ class User(Base):
 
     role = relationship('Role')
 
-    #serialize
-    def serialize(self):
-        return {
-            'user_id': self.user_id,
-            'role_id': self.role_id,
-            'email': self.email,
-            'password': self.password,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'create_time': self.create_time
-        }
+    # get user by email
+    @classmethod
+    def get_by_email(cls, email):
+        try:
+            user = db.session.query(User).filter(User.email == email).first()
+            return user
+        except Exception as e:
+            raise e

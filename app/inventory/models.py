@@ -2,21 +2,70 @@ from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from enum import Enum
 
-Base = declarative_base()
-metadata = Base.metadata
+class Service(db.Model):
+    __tablename__ = 'service'
 
-class RetailItem(Base):
-    __tablename__ = 'retail_item'
+    class ServiceStatus(Enum):
+        INACTIVE = 0
+        ACTIVE = 1
 
-    retail_item_id = Column(INTEGER, primary_key=True, unique=True)
-    name = Column(String(45))
+    service_id = Column(INTEGER, primary_key=True, unique=True)
+    service_type = Column(String(45))
     price = Column(INTEGER)
     description = Column(String(254))
+    status = Column(INTEGER, server_default=text("'1'"))
 
-class Vehical(Base):
+    @classmethod
+    def get_services(cls):
+        try:
+            services = db.session.query(Service).all()
+            return services
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def get_service(cls, service_id):
+        try:
+            service = db.session.query(Service).filter_by(service_id=service_id).first()
+            return service
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def create_service(cls, service_type, price, description):
+        try:
+            service = Service(service_type=service_type, price=price, description=description)
+            db.session.add(service)
+            return service
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def update_service(cls, service_id, service_type=None, price=None, description=None):
+        try:
+            service = db.session.query(Service).filter_by(service_id=service_id).first()
+            if service_type:
+                service.service_type = service_type
+            if price:
+                service.price = price
+            if description:
+                service.description = description
+            return service
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def update_service_status(cls, service_id, status):
+        try:
+            service = db.session.query(Service).filter_by(service_id=service_id).first()
+            service.status = status
+            return service
+        except Exception as e:
+            raise e
+
+class Vehical(db.Model):
     __tablename__ = 'vehical'
 
     class VehicalStatus(Enum):
@@ -37,29 +86,33 @@ class Vehical(Base):
     transmission = Column(String(45))
     image = Column(String(254))
     vehical_status = Column(INTEGER)
-
-    # functions
-    def serialize(self):
-        return {
-            'vehical_id': self.vehical_id,
-            'vin': self.vin,
-            'price': self.price,
-            'year': self.year,
-            'make': self.make,
-            'model': self.model,
-            'miles': self.miles,
-            'mpg': self.mpg,
-            'color': self.color,
-            'fuel_type': self.fuel_type,
-            'transmission': self.transmission,
-            'vehical_status': self.vehical_status
-        }
     
     @classmethod
-    def get_all_vehicles(cls):
+    def get_vehicles(cls, page=1, limit=10, query=None):
         try:
-            vehicles = db.session.query(Vehical).all()
-            return vehicles
+            query_obj = db.session.query(Vehical)
+            if query:
+                query_obj = query_obj.filter(
+                    Vehical.year.like(f'%{query}%') | 
+                    Vehical.make.like(f'%{query}%') | 
+                    Vehical.model.like(f'%{query}%') | 
+                    Vehical.color.like(f'%{query}%') | 
+                    Vehical.fuel_type.like(f'%{query}%') | 
+                    Vehical.transmission.like(f'%{query}%')
+                )
+            
+            num_of_records = query_obj.count()
+            num_of_pages = num_of_records // limit
+            if num_of_records % limit > 0:
+                num_of_pages += 1
+            
+            if page > num_of_pages:
+                page = max(1, num_of_pages)
+            
+            start_index = (page - 1) * limit
+            vehicles = query_obj.slice(start_index, start_index + limit).all()
+
+            return vehicles, num_of_pages, num_of_records
         except Exception as e:
             raise e
         
@@ -78,40 +131,50 @@ class Vehical(Base):
             return vehicles
         except Exception as e:
             raise e
-        
-    def create_vehicle(self, vin, price, year, make, model, miles, mpg, color, fuel_type, transmission, vehical_status):
+    
+    @classmethod
+    def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
+                       fuel_type, transmission, image, vehical_status):
         try:
-            vehicle = Vehical(vin=vin, price=price, year=year, make=make, model=model, miles=miles, mpg=mpg, color=color, fuel_type=fuel_type, transmission=transmission, vehical_status=vehical_status)
+            vehicle = Vehical(vin=vin, price=price, year=year, make=make, 
+                              model=model, miles=miles, mpg=mpg, color=color, 
+                              fuel_type=fuel_type, transmission=transmission, image=image, 
+                              vehical_status=vehical_status)
             db.session.add(vehicle)
-            db.session.commit()
             return vehicle
         except Exception as e:
             raise e
-        
-    def update_vehicle(self, vehical_id, vin, price, year, make, model, miles, mpg, color, fuel_type, transmission, vehical_status):
+    
+    @classmethod
+    def update_vehicle(cls, vehical_id, vin=None, price=None, year=None, 
+                       make=None, model=None, miles=None, mpg=None, color=None, 
+                       fuel_type=None, transmission=None, image=None, vehical_status=None):
         try:
             vehicle = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
-            vehicle.vin = vin
-            vehicle.price = price
-            vehicle.year = year
-            vehicle.make = make
-            vehicle.model = model
-            vehicle.miles = miles
-            vehicle.mpg = mpg
-            vehicle.color = color
-            vehicle.fuel_type = fuel_type
-            vehicle.transmission = transmission
-            vehicle.vehical_status = vehical_status
-            db.session.commit()
-            return vehicle
-        except Exception as e:
-            raise e
-        
-    def deactivate_vehicle(self, vehical_id):
-        try:
-            vehicle = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
-            vehicle.vehical_status = 0
-            db.session.commit()
+            if vin:
+                vehicle.vin = vin
+            if price: 
+                vehicle.price = price
+            if year:
+                vehicle.year = year
+            if make:
+                vehicle.make = make
+            if model:
+                vehicle.model = model
+            if miles:
+                vehicle.miles = miles
+            if mpg:
+                vehicle.mpg = mpg
+            if color:
+                vehicle.color = color
+            if fuel_type:
+                vehicle.fuel_type = fuel_type
+            if transmission:
+                vehicle.transmission = transmission
+            if image:
+                vehicle.image = image
+            if vehical_status:
+                vehicle.vehical_status = vehical_status
             return vehicle
         except Exception as e:
             raise e
