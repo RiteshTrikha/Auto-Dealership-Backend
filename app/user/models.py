@@ -9,6 +9,22 @@ class Role(db.Model):
     role_id = Column(INTEGER, primary_key=True, unique=True)
     role = Column(INTEGER, nullable=False)
 
+    #get role by role_id
+    @classmethod
+    def get_role_by_role_id(cls, role_id):
+        try:
+            return db.session.query(Role).filter(Role.role_id == role_id).first()
+        except Exception as e:
+            raise e
+        
+    #get all roles
+    @classmethod
+    def get_all_roles(cls):
+        try:
+            return db.session.query(Role).all()
+        except Exception as e:
+            raise e
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -21,13 +37,38 @@ class User(db.Model):
     last_name = Column(String(45))
     create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
-    role = relationship('Role')
+    role = relationship('Role', backref='user')
 
-    # get user by email
+    #create user
     @classmethod
-    def get_by_email(cls, email):
+    def create(cls, role_id, email, password, first_name, last_name):
         try:
-            user = db.session.query(User).filter(User.email == email).first()
-            return user
+            user = User(role_id=role_id, email=email, password=password, first_name=first_name, last_name=last_name)
+            db.session.add(user)
+            return user.user_id
         except Exception as e:
             raise e
+
+    #get user by user_id
+    @classmethod
+    def get_user_by_user_id(cls, user_id):
+        try:
+            return db.session.query(User).filter(User.user_id == user_id).first()
+        except Exception as e:
+            raise e
+
+    #get all users by user_id
+    @classmethod
+    def get_all_users(cls):
+        try:
+            return db.session.query(User).all()
+        except Exception as e:
+            raise e
+
+    #get by role_id
+    @classmethod
+    def get_by_role_id(cls, role_id):
+        try:
+            return db.session.query(User).filter(User.role_id == role_id).all()
+        except Exception as e:
+            raise e    
