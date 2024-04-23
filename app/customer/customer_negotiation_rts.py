@@ -4,7 +4,7 @@ from . import customer_bp
 from flasgger import swag_from
 from .models import Customer
 from app.negotiation.models import Negotiation, Offer
-from app.inventory.models import Vehical
+from app.inventory.models import Vehicle
 from app.exceptions import ExposedException
 
 # import utilities
@@ -25,7 +25,7 @@ standardize_response = Utilities.standardize_response
                     'type': 'object',
                     'properties': {
                         'customer_id': {'type': 'integer'},
-                        'vehical_id': {'type': 'integer'},
+                        'vehicle_id': {'type': 'integer'},
                         'offer_price': {'type': 'integer'},
                         'message': {'type': 'string'}
                     }
@@ -52,10 +52,10 @@ def create_negotiation():
   try:
       data = request.get_json()
       customer_id = data['customer_id']
-      vehical_id = data['vehical_id'] 
+      vehicle_id = data['vehicle_id'] 
       offer_price = data['offer_price']
       message = data['message']
-      negotiation_id = g.negotiation_service.create_negotiation(vehical_id=vehical_id, customer_id=customer_id, 
+      negotiation_id = g.negotiation_service.create_negotiation(vehicle_id=vehicle_id, customer_id=customer_id, 
                                                                 offer_price=offer_price, message=message)
       return standardize_response(data=negotiation_id, 
                                   message='Successfully created negotiation',
@@ -92,10 +92,10 @@ def create_negotiation():
               'type': 'object',
               'properties': {
                   'negotiation_id': {'type': 'integer'},
-                  'vehical': {
+                  'vehicle': {
                       'type': 'object',
                       'properties': {
-                          'vehical_id': {'type': 'integer'},
+                          'vehicle_id': {'type': 'integer'},
                           'year': {'type': 'integer'},
                           'make': {'type': 'string'},
                           'model': {'type': 'string'},
@@ -187,7 +187,7 @@ def get_negotiations(customer_id):
                             'vehicle': {
                                 'type': 'object',
                                 'properties': {
-                                    'vehical_id': {'type': 'integer'},
+                                    'vehicle_id': {'type': 'integer'},
                                     'year': {'type': 'integer'},
                                     'make': {'type': 'string'},
                                     'model': {'type': 'string'},

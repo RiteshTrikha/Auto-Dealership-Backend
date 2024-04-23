@@ -42,7 +42,7 @@ class AuthService:
             if not customer or not check_password_hash(customer.password, password):
                 raise ExposedException('Invalid email or password', 400)
             # create jwt token
-            access_token = create_access_token(identity={'user_type': 'customer', 'user_id': customer.customer_id})
+            access_token = create_access_token(identity={'user_type': 'customer', 'customer_id': customer.customer_id})
             return {'access_token': access_token}
         except ExposedException as e:
             raise e

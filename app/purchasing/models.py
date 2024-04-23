@@ -1,51 +1,18 @@
+from flask import current_app
 from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from enum import Enum
 
-# `purchase` (
-#   `purchase_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#   `customer_id` INT UNSIGNED NOT NULL,
-#   `open_date` DATETIME NULL DEFAULT NOW(),
-#   `close_date` DATETIME NULL,
-#   `purchase_final_date` DATETIME NULL,
-#   `purchase_type` INT NULL,
-#   `tax` FLOAT NULL,
-
-# `finance` (
-#   `finance_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#   `purchase_id` INT UNSIGNED NOT NULL,
-#   `start_date` DATETIME NULL DEFAULT NOW(),
-#   `end_date` DATETIME NULL,
-#   `down_payment` INT NULL,
-#   `loan_amount` INT NULL,
-#   `apy` FLOAT NULL,
-#   `term` INT NULL,
-#   `paid` INT NULL,
-#   `finance_status` INT NULL,
-
-# `payment` (
-#   `payment_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#   `purchase_id` INT UNSIGNED NOT NULL,
-#   `finance_id` INT UNSIGNED NULL,
-#   `routing_number` VARCHAR(45) NULL,
-#   `account_number` VARCHAR(45) NULL,
-#   `payment_amount` INT NULL,
-
-# `purchase_item` (
-#   `purchase_service_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#   `purchase_id` INT UNSIGNED NOT NULL,
-#   `service_id` INT UNSIGNED NOT NULL,
-
-# `purchase_vehical` (
-#   `purchase_vehical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#   `purchase_id` INT UNSIGNED NOT NULL,
-#   `vehical_id` INT UNSIGNED NOT NULL,
-
 
 class Purchase(db.Model):
     __tablename__ = 'purchase'
+
+    class PurchaseStatus(Enum):
+        PAID = 0
+        ACTIVE = 1
+        CANCELLED = 2
 
     class PurchaseType(Enum):
         ACH = 0
@@ -55,20 +22,40 @@ class Purchase(db.Model):
     customer_id = Column(INTEGER, ForeignKey('customer.customer_id'))
     open_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     close_date = Column(DateTime)
-    purchase_final_date = Column(DateTime)
     purchase_type = Column(INTEGER)
+    purchase_status = Column(INTEGER)
     tax = Column(Float)
 
-    customer = relationship('Customer', back_populates='purchase')
-    finance = relationship('Finance', back_populates='purchase')
-    payment = relationship('Payment', back_populates='purchase')
-    purchase_item = relationship('PurchaseItem', back_populates='purchase')
-    purchase_vehical = relationship('PurchaseVehical', back_populates='purchase')
+    customer = relationship('app.customer.models.Customer', backref='purchase')
+    finance = relationship('Finance', backref='purchase')
+    payment = relationship('Payment', backref='purchase')
+    purchase_addons = relationship('PurchaseAddon', backref='purchase')
+    purchase_vehicle = relationship('PurchaseVehicle', backref='purchase', uselist=False)
+    contracts = relationship('app.contracts.models.Contract', backref='purchase')
+
+    def get_purchase_totals(self):
+        try:
+            sub_total = 0
+            for purchase_addon in self.purchase_addons:
+                sub_total += purchase_addon.addon.price
+            sub_total += self.purchase_vehicle.offer.offer_price
+            total = sub_total + (sub_total * self.tax)
+            return total, sub_total
+        except Exception as e:
+            raise e
 
     @classmethod
     def get_purchases(cls):
         try:
             purchases = db.session.query(Purchase).all()
+            return purchases
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def get_customer_purchases(cls, customer_id):
+        try:
+            purchases = db.session.query(Purchase).filter_by(customer_id=customer_id).all()
             return purchases
         except Exception as e:
             raise e
@@ -82,38 +69,44 @@ class Purchase(db.Model):
             raise e
 
     @classmethod
-    def create_purchase(cls, customer_id, purchase_type, payment_method, tax):
+    def create_purchase(cls, customer_id, tax=0.06625):
         try:
-            purchase = Purchase(customer_id=customer_id, purchase_type=purchase_type, 
-                                payment_method=payment_method, tax=tax)
+            purchase = Purchase(customer_id=customer_id,
+                                tax=tax,
+                                purchase_status=cls.PurchaseStatus.ACTIVE.value)
             db.session.add(purchase)
             return purchase
         except Exception as e:
             raise e
-
-    @classmethod
-    def update_purchase(cls, purchase_id, customer_id=None, purchase_type=None, 
-                        payment_method=None, tax=None):
+        
+    def update_purchase_status(self, status):
         try:
-            purchase = db.session.query(Purchase).filter_by(purchase_id=purchase_id).first()
-            if customer_id:
-                purchase.customer_id = customer_id
-            if purchase_type:
-                purchase.purchase_type = purchase_type
-            if payment_method:
-                purchase.payment_method = payment_method
-            if tax:
-                purchase.tax = tax
-            return purchase.purchase_id
+            self.purchase_status = status
+            return self
+        except Exception as e:
+            raise e
+    
+    def update_purchase_type(self, purchase_type):
+        try:
+            self.purchase_type = purchase_type
+            return self
         except Exception as e:
             raise e
 
     @classmethod
-    def update_purchase_status(cls, purchase_id, status):
+    def update_purchase(cls, purchase_id, tax=None, 
+                        purchase_status=None, close_date=None, purchase_type=None):
         try:
             purchase = db.session.query(Purchase).filter_by(purchase_id=purchase_id).first()
-            purchase.status = status
-            return purchase
+            if tax:
+                purchase.tax = tax
+            if purchase_status:
+                purchase.purchase_status = purchase_status
+            if close_date:
+                purchase.close_date = close_date
+            if purchase_type:
+                purchase.purchase_type = purchase_type
+            return purchase.purchase_id
         except Exception as e:
             raise e
 
@@ -135,7 +128,7 @@ class Finance(db.Model):
     paid = Column(INTEGER)
     finance_status = Column(INTEGER)
 
-    payment = relationship('Payment', back_populates='finance')
+    payment = relationship('Payment', backref='finance')
 
     @classmethod
     def get_finances(cls):
@@ -256,94 +249,97 @@ class Payment(db.Model):
         except Exception as e:
             raise e
         
-class PurchaseItem(db.Model):
-    __tablename__ = 'purchase_item'
+class PurchaseAddon(db.Model):
+    __tablename__ = 'purchase_addon'
 
-    purchase_item_id = Column(INTEGER, primary_key=True, unique=True)
+    purchase_addon_id = Column(INTEGER, primary_key=True, unique=True)
     purchase_id = Column(INTEGER, ForeignKey('purchase.purchase_id'))
-    service_id = Column(INTEGER, ForeignKey('service.service_id'))
+    addon_id = Column(INTEGER, ForeignKey('addon.addon_id'))
 
-    service = relationship('Service', back_populates='purchase_item')
+    addon = relationship('app.inventory.models.Addon', backref='purchase_addon')
 
     @classmethod
-    def get_purchase_items(cls):
+    def get_purchase_addons(cls):
         try:
-            purchase_items = db.session.query(PurchaseItem).all()
-            return purchase_items
+            purchase_addons = db.session.query(PurchaseAddon).all()
+            return purchase_addons
         except Exception as e:
             raise e
 
     @classmethod
-    def get_purchase_item(cls, purchase_item_id):
+    def get_purchase_addon(cls, purchase_addon_id):
         try:
-            purchase_item = db.session.query(PurchaseItem).filter_by(purchase_item_id=purchase_item_id).first()
-            return purchase_item
+            purchase_addon = db.session.query(PurchaseAddon).filter_by(purchase_addon_id=purchase_addon_id).first()
+            return purchase_addon
         except Exception as e:
             raise e
 
     @classmethod
-    def create_purchase_item(cls, purchase_id, service_id):
+    def create_purchase_addon(cls, purchase_id, addon_id):
         try:
-            purchase_item = PurchaseItem(purchase_id=purchase_id, service_id=service_id)
-            db.session.add(purchase_item)
-            return purchase_item.purchase_item_id
+            purchase_addon = PurchaseAddon(purchase_id=purchase_id, addon_id=addon_id)
+            db.session.add(purchase_addon)
+            return purchase_addon
         except Exception as e:
             raise e
 
     @classmethod
-    def update_purchase_item(cls, purchase_item_id, purchase_id=None, service_id=None):
+    def update_purchase_addon(cls, purchase_addon_id, purchase_id=None, addon_id=None):
         try:
-            purchase_item = db.session.query(PurchaseItem).filter_by(purchase_item_id=purchase_item_id).first()
+            purchase_addon = db.session.query(PurchaseAddon).filter_by(purchase_addon_id=purchase_addon_id).first()
             if purchase_id:
-                purchase_item.purchase_id = purchase_id
-            if service_id:
-                purchase_item.service_id = service_id
-            return purchase_item.purchase_item_id
+                purchase_addon.purchase_id = purchase_id
+            if addon_id:
+                purchase_addon.addon_id = addon_id
+            return purchase_addon.purchase_addon_id
         except Exception as e:
             raise e
         
-class PurchaseVehical(db.Model):
-    __tablename__ = 'purchase_vehical'
+class PurchaseVehicle(db.Model):
+    __tablename__ = 'purchase_vehicle'
 
-    purchase_vehical_id = Column(INTEGER, primary_key=True, unique=True)
+    purchase_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
     purchase_id = Column(INTEGER, ForeignKey('purchase.purchase_id'))
-    vehical_id = Column(INTEGER, ForeignKey('vehical.vehical_id'))
+    vehicle_id = Column(INTEGER, ForeignKey('vehicle.vehicle_id'))
+    offer_id = Column(INTEGER, ForeignKey('offer.offer_id'))
 
-    vehical = relationship('Vehical', back_populates='purchase_vehical')
+    vehicle = relationship('app.inventory.models.Vehicle', backref='purchase_vehicle')
+    offer = relationship('app.negotiation.models.Offer', backref='purchase_vehicle')
 
     @classmethod
-    def get_purchase_vehicals(cls):
+    def get_purchase_vehicles(cls):
         try:
-            purchase_vehicals = db.session.query(PurchaseVehical).all()
-            return purchase_vehicals
+            purchase_vehicles = db.session.query(PurchaseVehicle).all()
+            return purchase_vehicles
         except Exception as e:
             raise e
 
     @classmethod
-    def get_purchase_vehical(cls, purchase_vehical_id):
+    def get_purchase_vehicle(cls, purchase_vehicle_id):
         try:
-            purchase_vehical = db.session.query(PurchaseVehical).filter_by(purchase_vehical_id=purchase_vehical_id).first()
-            return purchase_vehical
+            purchase_vehicle = db.session.query(PurchaseVehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
+            return purchase_vehicle
         except Exception as e:
             raise e
 
     @classmethod
-    def create_purchase_vehical(cls, purchase_id, vehical_id):
+    def create_purchase_vehicle(cls, purchase_id, vehicle_id, offer_id):
         try:
-            purchase_vehical = PurchaseVehical(purchase_id=purchase_id, vehical_id=vehical_id)
-            db.session.add(purchase_vehical)
-            return purchase_vehical.purchase_vehical_id
+            purchase_vehicle = PurchaseVehicle(purchase_id=purchase_id, vehicle_id=vehicle_id, 
+                                               offer_id=offer_id)
+            db.session.add(purchase_vehicle)
+            return purchase_vehicle
         except Exception as e:
             raise e
 
     @classmethod
-    def update_purchase_vehical(cls, purchase_vehical_id, purchase_id=None, vehical_id=None):
+    def update_purchase_vehicle(cls, purchase_vehicle_id, purchase_id=None, vehicle_id=None):
         try:
-            purchase_vehical = db.session.query(PurchaseVehical).filter_by(purchase_vehical_id=purchase_vehical_id).first()
+            purchase_vehicle = db.session.query(PurchaseVehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
             if purchase_id:
-                purchase_vehical.purchase_id = purchase_id
-            if vehical_id:
-                purchase_vehical.vehical_id = vehical_id
-            return purchase_vehical.purchase_vehical_id
+                purchase_vehicle.purchase_id = purchase_id
+            if vehicle_id:
+                purchase_vehicle.vehicle_id = vehicle_id
+            return purchase_vehicle.purchase_vehicle_id
         except Exception as e:
             raise e

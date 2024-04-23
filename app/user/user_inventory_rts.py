@@ -1,6 +1,6 @@
 from flask import jsonify, request, current_app, g
 from . import user_bp
-from app.inventory.models import Vehical
+from app.inventory.models import Vehicle
 from app.exceptions import ExposedException
 from flasgger import swag_from
 from flask_jwt_extended import jwt_required

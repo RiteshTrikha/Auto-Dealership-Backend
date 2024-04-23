@@ -113,9 +113,9 @@ class AppointmentDetail(db.Model):
 
     appointment_details_id = Column(INTEGER, primary_key=True, unique=True)
     appointment_id = Column(ForeignKey('appointment.appointment_id'), nullable=False, index=True)
-    customer_vehical_id = Column(ForeignKey('customer_vehical.customer_vehical_id'), nullable=False, index=True)
+    customer_vehicle_id = Column(ForeignKey('customer_vehicle.customer_vehicle_id'), nullable=False, index=True)
     customer_message = Column(String(512))
     notes = Column(String(512))
 
     appointment = relationship('Appointment')
-    customer_vehical = relationship('CustomerVehical')
+    customer_vehicle = relationship('Customervehicle')

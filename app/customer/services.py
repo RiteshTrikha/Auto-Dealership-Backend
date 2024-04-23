@@ -7,9 +7,9 @@ class CustomerServices:
 
     def create(self, first_name, last_name, email, password, birth_date, drivers_license):
         try:
-            customer_id = Customer.create(first_name, last_name, email, password, birth_date, drivers_license)
+            customer = Customer.create(first_name, last_name, email, password, birth_date, drivers_license)
             db.session.commit()
-            return customer_id
+            return customer.customer_id
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(str(e))
