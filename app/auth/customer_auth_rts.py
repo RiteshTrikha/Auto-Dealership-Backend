@@ -82,7 +82,16 @@ def register_customer():
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'data': {'type': 'string'}
+                    'data': 
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'access_token': {'type': 'string'},
+                            'user_type': {'type': 'string'},
+                            'customer_id': {'type': 'integer'},
+                            'first_name': {'type': 'string'}
+                        }
+                    }
                 }
             }
         }

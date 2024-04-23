@@ -22,4 +22,24 @@ class CustomerServices:
         except Exception as e:
             current_app.logger.error(str(e))
             raise e
+
+    def get_customer_details(self, customer_id):
+        try:
+            customer = Customer.get_customer(customer_id)
+            customer_dict = {
+                'customer_id': customer_id,
+                'first_name': customer.first_name,
+                'last_name': customer.last_name,
+                'email': customer.email,
+                'ssn': customer.ssn,
+                'birth_date': customer.birth_date,
+                'drivers_license': customer.drivers_license,
+                'address_id': customer.address_id,
+                'create_time': customer.create_time,
+                'status': customer.status
+            }
+            return customer_dict
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
         

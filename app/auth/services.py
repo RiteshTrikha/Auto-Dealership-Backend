@@ -43,7 +43,12 @@ class AuthService:
                 raise ExposedException('Invalid email or password', 400)
             # create jwt token
             access_token = create_access_token(identity={'user_type': 'customer', 'customer_id': customer.customer_id})
-            return {'access_token': access_token}
+            return {
+                'access_token': access_token,
+                'user_type': 'customer',
+                'customer_id': customer.customer_id,
+                'first_name': customer.first_name
+            }
         except ExposedException as e:
             raise e
         except Exception as e:
@@ -59,7 +64,12 @@ class AuthService:
                 raise ExposedException('Invalid email or password', 400)
             # create jwt token
             access_token = create_access_token(identity={'user_type': 'user', 'user_id': user.user_id, 'role': user.role.role})
-            return {'access_token': access_token}
+            return {
+                'access_token': access_token,
+                'user_type': 'user',
+                'user_id': user.user_id,
+                'role': user.role.role
+            }
         except ExposedException as e:
             raise e
         except Exception as e:
