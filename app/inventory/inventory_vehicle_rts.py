@@ -137,15 +137,15 @@ def get_vehicles():
         
 
 # get vehicle by id
-@inventory_bp.route('/vehicle/<vehical_id>', methods=['GET'])
-def get_vehicle(vehical_id):
+@inventory_bp.route('/vehicle/<vehicle_id>', methods=['GET'])
+def get_vehicle(vehicle_id):
     """
     Get vehicle by id
     ---
     tags: [Vehicle]
     parameters:
         - in: path
-          name: vehical_id
+          name: vehicle_id
           schema:
             type: integer
           required: true
@@ -201,7 +201,7 @@ def get_vehicle(vehical_id):
                     code: { type: integer }
     """
     try:
-        vehicle = InventoryService().get_vehicle(vehical_id)
+        vehicle = InventoryService().get_vehicle(vehicle_id)
         return standardize_response(status='success', data=vehicle,
                                      message='Successfully retrieved vehicle', code=200)
     except Exception as e:

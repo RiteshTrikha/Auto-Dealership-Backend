@@ -1,6 +1,5 @@
 version: '3.8'
 services:
-  # db service
   db:
     image: mysql:8.0
     volumes:
@@ -11,16 +10,20 @@ services:
       MYSQL_DATABASE: DealershipDB
     ports:
       - "3307:3306"
-  # flask app service
+
   app:
     build: .
-    command: flask run --host=0.0.0.0
+    command: flask run --host=0.0.0.0 --reload --extra-files /app/**/*.py
     volumes:
       - .:/app
     ports:
       - "5000:5000"
     depends_on:
       - db
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: run.py
+      FLASK_RUN_HOST: 0.0.0.0
 
 volumes:
   mysql_data:

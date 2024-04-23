@@ -8,8 +8,10 @@ class Config:
     }
     # debug mode
     DEBUG = True
-    # secret
+
+    # JWT configurations
     JWT_SECRET_KEY = 'secret_key'
+    JWT_ACCESS_TOKEN_EXPIRES = 3600
     # swagger configurations
     
     SWAGGER = {

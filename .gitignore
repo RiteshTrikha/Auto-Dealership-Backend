@@ -4,3 +4,6 @@ venv/
 # pycache files
 __pycache__/
 *.pyc
+
+# contracts
+app/data/contracts/
