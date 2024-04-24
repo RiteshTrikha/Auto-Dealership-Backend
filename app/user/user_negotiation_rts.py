@@ -2,7 +2,7 @@ from flask import jsonify, request, current_app, g
 from flask_jwt_extended import jwt_required
 from . import user_bp
 from app.negotiation.models import Negotiation, Offer
-from app.inventory.models import Vehicle
+from app.inventory.models import Vehical
 from app.exceptions import ExposedException
 from app.auth.auth_decorators import manager_required
 
@@ -34,10 +34,10 @@ def get_all_negotiations():
                             type: object
                             properties:
                                 negotiation_id: { type: integer }
-                                vehicle:
+                                vehical:
                                     type: object
                                     properties:
-                                        vehicle_id: { type: integer }
+                                        vehical_id: { type: integer }
                                         year: { type: integer }
                                         make: { type: string }
                                         model: { type: string }
@@ -103,7 +103,7 @@ def get_negotiation_details(negotiation_id):
                                 type: object
                                 properties:
                                     negotiation_id: { type: integer }
-                                    vehicle_id: { type: integer }
+                                    vehical_id: { type: integer }
                                     customer_id: { type: integer }
                                     negotiation_status: { type: integer }
                                     start_date: { type: string }
@@ -122,7 +122,7 @@ def get_negotiation_details(negotiation_id):
                             vehical:
                                 type: object
                                 properties:
-                                    vehicle_id: { type: integer }
+                                    vehical_id: { type: integer }
                                     year: { type: integer }
                                     make: { type: string }
                                     model: { type: string }

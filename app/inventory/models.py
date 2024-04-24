@@ -4,6 +4,68 @@ from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from enum import Enum
 
+# class Service(db.Model):
+#     __tablename__ = 'service'
+
+#     class ServiceStatus(Enum):
+#         INACTIVE = 0
+#         ACTIVE = 1
+
+#     service_id = Column(INTEGER, primary_key=True, unique=True)
+#     service_type = Column(String(45))
+#     price = Column(INTEGER)
+#     description = Column(String(254))
+#     status = Column(INTEGER, server_default=text("'1'"))
+
+#     @classmethod
+#     def get_services(cls):
+#         try:
+#             services = db.session.query(Service).all()
+#             return services
+#         except Exception as e:
+#             raise e
+        
+#     @classmethod
+#     def get_service(cls, service_id):
+#         try:
+#             service = db.session.query(Service).filter_by(service_id=service_id).first()
+#             return service
+#         except Exception as e:
+#             raise e
+        
+#     @classmethod
+#     def create_service(cls, service_type, price, description):
+#         try:
+#             service = Service(service_type=service_type, price=price, description=description)
+#             db.session.add(service)
+#             return service
+#         except Exception as e:
+#             raise e
+    
+#     @classmethod
+#     def update_service(cls, service_id, service_type=None, price=None, description=None):
+#         try:
+#             service = db.session.query(Service).filter_by(service_id=service_id).first()
+#             if service_type:
+#                 service.service_type = service_type
+#             if price:
+#                 service.price = price
+#             if description:
+#                 service.description = description
+#             return service
+#         except Exception as e:
+#             raise e
+        
+#     @classmethod
+#     def update_service_status(cls, service_id, status):
+#         try:
+#             service = db.session.query(Service).filter_by(service_id=service_id).first()
+#             service.status = status
+#             return service
+#         except Exception as e:
+#             raise e
+        
+#copied from scheduling
 class Service(db.Model):
     __tablename__ = 'service'
 
@@ -12,50 +74,46 @@ class Service(db.Model):
         ACTIVE = 1
 
     service_id = Column(INTEGER, primary_key=True, unique=True)
-    service_type = Column(String(45))
-    price = Column(INTEGER)
-    description = Column(String(254))
+    service_type = Column(String(255), nullable=False)
+    price = Column(INTEGER, nullable=False)
+    description = Column(String(255), nullable=False)
     status = Column(INTEGER, server_default=text("'1'"))
 
+
+    #get service by service id
     @classmethod
-    def get_services(cls):
+    def get_service_by_service_id(cls, service_id):
         try:
-            services = db.session.query(Service).all()
-            return services
+            return db.session.query(Service).filter(Service.service_id == service_id).first()
         except Exception as e:
             raise e
-        
+    
+    #get service by service_type
     @classmethod
-    def get_service(cls, service_id):
+    def get_service_by_service_type(cls, service_type):
         try:
-            service = db.session.query(Service).filter_by(service_id=service_id).first()
-            return service
+            return db.session.query(Service).filter(Service.service_type == service_type).first()
         except Exception as e:
             raise e
-        
+
+    #get all services
     @classmethod
-    def create_service(cls, service_type, price, description):
+    def get_all_services(cls):
+        try:
+            return db.session.query(Service).all()
+        except Exception as e:
+            raise e
+
+    #create service
+    @classmethod
+    def create_service(self, service_type, price, description):
         try:
             service = Service(service_type=service_type, price=price, description=description)
             db.session.add(service)
             return service
         except Exception as e:
             raise e
-    
-    @classmethod
-    def update_service(cls, service_id, service_type=None, price=None, description=None):
-        try:
-            service = db.session.query(Service).filter_by(service_id=service_id).first()
-            if service_type:
-                service.service_type = service_type
-            if price:
-                service.price = price
-            if description:
-                service.description = description
-            return service
-        except Exception as e:
-            raise e
-        
+
     @classmethod
     def update_service_status(cls, service_id, status):
         try:
@@ -63,18 +121,33 @@ class Service(db.Model):
             service.status = status
             return service
         except Exception as e:
+            raise e    
+
+    #update service
+    @classmethod
+    def update_service(self, service_id, service_type, price, description, status):
+        try:
+            service = db.session.query(Service).filter(Service.service_id == service_id).first()
+            service.service_type = service_type
+            service.price = price
+            service.description = description
+            service.status = status
+            return service
+        except Exception as e:
             raise e
 
-class Vehicle(db.Model):
-    __tablename__ = 'vehicle'
 
-    class VehicleStatus(Enum):
+
+class Vehical(db.Model):
+    __tablename__ = 'vehical'
+
+    class VehicalStatus(Enum):
         INACTIVE = 0
         AVAILABLE = 1
         SOLD = 2
         RESERVED = 3
 
-    vehicle_id = Column(INTEGER, primary_key=True, unique=True)
+    vehical_id = Column(INTEGER, primary_key=True, unique=True)
     vin = Column(String(17), nullable=False)
     price = Column(INTEGER)
     year = Column(String(4))
@@ -86,20 +159,20 @@ class Vehicle(db.Model):
     fuel_type = Column(String(45))
     transmission = Column(String(45))
     image = Column(String(254))
-    vehicle_status = Column(INTEGER)
+    vehical_status = Column(INTEGER)
     
     @classmethod
     def get_vehicals(cls, page=1, limit=10, query=None):
         try:
-            query_obj = db.session.query(Vehicle)
+            query_obj = db.session.query(Vehical)
             if query:
                 query_obj = query_obj.filter(
-                    Vehicle.year.like(f'%{query}%') | 
-                    Vehicle.make.like(f'%{query}%') | 
-                    Vehicle.model.like(f'%{query}%') | 
-                    Vehicle.color.like(f'%{query}%') | 
-                    Vehicle.fuel_type.like(f'%{query}%') | 
-                    Vehicle.transmission.like(f'%{query}%')
+                    Vehical.year.like(f'%{query}%') | 
+                    Vehical.make.like(f'%{query}%') | 
+                    Vehical.model.like(f'%{query}%') | 
+                    Vehical.color.like(f'%{query}%') | 
+                    Vehical.fuel_type.like(f'%{query}%') | 
+                    Vehical.transmission.like(f'%{query}%')
                 )
             
             num_of_records = query_obj.count()
@@ -113,7 +186,7 @@ class Vehicle(db.Model):
             start_index = (page - 1) * limit
             vehicals = query_obj.slice(start_index, start_index + limit).all()
 
-            return vehicals, num_of_pages
+            return vehicals, num_of_pages, num_of_records
         except Exception as e:
             raise e
         
@@ -149,7 +222,7 @@ class Vehicle(db.Model):
     @classmethod
     def update_vehical(cls, vehical_id, vin=None, price=None, year=None, 
                        make=None, model=None, miles=None, mpg=None, color=None, 
-                       fuel_type=None, transmission=None, image=None, vehicle_status=None):
+                       fuel_type=None, transmission=None, image=None, vehical_status=None):
         try:
             vehical = db.session.query(Vehical).filter_by(vehical_id=vehical_id).first()
             if vin:
@@ -180,9 +253,9 @@ class Vehicle(db.Model):
         except Exception as e:
             raise e
         
-    def update_vehicle_status(self, status):
+    def update_vehical_status(self, status):
         try:
-            self.vehicle_status = status
+            self.vehical_status = status
             return self
         except Exception as e:
             raise e

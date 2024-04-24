@@ -1,6 +1,6 @@
 from flask import jsonify, request, current_app, g
 from . import user_bp
-from app.inventory.models import Vehicle
+from app.inventory.models import Vehical
 from app.exceptions import ExposedException
 from flasgger import swag_from
 from flask_jwt_extended import jwt_required
@@ -251,13 +251,13 @@ def set_service_status(service_id):
 
 
 
-# vehicle routes
+# vehical routes
 
-# create vehicle
-@user_bp.route('/inventory/vehicle', methods=['POST'])
+# create vehical
+@user_bp.route('/inventory/vehical', methods=['POST'])
 @swag_from({
-    'summary': 'Create vehicle',
-    'tags': ['User Vehicle'],
+    'summary': 'Create vehical',
+    'tags': ['User vehical'],
     'security': [{'BearerAuth': []}],
     'requestBody': {
         'required': True,
@@ -323,7 +323,7 @@ def set_service_status(service_id):
 })
 @jwt_required()
 @manager_required
-def create_vehicle():
+def create_vehical():
     try:
         data = request.get_json()
         vin = data.get('vin')
@@ -348,8 +348,8 @@ def create_vehicle():
 # update vehical
 @user_bp.route('/inventory/vehical/<int:vehical_id>', methods=['PUT'])
 @swag_from({
-    'summary': 'Update vehicle',
-    'tags': ['User Vehicle'],
+    'summary': 'Update vehical',
+    'tags': ['User vehical'],
     'security': [{'BearerAuth': []}],
     'parameters': [
         {
@@ -425,7 +425,7 @@ def create_vehicle():
 })
 @jwt_required()
 @manager_required
-def update_vehicle(vehicle_id):
+def update_vehical(vehical_id):
     try:
         data = request.get_json()
         vin = data.get('vin')
@@ -450,8 +450,8 @@ def update_vehicle(vehicle_id):
 # set vehical status
 @user_bp.route('/inventory/vehical/<int:vehical_id>/status', methods=['PUT'])
 @swag_from({
-    'summary': 'Set vehicle status',
-    'tags': ['User Vehicle'],
+    'summary': 'Set vehical status',
+    'tags': ['User vehical'],
     'security': [{'BearerAuth': []}],
     'parameters': [
         {
@@ -470,7 +470,7 @@ def update_vehicle(vehicle_id):
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'vehicle_status': {'type': 'string'}
+                        'vehical_status': {'type': 'string'}
                     }
                 }
             }
@@ -517,7 +517,7 @@ def update_vehicle(vehicle_id):
 })
 @jwt_required()
 @manager_required
-def set_vehicle_status(vehicle_id):
+def set_vehical_status(vehical_id):
     try:
         data = request.get_json()
         vehical_status = data.get('vehical_status')

@@ -1,6 +1,6 @@
 from flask import current_app, g
-from .models import Appointment, TimeSlot, Service, Service_Ticket, Service_Ticket_Service
-from app.inventory.models import Vehical
+from .models import Appointment, TimeSlot, Service_Ticket, Service_Ticket_Service
+from app.inventory.models import Service
 from app.customer.models import Customer, CustomerVehical
 from app.exceptions import ExposedException, ExpDatabaseException
 from app import db

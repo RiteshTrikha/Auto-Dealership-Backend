@@ -30,7 +30,7 @@ class Purchase(db.Model):
     finance = relationship('Finance', backref='purchase')
     payment = relationship('Payment', backref='purchase')
     purchase_addons = relationship('PurchaseAddon', backref='purchase')
-    purchase_vehicle = relationship('PurchaseVehicle', backref='purchase', uselist=False)
+    purchase_vehical = relationship('Purchasevehical', backref='purchase', uselist=False)
     contracts = relationship('app.contracts.models.Contract', backref='purchase')
 
     def get_purchase_totals(self):
@@ -38,7 +38,7 @@ class Purchase(db.Model):
             sub_total = 0
             for purchase_addon in self.purchase_addons:
                 sub_total += purchase_addon.addon.price
-            sub_total += self.purchase_vehicle.offer.offer_price
+            sub_total += self.purchase_vehical.offer.offer_price
             total = sub_total + (sub_total * self.tax)
             return total, sub_total
         except Exception as e:
@@ -295,51 +295,51 @@ class PurchaseAddon(db.Model):
         except Exception as e:
             raise e
         
-class PurchaseVehicle(db.Model):
-    __tablename__ = 'purchase_vehicle'
+class Purchasevehical(db.Model):
+    __tablename__ = 'purchase_vehical'
 
-    purchase_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
+    purchase_vehical_id = Column(INTEGER, primary_key=True, unique=True)
     purchase_id = Column(INTEGER, ForeignKey('purchase.purchase_id'))
-    vehicle_id = Column(INTEGER, ForeignKey('vehicle.vehicle_id'))
+    vehical_id = Column(INTEGER, ForeignKey('vehical.vehical_id'))
     offer_id = Column(INTEGER, ForeignKey('offer.offer_id'))
 
-    vehicle = relationship('app.inventory.models.Vehicle', backref='purchase_vehicle')
-    offer = relationship('app.negotiation.models.Offer', backref='purchase_vehicle')
+    vehical = relationship('app.inventory.models.Vehical', backref='purchase_vehical')
+    offer = relationship('app.negotiation.models.Offer', backref='purchase_vehical')
 
     @classmethod
-    def get_purchase_vehicles(cls):
+    def get_purchase_vehicals(cls):
         try:
-            purchase_vehicles = db.session.query(PurchaseVehicle).all()
-            return purchase_vehicles
+            purchase_vehicals = db.session.query(Purchasevehical).all()
+            return purchase_vehicals
         except Exception as e:
             raise e
 
     @classmethod
-    def get_purchase_vehicle(cls, purchase_vehicle_id):
+    def get_purchase_vehical(cls, purchase_vehical_id):
         try:
-            purchase_vehicle = db.session.query(PurchaseVehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
-            return purchase_vehicle
+            purchase_vehical = db.session.query(Purchasevehical).filter_by(purchase_vehical_id=purchase_vehical_id).first()
+            return purchase_vehical
         except Exception as e:
             raise e
 
     @classmethod
-    def create_purchase_vehicle(cls, purchase_id, vehicle_id, offer_id):
+    def create_purchase_vehical(cls, purchase_id, vehical_id, offer_id):
         try:
-            purchase_vehicle = PurchaseVehicle(purchase_id=purchase_id, vehicle_id=vehicle_id, 
+            purchase_vehical = Purchasevehical(purchase_id=purchase_id, vehical_id=vehical_id, 
                                                offer_id=offer_id)
-            db.session.add(purchase_vehicle)
-            return purchase_vehicle
+            db.session.add(purchase_vehical)
+            return purchase_vehical
         except Exception as e:
             raise e
 
     @classmethod
-    def update_purchase_vehicle(cls, purchase_vehicle_id, purchase_id=None, vehicle_id=None):
+    def update_purchase_vehical(cls, purchase_vehical_id, purchase_id=None, vehical_id=None):
         try:
-            purchase_vehicle = db.session.query(PurchaseVehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
+            purchase_vehical = db.session.query(Purchasevehical).filter_by(purchase_vehical_id=purchase_vehical_id).first()
             if purchase_id:
-                purchase_vehicle.purchase_id = purchase_id
-            if vehicle_id:
-                purchase_vehicle.vehicle_id = vehicle_id
-            return purchase_vehicle.purchase_vehicle_id
+                purchase_vehical.purchase_id = purchase_id
+            if vehical_id:
+                purchase_vehical.vehical_id = vehical_id
+            return purchase_vehical.purchase_vehical_id
         except Exception as e:
             raise e

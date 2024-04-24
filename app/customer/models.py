@@ -65,10 +65,10 @@ class CreditReport(db.Model):
     customer = relationship('Customer')
 
 
-class Customervehicle(db.Model):
-    __tablename__ = 'customer_vehicle'
+class CustomerVehical(db.Model):
+    __tablename__ = 'customer_vehical'
 
-    customer_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
+    customer_vehical_id = Column(INTEGER, primary_key=True, unique=True)
     vin = Column(String(45))
     year = Column(String(4))
     make = Column(String(254))

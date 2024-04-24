@@ -316,60 +316,6 @@ class Service_Ticket(db.Model):
             raise e
 
 
-class Service(db.Model):
-    __tablename__ = 'service'
-
-    service_id = Column(INTEGER, primary_key=True, unique=True)
-    service_type = Column(String(255), nullable=False)
-    price = Column(INTEGER, nullable=False)
-    description = Column(String(255), nullable=False)
-    
-    #get service by service id
-    @classmethod
-    def get_service_by_service_id(cls, service_id):
-        try:
-            return db.session.query(Service).filter(Service.service_id == service_id).first()
-        except Exception as e:
-            raise e
-    
-    #get service by service_type
-    @classmethod
-    def get_service_by_service_type(cls, service_type):
-        try:
-            return db.session.query(Service).filter(Service.service_type == service_type).first()
-        except Exception as e:
-            raise e
-
-    #get all services
-    @classmethod
-    def get_all_services(cls):
-        try:
-            return db.session.query(Service).all()
-        except Exception as e:
-            raise e
-
-    #create service
-    @classmethod
-    def create_service(self, service_type, price, description):
-        try:
-            service = Service(service_type=service_type, price=price, description=description)
-            db.session.add(service)
-            return service
-        except Exception as e:
-            raise e    
-
-    #update service
-    @classmethod
-    def update_service(self, service_id, service_type, price, description):
-        try:
-            service = db.session.query(Service).filter(Service.service_id == service_id).first()
-            service.service_type = service_type
-            service.price = price
-            service.description = description
-            return service
-        except Exception as e:
-            raise e
-
 
 class Service_Ticket_Service(db.Model):
     __tablename__ = 'service_ticket_service'
@@ -377,7 +323,7 @@ class Service_Ticket_Service(db.Model):
     service_ticket_id = Column(ForeignKey('service_ticket.service_ticket_id'), primary_key=True, nullable=False)
     service_id = Column(ForeignKey('service.service_id'), primary_key=True, nullable=False)
 
-    service = relationship('Service', backref='service_ticket_services')
+    service = relationship('app.inventory.models.Service', backref='service_ticket_services')
     ticket = relationship('Service_Ticket', backref='service_ticket_services', overlaps='services')
 
     

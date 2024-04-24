@@ -35,10 +35,10 @@ class ContractServices:
                                                 contract_type=Contract.ContractType.PURCHASE.value,
                                                 contract_path=contract_path,
                                                 signer_full_name=customer_name,
-                                                vehicle_year=year,
-                                                vehicle_make=make,
-                                                vehicle_model=model,
-                                                vehicle_vin=vin)
+                                                vehical_year=year,
+                                                vehical_make=make,
+                                                vehical_model=model,
+                                                vehical_vin=vin)
             db.session.commit()
             return contract_path
         except Exception as e:
@@ -72,10 +72,10 @@ class ContractServices:
             contract = Contract.get_contract(contract_id)
             contract_data = {
                 'customer_name': contract.signer_full_name,
-                'year': contract.vehicle_year,
-                'make': contract.vehicle_make,
-                'model': contract.vehicle_model,
-                'vin': contract.vehicle_vin,
+                'year': contract.vehical_year,
+                'make': contract.vehical_make,
+                'model': contract.vehical_model,
+                'vin': contract.vehical_vin,
                 'date': contract.contract_date.strftime('%Y-%m-%d'),
                 'customer_signature': signature,
                 'dealer_signature': '________________________'
@@ -105,10 +105,10 @@ class ContractServices:
             contract = Contract.get_contract(contract_id)
             contract_data = {
                 'customer_name': contract.signer_full_name,
-                'year': contract.vehicle_year,
-                'make': contract.vehicle_make,
-                'model': contract.vehicle_model,
-                'vin': contract.vehicle_vin,
+                'year': contract.vehical_year,
+                'make': contract.vehical_make,
+                'model': contract.vehical_model,
+                'vin': contract.vehical_vin,
                 'date': contract.contract_date.strftime('%Y-%m-%d'),
                 'customer_signature': contract.customer_signature,
                 'dealer_signature': signature

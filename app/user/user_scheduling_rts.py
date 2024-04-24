@@ -2,7 +2,8 @@ from flask import jsonify, request, current_app, g
 from flask_jwt_extended import jwt_required
 from . import user_bp
 from flasgger import swag_from
-from app.scheduling.models import Appointment, TimeSlot, Service, Service_Ticket, Service_Ticket_Service
+from app.scheduling.models import Appointment, TimeSlot, Service_Ticket, Service_Ticket_Service
+from app.inventory.models import Service
 from app.exceptions import ExposedException
 from app.auth.auth_decorators import user_required, manager_required
 

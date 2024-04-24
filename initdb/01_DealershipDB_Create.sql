@@ -58,21 +58,21 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`credit_report` (
 
 
 -- -----------------------------------------------------
--- Table `DealershipDB`.`customer_vehicle`
+-- Table `DealershipDB`.`customer_vehical`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`customer_vehicle` ;
+DROP TABLE IF EXISTS `DealershipDB`.`customer_vehical` ;
 
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer_vehicle` (
-  `customer_vehicle_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer_vehical` (
+  `customer_vehical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `vin` VARCHAR(45) NULL,
   `year` VARCHAR(4) NULL,
   `make` VARCHAR(254) NULL,
   `model` VARCHAR(254) NULL,
   `customer_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`customer_vehicle_id`),
-  UNIQUE INDEX `customer_vehicle_id_UNIQUE` (`customer_vehicle_id` ASC) VISIBLE,
+  PRIMARY KEY (`customer_vehical_id`),
+  UNIQUE INDEX `customer_vehical_id_UNIQUE` (`customer_vehical_id` ASC) VISIBLE,
   INDEX `fk_customer_idx` (`customer_id` ASC) VISIBLE,
-  CONSTRAINT `fk_customer_vehicle_customer`
+  CONSTRAINT `fk_customer_vehical_customer`
     FOREIGN KEY (`customer_id`)
     REFERENCES `DealershipDB`.`customer` (`customer_id`)
     ON DELETE NO ACTION
@@ -80,12 +80,12 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer_vehicle` (
 
 
 -- -----------------------------------------------------
--- Table `DealershipDB`.`vehicle`
+-- Table `DealershipDB`.`vehical`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`vehicle` ;
+DROP TABLE IF EXISTS `DealershipDB`.`vehical` ;
 
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`vehicle` (
-  `vehicle_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`vehical` (
+  `vehical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `vin` VARCHAR(17) NOT NULL,
   `price` INT NULL,
   `year` VARCHAR(4) NULL,
@@ -97,9 +97,9 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`vehicle` (
   `fuel_type` VARCHAR(45) NULL,
   `transmission` VARCHAR(45) NULL,
   `image` VARCHAR(254) NULL,
-  `vehicle_status` INT NULL,
-  PRIMARY KEY (`vehicle_id`),
-  UNIQUE INDEX `vehicle_id_UNIQUE` (`vehicle_id` ASC) VISIBLE);
+  `vehical_status` INT NULL,
+  PRIMARY KEY (`vehical_id`),
+  UNIQUE INDEX `vehical_id_UNIQUE` (`vehical_id` ASC) VISIBLE);
 
 
 -- -----------------------------------------------------
@@ -109,7 +109,7 @@ DROP TABLE IF EXISTS `DealershipDB`.`negotiation` ;
 
 CREATE TABLE IF NOT EXISTS `DealershipDB`.`negotiation` (
   `negotiation_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `vehicle_id` INT UNSIGNED NOT NULL,
+  `vehical_id` INT UNSIGNED NOT NULL,
   `customer_id` INT UNSIGNED NOT NULL,
   `negotiation_status` INT NOT NULL DEFAULT 1,
   `start_date` DATETIME NULL DEFAULT NOW(),
@@ -117,15 +117,15 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`negotiation` (
   PRIMARY KEY (`negotiation_id`),
   UNIQUE INDEX `negotiation_id_UNIQUE` (`negotiation_id` ASC) VISIBLE,
   INDEX `fk_customer_idx` (`customer_id` ASC) VISIBLE,
-  INDEX `fk_vehicle_idx` (`vehicle_id` ASC) VISIBLE,
+  INDEX `fk_vehical_idx` (`vehical_id` ASC) VISIBLE,
   CONSTRAINT `fk_negotiation_customer`
     FOREIGN KEY (`customer_id`)
     REFERENCES `DealershipDB`.`customer` (`customer_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_negotiation_vehicle`
-    FOREIGN KEY (`vehicle_id`)
-    REFERENCES `DealershipDB`.`vehicle` (`vehicle_id`)
+  CONSTRAINT `fk_negotiation_vehical`
+    FOREIGN KEY (`vehical_id`)
+    REFERENCES `DealershipDB`.`vehical` (`vehical_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
@@ -257,9 +257,6 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`service_ticket` (
   CONSTRAINT `fk_service_ticket_customer_vehical`
     FOREIGN KEY (`customer_vehical_id`)
     REFERENCES `DealershipDB`.`customer_vehical` (`customer_vehical_id`)
-  CONSTRAINT `fk_service_ticket_customer_vehicle`
-    FOREIGN KEY (`customer_vehicle_id`)
-    REFERENCES `DealershipDB`.`customer_vehicle` (`customer_vehicle_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_service_ticket_time_slot`
@@ -403,30 +400,30 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase_addon` (
     ON UPDATE NO ACTION);
 
 -- -----------------------------------------------------
--- Table `DealershipDB`.`purchase_vehicle`
+-- Table `DealershipDB`.`purchase_vehical`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `DealershipDB`.`purchase_vehicle` ;
+DROP TABLE IF EXISTS `DealershipDB`.`purchase_vehical` ;
 
-CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase_vehicle` (
-  `purchase_vehicle_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`purchase_vehical` (
+  `purchase_vehical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `purchase_id` INT UNSIGNED NOT NULL,
-  `vehicle_id` INT UNSIGNED NOT NULL,
+  `vehical_id` INT UNSIGNED NOT NULL,
   `offer_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`purchase_vehicle_id`),
-  UNIQUE INDEX `purchase_vehicle_id_UNIQUE` (`purchase_vehicle_id` ASC) VISIBLE,
-  INDEX `fk_purchase_vehicle_purchase_idx` (`purchase_id` ASC) VISIBLE,
-  INDEX `fk_purchase_vehicle_vehicle_idx` (`vehicle_id` ASC) VISIBLE,
-  CONSTRAINT `fk_purchase_vehicle_purchase`
+  PRIMARY KEY (`purchase_vehical_id`),
+  UNIQUE INDEX `purchase_vehical_id_UNIQUE` (`purchase_vehical_id` ASC) VISIBLE,
+  INDEX `fk_purchase_vehical_purchase_idx` (`purchase_id` ASC) VISIBLE,
+  INDEX `fk_purchase_vehical_vehical_idx` (`vehical_id` ASC) VISIBLE,
+  CONSTRAINT `fk_purchase_vehical_purchase`
     FOREIGN KEY (`purchase_id`)
     REFERENCES `DealershipDB`.`purchase` (`purchase_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_purchase_vehicle_vehicle`
-    FOREIGN KEY (`vehicle_id`)
-    REFERENCES `DealershipDB`.`vehicle` (`vehicle_id`)
+  CONSTRAINT `fk_purchase_vehical_vehical`
+    FOREIGN KEY (`vehical_id`)
+    REFERENCES `DealershipDB`.`vehical` (`vehical_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_purchase_vehicle_offer`
+  CONSTRAINT `fk_purchase_vehical_offer`
     FOREIGN KEY (`offer_id`)
     REFERENCES `DealershipDB`.`offer` (`offer_id`)
     ON DELETE NO ACTION
@@ -460,10 +457,10 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`contract` (
   `signer_full_name` VARCHAR(45) NULL,
   `customer_signature` VARCHAR(254) NULL,
   `dealer_signature` VARCHAR(254) NULL,
-  `vehicle_year` VARCHAR(4) NULL,
-  `vehicle_make` VARCHAR(45) NULL,
-  `vehicle_model` VARCHAR(45) NULL,
-  `vehicle_vin` VARCHAR(17) NULL,
+  `vehical_year` VARCHAR(4) NULL,
+  `vehical_make` VARCHAR(45) NULL,
+  `vehical_model` VARCHAR(45) NULL,
+  `vehical_vin` VARCHAR(17) NULL,
   `contract_date` DATETIME NULL DEFAULT NOW(),
   `contract_path` VARCHAR(254) NULL,
   PRIMARY KEY (`contract_id`),
