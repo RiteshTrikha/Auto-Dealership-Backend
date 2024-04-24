@@ -1,7 +1,7 @@
 from flask import current_app, g
 from .models import Appointment, TimeSlot, Service_Ticket, Service_Ticket_Service
 from app.inventory.models import Service
-from app.customer.models import Customer, CustomerVehical
+from app.customer.models import Customer, CustomerVehicle
 from app.exceptions import ExposedException, ExpDatabaseException
 from app import db
 
@@ -34,10 +34,10 @@ class ScheduleService:
 
 
     #pick a time slot for a service appointment and create a service appointment with the status pending(3) and appointment type service(1) and update time slot is_available to unavailable(0) and create service ticket with the services selected
-    def schedule_service(self, customer_id, time_slot_id, customer_vehical_id, customer_note, technician_note, services):
+    def schedule_service(self, customer_id, time_slot_id, customer_vehicle_id, customer_note, technician_note, services):
         try:
             #check for missing fields
-            if customer_id is None or time_slot_id is None or customer_vehical_id is None or services is None:
+            if customer_id is None or time_slot_id is None or customer_vehicle_id is None or services is None:
                 raise ExposedException("Missing fields", code = 400)
 
             #create service appointment
@@ -48,7 +48,7 @@ class ScheduleService:
             time_slot.is_available = 0
             
             #create service ticket
-            service_ticket = Service_Ticket.create_service_ticket(customer_id=customer_id, user_id= None, customer_vehical_id=customer_vehical_id, time_slot_id=time_slot_id, customer_note=customer_note, technician_note=technician_note, status=Service_Ticket.Status.OPEN.value)
+            service_ticket = Service_Ticket.create_service_ticket(customer_id=customer_id, user_id= None, customer_vehicle_id=customer_vehicle_id, time_slot_id=time_slot_id, customer_note=customer_note, technician_note=technician_note, status=Service_Ticket.Status.OPEN.value)
 
             #get service by service_id
             for service in services:
@@ -309,7 +309,7 @@ class ScheduleService:
                         'service_ticket_id': service.service_ticket_id,
                         'customer_id': service.customer_id,
                         'user_id': service.user_id,
-                        'customer_vehical_id': service.customer_vehical_id,
+                        'customer_vehicle_id': service.customer_vehicle_id,
                         'time_slot_id': service.time_slot_id,
                         'customer_note': service.customer_note,
                         'technician_note': service.technician_note,

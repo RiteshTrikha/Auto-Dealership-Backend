@@ -13,14 +13,14 @@ class Negotiation(db.Model):
         REJECTED = 3
 
     negotiation_id = Column(INTEGER, primary_key=True, unique=True)
-    vehical_id = Column(ForeignKey('vehical.vehical_id'), nullable=False, index=True)
+    vehicle_id = Column(ForeignKey('vehicle.vehicle_id'), nullable=False, index=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
     negotiation_status = Column(Integer, nullable=False, server_default=text("1"))
     start_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     end_date = Column(DateTime)
 
     customer = relationship('app.customer.models.Customer' , backref='negotiations')
-    vehical = relationship('app.inventory.models.Vehical' , backref='negotiations')
+    vehicle = relationship('app.inventory.models.Vehicle' , backref='negotiations')
     offers = relationship('Offer', backref='negotiation')
 
 
@@ -28,7 +28,7 @@ class Negotiation(db.Model):
     def serialize(self):
         return {
             'negotiation_id': self.negotiation_id,
-            'vehical_id': self.vehical_id,
+            'vehicle_id': self.vehicle_id,
             'customer_id': self.customer_id,
             'negotiation_status': self.NegotiationStatus(self.negotiation_status).name,
             'start_date': self.start_date,
@@ -37,10 +37,10 @@ class Negotiation(db.Model):
     
     # create functions
     @classmethod
-    def create_negotiation(cls, vehical_id, customer_id):
+    def create_negotiation(cls, vehicle_id, customer_id):
         try:
             # create negotiation
-            negotiation = Negotiation(vehical_id=vehical_id, customer_id=customer_id)
+            negotiation = Negotiation(vehicle_id=vehicle_id, customer_id=customer_id)
             db.session.add(negotiation)
             
             return negotiation
@@ -88,10 +88,10 @@ class Negotiation(db.Model):
             raise e
         
     @classmethod
-    def negotiation_already_exists(cls, vehical_id, customer_id):
+    def negotiation_already_exists(cls, vehicle_id, customer_id):
         try:
             # check if negotiation already exists
-            negotiation = db.session.query(Negotiation).filter(Negotiation.vehical_id == vehical_id, Negotiation.customer_id == customer_id).first()
+            negotiation = db.session.query(Negotiation).filter(Negotiation.vehicle_id == vehicle_id, Negotiation.customer_id == customer_id).first()
             if negotiation:
                 return True
             return False

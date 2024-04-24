@@ -1,7 +1,7 @@
 from decimal import Decimal
 from flask import current_app, g
 from app.contracts.models import Contract
-from .models import Purchase, Finance, Payment, PurchaseAddon, Purchasevehical
+from .models import Purchase, Finance, Payment, PurchaseAddon, Purchasevehicle
 from app.exceptions import ExposedException
 from app import db
 
@@ -12,10 +12,10 @@ class PurchasingServices:
         Initiates a car purchase from an accepted negotiation
         ---
         checks if negotiation is accepted
-        checks if vehical is available
+        checks if vehicle is available
         creates a purchase record
-        creates a purchase vehical record
-        updates vehical status to RESERVED
+        creates a purchase vehicle record
+        updates vehicle status to RESERVED
         '''
         try:
             # get accepted negotiation
@@ -25,16 +25,16 @@ class PurchasingServices:
                 raise ExposedException('Negotiation is not accepted')
             # create a purchase
             purchase = Purchase.create_purchase(customer_id=customer_id)
-            # create purchase vehical
+            # create purchase vehicle
             db.session.commit()
             current_app.logger.info('created purchase with id: %s', purchase.purchase_id)
-            purchase_vehical = Purchasevehical.create_purchase_vehical(purchase_id=purchase.purchase_id,
-                                                                       vehical_id=negotiation.vehical_id,
+            purchase_vehicle = Purchasevehicle.create_purchase_vehicle(purchase_id=purchase.purchase_id,
+                                                                       vehicle_id=negotiation.vehicle_id,
                                                                        offer_id=negotiation.offers[-1].offer_id)
-            # set vehical status to RESERVED
-            negotiation.vehical.update_vehical_status(3) # RESERVED
+            # set vehicle status to RESERVED
+            negotiation.vehicle.update_vehicle_status(3) # RESERVED
             db.session.commit()
-            return {'purchase_id': purchase.purchase_id, 'purchase_vehical_id': purchase_vehical.purchase_vehical_id}
+            return {'purchase_id': purchase.purchase_id, 'purchase_vehicle_id': purchase_vehicle.purchase_vehicle_id}
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
@@ -48,11 +48,11 @@ class PurchasingServices:
                     {
                         'purchase_id': purchase.purchase_id,
                         'purchase_status': purchase.PurchaseStatus(purchase.purchase_status).name,
-                        'purchase_vehical': {
-                            'vehical_id': purchase.purchase_vehical.vehical.vehical_id,
-                            'year': purchase.purchase_vehical.vehical.year,
-                            'make': purchase.purchase_vehical.vehical.make,
-                            'model': purchase.purchase_vehical.vehical.model,
+                        'purchase_vehicle': {
+                            'vehicle_id': purchase.purchase_vehicle.vehicle.vehicle_id,
+                            'year': purchase.purchase_vehicle.vehicle.year,
+                            'make': purchase.purchase_vehicle.vehicle.make,
+                            'model': purchase.purchase_vehicle.vehicle.model,
                         },
                         'puchase_total': '{:.2f}'.format(purchase.get_purchase_totals()[0]),
 
@@ -73,13 +73,13 @@ class PurchasingServices:
             purchase_dict = {
                 'purchase_id': purchase.purchase_id,
                 'purchase_status': purchase.PurchaseStatus(purchase.purchase_status).name,
-                'purchase_vehical': {
-                    'vehical_id': purchase.purchase_vehical.vehical.vehical_id,
-                    'year': purchase.purchase_vehical.vehical.year,
-                    'make': purchase.purchase_vehical.vehical.make,
-                    'model': purchase.purchase_vehical.vehical.model,
-                    'vin': purchase.purchase_vehical.vehical.vin,
-                    'price': purchase.purchase_vehical.offer.offer_price
+                'purchase_vehicle': {
+                    'vehicle_id': purchase.purchase_vehicle.vehicle.vehicle_id,
+                    'year': purchase.purchase_vehicle.vehicle.year,
+                    'make': purchase.purchase_vehicle.vehicle.make,
+                    'model': purchase.purchase_vehicle.vehicle.model,
+                    'vin': purchase.purchase_vehicle.vehicle.vin,
+                    'price': purchase.purchase_vehicle.offer.offer_price
                 },
                 'purchase_subtotal': '{:.2f}'.format(purchase.get_purchase_totals()[1]),
                 'tax': purchase.tax,
@@ -140,10 +140,10 @@ class PurchasingServices:
             
             contract_path = g.contract_service.generate_purchase_contract(purchase_id=purchase_id, 
                                                           customer_name=purchase.customer.first_name + '_' + purchase.customer.last_name,
-                                                          year=purchase.purchase_vehical.vehical.year,
-                                                          make=purchase.purchase_vehical.vehical.make,
-                                                          model=purchase.purchase_vehical.vehical.model,
-                                                          vin=purchase.purchase_vehical.vehical.vin)
+                                                          year=purchase.purchase_vehicle.vehicle.year,
+                                                          make=purchase.purchase_vehicle.vehicle.make,
+                                                          model=purchase.purchase_vehicle.vehicle.model,
+                                                          vin=purchase.purchase_vehicle.vehicle.vin)
             db.session.commit()
             return contract_path
         except Exception as e:
@@ -238,7 +238,7 @@ class PurchasingServices:
         '''
         Makes an ACH payment for a purchase
         ---
-        creates a payment record and updates the purchase status to PAID and vehical status to SOLD
+        creates a payment record and updates the purchase status to PAID and vehicle status to SOLD
         '''
         try:
             purchase = Purchase.get_purchase(purchase_id)
@@ -265,8 +265,8 @@ class PurchasingServices:
             # update purchase type and status
             purchase.update_purchase_type(Purchase.PurchaseType.ACH.value)
             purchase.update_purchase_status(Purchase.PurchaseStatus.PAID.value)
-            # update vehical status
-            purchase.purchase_vehical.vehical.update_vehical_status(2) # SOLD
+            # update vehicle status
+            purchase.purchase_vehicle.vehicle.update_vehicle_status(2) # SOLD
             db.session.commit()
             return {'payment_id': payment.payment_id}
         except Exception as e:
@@ -278,7 +278,7 @@ class PurchasingServices:
         '''
         Cancels a purchase
         ---
-        updates purchase status to CANCELLED and vehical status to AVAILABLE
+        updates purchase status to CANCELLED and vehicle status to AVAILABLE
         '''
         try:
             purchase = Purchase.get_purchase(purchase_id)
@@ -289,8 +289,8 @@ class PurchasingServices:
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
             purchase.update_purchase_status(Purchase.PurchaseStatus.CANCELLED.value)
-            # update vehical status
-            purchase.purchase_vehical.vehical.update_vehical_status(1) # AVAILABLE
+            # update vehicle status
+            purchase.purchase_vehicle.vehicle.update_vehicle_status(1) # AVAILABLE
             db.session.commit()
             return {'purchase_id': purchase.purchase_id}
         except Exception as e:

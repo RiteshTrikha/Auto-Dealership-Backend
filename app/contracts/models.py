@@ -33,10 +33,10 @@ class Contract(db.Model):
     signer_full_name = Column(String(45))
     customer_signature = Column(String(254))
     dealer_signature = Column(String(254))
-    vehical_year = Column(String(4))
-    vehical_make = Column(String(45))
-    vehical_model = Column(String(45))
-    vehical_vin = Column(String(17))
+    vehicle_year = Column(String(4))
+    vehicle_make = Column(String(45))
+    vehicle_model = Column(String(45))
+    vehicle_vin = Column(String(17))
     contract_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     contract_path = Column(String(254))
 
@@ -49,12 +49,12 @@ class Contract(db.Model):
             raise e
         
     @staticmethod
-    def create_contract(purchase_id, contract_type, contract_path, signer_full_name, vehical_year, vehical_make, vehical_model, vehical_vin):
+    def create_contract(purchase_id, contract_type, contract_path, signer_full_name, vehicle_year, vehicle_make, vehicle_model, vehicle_vin):
         try:
             contract = Contract(purchase_id=purchase_id, contract_type=contract_type, 
                                 contract_path=contract_path, signer_full_name=signer_full_name, 
-                                vehical_year=vehical_year, vehical_make=vehical_make, 
-                                vehical_model=vehical_model, vehical_vin=vehical_vin,
+                                vehicle_year=vehicle_year, vehicle_make=vehicle_make, 
+                                vehicle_model=vehicle_model, vehicle_vin=vehicle_vin,
                                 contract_status=Contract.ContractStatus.ACTIVE.value)
             db.session.add(contract)
             return contract

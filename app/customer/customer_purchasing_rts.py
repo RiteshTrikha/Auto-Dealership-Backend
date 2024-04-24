@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import customer_bp
 from flasgger import swag_from
 from .models import Customer
-from app.purchasing.models import Purchase, Purchasevehical, PurchaseAddon, Finance, Payment
+from app.purchasing.models import Purchase, Purchasevehicle, PurchaseAddon, Finance, Payment
 from app.contracts.models import Contract
 
 # import utilities
@@ -92,10 +92,10 @@ def initiate_car_purchase():
                                                 'purchase_id': { 'type': 'integer' },
                                                 'purchase_status': { 'type': 'string' },
                                                 'purchase_type': { 'type': 'string' },
-                                                'purchase_vehical': {
+                                                'purchase_vehicle': {
                                                     'type': 'object',
                                                     'properties': {
-                                                        'vehical_id': { 'type': 'integer' },
+                                                        'vehicle_id': { 'type': 'integer' },
                                                         'year': { 'type': 'integer' },
                                                         'make': { 'type': 'string' },
                                                         'model': { 'type': 'string' }
@@ -153,10 +153,10 @@ def get_purchases():
                                     'purchase_id': { 'type': 'integer' },
                                     'purchase_status': { 'type': 'string' },
                                     'purchase_type': { 'type': 'string' },
-                                    'purchase_vehical': {
+                                    'purchase_vehicle': {
                                         'type': 'object',
                                         'properties': {
-                                            'vehical_id': { 'type': 'integer' },
+                                            'vehicle_id': { 'type': 'integer' },
                                             'year': { 'type': 'integer' },
                                             'make': { 'type': 'string' },
                                             'model': { 'type': 'string' },

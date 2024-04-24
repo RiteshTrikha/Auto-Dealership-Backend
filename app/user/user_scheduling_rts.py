@@ -254,7 +254,7 @@ def get_service_appointments():
                                             'service_ticket_id': {'type': 'integer'},
                                             'customer_id': {'type': 'integer'},
                                             'user_id': {'type': 'integer'},
-                                            'customer_vehical_id': {'type': 'integer'},
+                                            'customer_vehicle_id': {'type': 'integer'},
                                             'time_slot_id': {'type': 'integer'},
                                             'customer_note': {'type': 'string'},
                                             'technician_note': {'type': 'string'},

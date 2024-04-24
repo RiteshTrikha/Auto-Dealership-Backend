@@ -1,11 +1,11 @@
 from flask import request, jsonify, current_app
-from .models import Vehical, Service
+from .models import Vehicle, Service
 from app.exceptions import ExposedException
 from app import db
 
 class InventoryService:
 
-    # vehical_id = Column(INTEGER, primary_key=True, unique=True)
+    # vehicle_id = Column(INTEGER, primary_key=True, unique=True)
     # vin = Column(String(17), nullable=False)
     # price = Column(INTEGER)
     # year = Column(String(4))
@@ -17,7 +17,7 @@ class InventoryService:
     # fuel_type = Column(String(45))
     # transmission = Column(String(45))
     # image = Column(String(254))
-    # vehical_status = Column(INTEGER)
+    # vehicle_status = Column(INTEGER)
 
     # service services
 
@@ -87,120 +87,120 @@ class InventoryService:
             raise e
 
 
-    # vehical services
+    # vehicle services
     
-    def create_vehical(self, vin, price, year, make, model, miles, mpg, color, fuel_type, 
-                       transmission, image, vehical_status=Vehical.VehicalStatus.AVAILABLE.value):
+    def create_vehicle(self, vin, price, year, make, model, miles, mpg, color, fuel_type, 
+                       transmission, image, vehicle_status=Vehicle.VehicleStatus.AVAILABLE.value):
         try:
-            vehical = Vehical.create_vehical(vin=vin, price=price, year=year, make=make, 
+            vehicle = Vehicle.create_vehicle(vin=vin, price=price, year=year, make=make, 
                                              model=model, miles=miles, mpg=mpg, color=color, 
                                              fuel_type=fuel_type, transmission=transmission,
-                                             image=image, vehical_status=vehical_status)
+                                             image=image, vehicle_status=vehicle_status)
             db.session.commit()
-            return { 'vehical_id': vehical.vehical_id }
+            return { 'vehicle_id': vehicle.vehicle_id }
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
         
-    def update_vehical(self, vehical_id, vin, price, year, make, model, miles, mpg, 
+    def update_vehicle(self, vehicle_id, vin, price, year, make, model, miles, mpg, 
                        color, fuel_type, transmission, image):
         try:
-            vehical = Vehical.update_vehical(vehical_id, vin, price, year, make, model, miles, mpg, 
+            vehicle = Vehicle.update_vehicle(vehicle_id, vin, price, year, make, model, miles, mpg, 
                                              color, fuel_type, transmission, image)
             db.session.commit()
-            return { 'vehical_id': vehical.vehical_id }
+            return { 'vehicle_id': vehicle.vehicle_id }
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
         
-    def change_vehical_status(self, vehical_id, vehical_status):
+    def change_vehicle_status(self, vehicle_id, vehicle_status):
         try:
-            if vehical_status not in [status.value for status in Vehical.VehicalStatus]:
-                raise ExposedException('Invalid vehical status', code=400)
-            vehical = Vehical.update_vehical(vehical_id, vehical_status=vehical_status)
+            if vehicle_status not in [status.value for status in Vehicle.VehicleStatus]:
+                raise ExposedException('Invalid vehicle status', code=400)
+            vehicle = Vehicle.update_vehicle(vehicle_id, vehicle_status=vehicle_status)
             db.session.commit()
-            return { 'vehical_id': vehical.vehical_id }
+            return { 'vehicle_id': vehicle.vehicle_id }
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
            
-    def get_vehical(self, vehical_id):
+    def get_vehicle(self, vehicle_id):
         try:
-            vehical = Vehical.get_vehical(vehical_id)
-            if not vehical:
-                raise ExposedException('vehical not found', code=404)
+            vehicle = Vehicle.get_vehicle(vehicle_id)
+            if not vehicle:
+                raise ExposedException('vehicle not found', code=404)
             return {
-                'vehical_id': vehical.vehical_id,
-                'vin': vehical.vin,
-                'price': vehical.price,
-                'year': vehical.year,
-                'make': vehical.make,
-                'model': vehical.model,
-                'miles': vehical.miles,
-                'mpg': vehical.mpg,
-                'color': vehical.color,
-                'fuel_type': vehical.fuel_type,
-                'transmission': vehical.transmission,
-                'image': vehical.image,
-                'vehical_status': vehical.vehical_status
+                'vehicle_id': vehicle.vehicle_id,
+                'vin': vehicle.vin,
+                'price': vehicle.price,
+                'year': vehicle.year,
+                'make': vehicle.make,
+                'model': vehicle.model,
+                'miles': vehicle.miles,
+                'mpg': vehicle.mpg,
+                'color': vehicle.color,
+                'fuel_type': vehicle.fuel_type,
+                'transmission': vehicle.transmission,
+                'image': vehicle.image,
+                'vehicle_status': vehicle.vehicle_status
             }
         except Exception as e:
             current_app.logger.exception(e)
             raise e
             
     
-    def get_vehicals(self, page, limit, query):
+    def get_vehicles(self, page, limit, query):
         try:
-            vehicals, num_of_pages, num_of_records = Vehical.get_vehicals(page=page, limit=limit, query=query)
-            if vehicals == []:
-                raise ExposedException('No vehicals found', code=404)
+            vehicles, num_of_pages, num_of_records = Vehicle.get_vehicles(page=page, limit=limit, query=query)
+            if vehicles == []:
+                raise ExposedException('No vehicles found', code=404)
             json_dict = {
                     'num_of_pages': num_of_pages,
                     'num_of_results': num_of_records,
                     'page': page,
-                    'vehicals': 
+                    'vehicles': 
                     [{
-                        'vehical_id': vehical.vehical_id,
-                        'price': vehical.price,
-                        'year': vehical.year,
-                        'make': vehical.make,
-                        'model': vehical.model,
-                        'miles': vehical.miles,
-                        'mpg': vehical.mpg,
-                        'color': vehical.color,
-                        'fuel_type': vehical.fuel_type,
-                        'transmission': vehical.transmission,
-                        'image': vehical.image,
-                        'vehical_status': vehical.vehical_status
-                    } for vehical in vehicals],
+                        'vehicle_id': vehicle.vehicle_id,
+                        'price': vehicle.price,
+                        'year': vehicle.year,
+                        'make': vehicle.make,
+                        'model': vehicle.model,
+                        'miles': vehicle.miles,
+                        'mpg': vehicle.mpg,
+                        'color': vehicle.color,
+                        'fuel_type': vehicle.fuel_type,
+                        'transmission': vehicle.transmission,
+                        'image': vehicle.image,
+                        'vehicle_status': vehicle.vehicle_status
+                    } for vehicle in vehicles],
                 }
             return json_dict
         except Exception as e:
             current_app.logger.exception(e) # TODO: switch all loggers to exception instead of error and remove the str()
             raise e
         
-    def get_top_5_vehicals(self):
+    def get_top_5_vehicles(self):
         try:
-            vehicals = Vehical.get_top_5_vehicals()
-            if vehicals == []:
-                raise ExposedException('No vehicals found', code=404)
+            vehicles = Vehicle.get_top_5_vehicles()
+            if vehicles == []:
+                raise ExposedException('No vehicles found', code=404)
             return [{
-                'vehical_id': vehical.vehical_id,
-                'price': vehical.price,
-                'year': vehical.year,
-                'make': vehical.make,
-                'model': vehical.model,
-                'miles': vehical.miles,
-                'mpg': vehical.mpg,
-                'color': vehical.color,
-                'fuel_type': vehical.fuel_type,
-                'transmission': vehical.transmission,
-                'image': vehical.image,
-                'vehical_status': vehical.vehical_status
-            } for vehical in vehicals]
+                'vehicle_id': vehicle.vehicle_id,
+                'price': vehicle.price,
+                'year': vehicle.year,
+                'make': vehicle.make,
+                'model': vehicle.model,
+                'miles': vehicle.miles,
+                'mpg': vehicle.mpg,
+                'color': vehicle.color,
+                'fuel_type': vehicle.fuel_type,
+                'transmission': vehicle.transmission,
+                'image': vehicle.image,
+                'vehicle_status': vehicle.vehicle_status
+            } for vehicle in vehicles]
         except Exception as e:
             current_app.logger.exception(e)
             raise e
