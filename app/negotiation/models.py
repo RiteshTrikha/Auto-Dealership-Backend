@@ -1,3 +1,4 @@
+from flask import current_app
 from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
@@ -179,7 +180,7 @@ class Offer(db.Model):
         try:
             # get current offer
             offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).first()
-            if offer.offer_type == Offer.OfferType.COUNTER_OFFER:
+            if offer.offer_type == Offer.OfferType.COUNTER_OFFER.value:
                 return True
             return False
         except Exception as e:
@@ -190,8 +191,9 @@ class Offer(db.Model):
         try:
             # get current offer
             offer = db.session.query(Offer).filter(Offer.negotiation_id == negotiation_id).order_by(Offer.offer_id.desc()).first()
-            if offer.offer_type == Offer.OfferType.OFFER:
+            if offer.offer_type == Offer.OfferType.OFFER.value:
                 return True
             return False
         except Exception as e:
             raise e
+        

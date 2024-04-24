@@ -1,5 +1,5 @@
 from flask import jsonify, request, current_app, g
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import customer_bp
 from flasgger import swag_from
 from .models import Customer
@@ -24,10 +24,9 @@ standardize_response = Utilities.standardize_response
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'customer_id': {'type': 'integer'},
-                        'vehicle_id': {'type': 'integer'},
-                        'offer_price': {'type': 'integer'},
-                        'message': {'type': 'string'}
+                        'vehicle_id': {'type': 'integer', 'example': 1},
+                        'offer_price': {'type': 'integer', 'example': 10000},
+                        'message': {'type': 'string', 'example': 'I like the car. but I noticed a scratch on the bumper... can I get a discount?'}
                     }
                 }
             }
@@ -51,7 +50,7 @@ standardize_response = Utilities.standardize_response
 def create_negotiation():
   try:
       data = request.get_json()
-      customer_id = data['customer_id']
+      customer_id = get_jwt_identity().get('customer_id')
       vehicle_id = data['vehicle_id'] 
       offer_price = data['offer_price']
       message = data['message']
@@ -64,21 +63,12 @@ def create_negotiation():
       raise e
 
 # get list of negotiations by customer
-@customer_bp.route('/negotiation/negotiations/<int:customer_id>', methods=['GET'])
+@customer_bp.route('/negotiation/negotiations/', methods=['GET'])
 @jwt_required()
 @swag_from({
   'summary': 'Get list of negotiations by customer',
   'tags': ['Customer Negotiation'],
   'security': [{'BearerAuth': []}],
-  'parameters': [
-    {
-      'in': 'path',
-      'name': 'customer_id',
-      'type': 'integer',
-      'required': True,
-      'description': 'The id of the customer'
-    }
-  ],
   'responses': {
     '200': {
       'description': 'Negotiations found',
@@ -123,8 +113,9 @@ def create_negotiation():
     },
   }
 })
-def get_negotiations(customer_id):
+def get_negotiations():
     try:
+        customer_id = get_jwt_identity().get('customer_id')
         negotiations = g.negotiation_service.get_negotiations(customer_id)
         return standardize_response(data=negotiations, message='Successfully retrieved negotiations',
                                     code=200)
@@ -242,8 +233,8 @@ def get_negotiation_details(negotiation_id):
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'offer_price': {'type': 'integer'},
-                        'message': {'type': 'string'}
+                        'offer_price': {'type': 'integer', 'example': 10000},
+                        'message': {'type': 'string', 'example': 'I\'m not made of money! I have a wife and kids!'}
                     }
                 }
             }
@@ -338,7 +329,7 @@ def accept_offer(negotiation_id):
         return standardize_response(message='Successfully accepted offer')
     except Exception as e:
         raise e
-    
+
 # reject counter offer
 @customer_bp.route('/negotiation/negotiation/<int:negotiation_id>/reject', methods=['POST'])
 @jwt_required()
@@ -387,3 +378,4 @@ def reject_offer(negotiation_id):
         return standardize_response(message='Successfully rejected offer')
     except Exception as e:
         raise e
+    

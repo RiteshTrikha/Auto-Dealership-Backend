@@ -284,7 +284,7 @@ def set_service_status(service_id):
     },
     'responses': {
         201: {
-            'description': 'vehicle created successfully',
+            'description': 'Vehicle created successfully',
             'content': {
                 'application/json': {
                     'schema': {
@@ -341,7 +341,7 @@ def create_vehicle():
                                                      model=model, miles=miles, mpg=mpg, color=color, 
                                                      fuel_type=fuel_type, image=image, 
                                                      transmission=transmission)
-        return standardize_response(data=vehicle_id, message='vehicle created successfully', code=201)
+        return standardize_response(data=vehicle_id, message='Vehicle created successfully', code=201)
     except Exception as e:
         raise e
     
@@ -386,7 +386,7 @@ def create_vehicle():
     },
     'responses': {
         200: {
-            'description': 'vehicle updated successfully',
+            'description': 'Vehicle updated successfully',
             'content': {
                 'application/json': {
                     'schema': {
@@ -443,7 +443,7 @@ def update_vehicle(vehicle_id):
                                                      make=make, model=model, miles=miles, mpg=mpg, 
                                                      color=color, fuel_type=fuel_type, image=image, 
                                                      transmission=transmission)
-        return standardize_response(data=vehicle_id, message='vehicle updated successfully', code=200)
+        return standardize_response(data=vehicle_id, message='Vehicle updated successfully', code=200)
     except Exception as e:
         raise e
     
@@ -478,7 +478,7 @@ def update_vehicle(vehicle_id):
     },
     'responses': {
         200: {
-            'description': 'vehicle status updated successfully',
+            'description': 'Vehicle status updated successfully',
             'content': {
                 'application/json': {
                     'schema': {
@@ -522,6 +522,6 @@ def set_vehicle_status(vehicle_id):
         data = request.get_json()
         vehicle_status = data.get('vehicle_status')
         vehicle_id = g.inventory_service.change_vehicle_status(vehicle_id, vehicle_status)
-        return standardize_response(data=vehicle_id, message='vehicle status updated successfully', code=200)
+        return standardize_response(data=vehicle_id, message='Vehicle status updated successfully', code=200)
     except Exception as e:
         raise e

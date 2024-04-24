@@ -64,7 +64,7 @@ DROP TABLE IF EXISTS `DealershipDB`.`customer_vehicle` ;
 
 CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer_vehicle` (
   `customer_vehicle_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `vin` VARCHAR(45) NULL,
+  `vin` VARCHAR(45) NOT NULL UNIQUE,
   `year` VARCHAR(4) NULL,
   `make` VARCHAR(254) NULL,
   `model` VARCHAR(254) NULL,
@@ -466,6 +466,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`contract` (
   PRIMARY KEY (`contract_id`),
   UNIQUE INDEX `contract_id_UNIQUE` (`contract_id` ASC) VISIBLE,
   INDEX `fk_purchase_contract_idx` (`purchase_id` ASC) VISIBLE,
+  UNIQUE INDEX `ux_purchase_id_contract_type` (`purchase_id` ASC, `contract_type` ASC) VISIBLE,
   CONSTRAINT `fk_contract_purchase`
     FOREIGN KEY (`purchase_id`)
     REFERENCES `DealershipDB`.`purchase` (`purchase_id`)

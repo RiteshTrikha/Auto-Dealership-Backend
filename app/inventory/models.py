@@ -163,6 +163,7 @@ class Vehicle(db.Model):
     
     @classmethod
     def get_vehicles(cls, page=1, limit=10, query=None):
+    def get_vehicles(cls, page=1, limit=10, query=None):
         try:
             query_obj = db.session.query(Vehicle)
             if query:
@@ -185,12 +186,15 @@ class Vehicle(db.Model):
             
             start_index = (page - 1) * limit
             vehicles = query_obj.slice(start_index, start_index + limit).all()
+            vehicles = query_obj.slice(start_index, start_index + limit).all()
 
+            return vehicles, num_of_pages, num_of_records
             return vehicles, num_of_pages, num_of_records
         except Exception as e:
             raise e
         
     @classmethod
+    def get_vehicle(cls, vehicle_id):
     def get_vehicle(cls, vehicle_id):
         try:
             vehicle = db.session.query(Vehicle).filter_by(vehicle_id=vehicle_id).first()
@@ -200,13 +204,18 @@ class Vehicle(db.Model):
         
     @classmethod    
     def get_top_5_vehicles(cls):
+    def get_top_5_vehicles(cls):
         try:
+            vehicles = db.session.query(Vehicle).limit(5).all()
+            return vehicles
             vehicles = db.session.query(Vehicle).limit(5).all()
             return vehicles
         except Exception as e:
             raise e
     
     @classmethod
+    def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
+                       fuel_type, transmission, image, vehicle_status):
     def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
                        fuel_type, transmission, image, vehicle_status):
         try:
@@ -216,10 +225,14 @@ class Vehicle(db.Model):
                               vehicle_status=vehicle_status)
             db.session.add(vehicle)
             return vehicle
+                              vehicle_status=vehicle_status)
+            db.session.add(vehicle)
+            return vehicle
         except Exception as e:
             raise e
     
     @classmethod
+    def update_vehicle(cls, vehicle_id, vin=None, price=None, year=None, 
     def update_vehicle(cls, vehicle_id, vin=None, price=None, year=None, 
                        make=None, model=None, miles=None, mpg=None, color=None, 
                        fuel_type=None, transmission=None, image=None, vehicle_status=None):
@@ -227,25 +240,39 @@ class Vehicle(db.Model):
             vehicle = db.session.query(Vehicle).filter_by(vehicle_id=vehicle_id).first()
             if vin:
                 vehicle.vin = vin
+                vehicle.vin = vin
             if price: 
+                vehicle.price = price
                 vehicle.price = price
             if year:
                 vehicle.year = year
+                vehicle.year = year
             if make:
+                vehicle.make = make
                 vehicle.make = make
             if model:
                 vehicle.model = model
+                vehicle.model = model
             if miles:
+                vehicle.miles = miles
                 vehicle.miles = miles
             if mpg:
                 vehicle.mpg = mpg
+                vehicle.mpg = mpg
             if color:
+                vehicle.color = color
                 vehicle.color = color
             if fuel_type:
                 vehicle.fuel_type = fuel_type
+                vehicle.fuel_type = fuel_type
             if transmission:
                 vehicle.transmission = transmission
+                vehicle.transmission = transmission
             if image:
+                vehicle.image = image
+            if vehicle_status:
+                vehicle.vehicle_status = vehicle_status
+            return vehicle
                 vehicle.image = image
             if vehicle_status:
                 vehicle.vehicle_status = vehicle_status

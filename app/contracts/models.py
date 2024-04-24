@@ -16,6 +16,7 @@ from enum import Enum
 
 class Contract(db.Model):
     __tablename__ = 'contract'
+    __table_args__ = (db.UniqueConstraint('purchase_id', 'contract_type', name='purchase_contract_type_uc'),)
 
     class ContractType(Enum):
         PURCHASE = 1

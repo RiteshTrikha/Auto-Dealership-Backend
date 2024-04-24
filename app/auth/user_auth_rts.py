@@ -20,8 +20,8 @@ standardize_response = Utilities.standardize_response
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'email': {'type': 'string'},
-                        'password': {'type': 'string'}
+                        'email': {'type': 'string', 'example': 'manager'},
+                        'password': {'type': 'string', 'example': 'manager'}
                     }
                 }
             }

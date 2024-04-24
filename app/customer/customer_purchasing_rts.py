@@ -115,10 +115,10 @@ def initiate_car_purchase():
         }
     }
 })
-def get_purchases():
+def get_customer_purchases():
     try:
         customer_id = get_jwt_identity().get('customer_id')
-        purchases_dict = g.purchasing_service.get_purchases(customer_id)
+        purchases_dict = g.purchasing_service.get_customer_purchases(customer_id)
         return standardize_response(data=purchases_dict, message='Purchases retrieved successfully')
     except Exception as e:
         raise e
@@ -207,10 +207,10 @@ def get_purchases():
         }
     }
 })
-def get_purchase_details(purchase_id):
+def get_customer_purchase_details(purchase_id):
     try:
         customer_id = get_jwt_identity().get('customer_id')
-        purchase_dict = g.purchasing_service.get_purchase_details(customer_id, purchase_id)
+        purchase_dict = g.purchasing_service.get_customer_purchase_details(customer_id, purchase_id)
         return standardize_response(data=purchase_dict, message='Purchase details retrieved successfully')
     except Exception as e:
         raise e
@@ -317,10 +317,10 @@ def add_addons_to_purchase(purchase_id):
         }
     }
 })
-def generate_purchase_contract(purchase_id):
+def generate_customer_purchase_contract(purchase_id):
     try:
         customer_id = get_jwt_identity().get('customer_id')
-        contract_path = g.purchasing_service.generate_purchase_contract(purchase_id, customer_id)
+        contract_path = g.purchasing_service.generate_customer_purchase_contract(purchase_id, customer_id)
         current_app.logger.info(f'contract_path: {contract_path}')
         return send_file(open(contract_path, 'rb'),
                             mimetype='application/pdf',
@@ -356,10 +356,10 @@ def generate_purchase_contract(purchase_id):
         }
     }
 })
-def get_purchase_contract(purchase_id):
+def get_customer_purchase_contract(purchase_id):
     try:
         customer_id = get_jwt_identity().get('customer_id')
-        contract_path = g.purchasing_service.get_purchase_contract(purchase_id=purchase_id, 
+        contract_path = g.purchasing_service.get_customer_purchase_contract(purchase_id=purchase_id, 
                                                                    customer_id=customer_id)
         return send_file(open(contract_path, 'rb'),
                             mimetype='application/pdf',

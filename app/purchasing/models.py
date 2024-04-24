@@ -28,7 +28,7 @@ class Purchase(db.Model):
 
     customer = relationship('app.customer.models.Customer', backref='purchase')
     finance = relationship('Finance', backref='purchase')
-    payment = relationship('Payment', backref='purchase')
+    payment = relationship('Payment', backref='purchase', uselist=False)
     purchase_addons = relationship('PurchaseAddon', backref='purchase')
     purchase_vehicle = relationship('Purchasevehicle', backref='purchase', uselist=False)
     contracts = relationship('app.contracts.models.Contract', backref='purchase')
@@ -226,7 +226,7 @@ class Payment(db.Model):
                               routing_number=routing_number, account_number=account_number, 
                               payment_amount=payment_amount)
             db.session.add(payment)
-            return payment.payment_id
+            return payment
         except Exception as e:
             raise e
 
@@ -245,7 +245,7 @@ class Payment(db.Model):
                 payment.account_number = account_number
             if payment_amount:
                 payment.payment_amount = payment_amount
-            return payment.payment_id
+            return payment
         except Exception as e:
             raise e
         
