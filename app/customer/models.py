@@ -30,7 +30,7 @@ class Customer(db.Model):
                drivers_license):
         try:
             # create customer
-            customer = Customer(first_name=first_name, last_name=last_name, email=email, password=password, 
+            customer = Customer(first_name=first_name, last_name=last_name, email=email, password=password,
                                 birth_date=birth_date, drivers_license=drivers_license, status=1)
             db.session.add(customer)
             return customer
@@ -65,14 +65,41 @@ class CreditReport(db.Model):
     customer = relationship('Customer')
 
 
-class Customervehicle(db.Model):
+class CustomerVehicle(db.Model):
     __tablename__ = 'customer_vehicle'
 
     customer_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
-    vin = Column(String(45))
+    vin = Column(String(45), nullable=False, unique=True)
     year = Column(String(4))
     make = Column(String(254))
     model = Column(String(254))
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
 
     customer = relationship('Customer')
+
+    @classmethod
+    def create_vehicle(cls, vin, year, make, model, customer_id):
+        try:
+            vehicle = Customervehicle(vin=vin, year=year, make=make, model=model, customer_id=customer_id)
+            db.session.add(vehicle)
+            return vehicle
+        except Exception as e:
+            raise e
+        
+    def get_vehicle(cls, customer_vehicle_id):
+        try:
+            vehicle = db.session.query(Customervehicle).filter(Customervehicle.customer_vehicle_id == customer_vehicle_id).first()
+            return vehicle
+        except Exception as e:
+            raise e
+        
+    def update_vehicle(cls, customer_vehicle_id, vin, year, make, model):
+        try:
+            vehicle = db.session.query(Customervehicle).filter(Customervehicle.customer_vehicle_id == customer_vehicle_id).first()
+            vehicle.vin = vin
+            vehicle.year = year
+            vehicle.make = make
+            vehicle.model = model
+            return vehicle
+        except Exception as e:
+            raise e

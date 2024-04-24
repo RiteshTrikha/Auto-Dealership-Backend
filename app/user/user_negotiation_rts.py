@@ -1,5 +1,6 @@
 from flask import jsonify, request, current_app, g
 from flask_jwt_extended import jwt_required
+from flasgger import swag_from
 from . import user_bp
 from app.negotiation.models import Negotiation, Offer
 from app.inventory.models import Vehicle
@@ -161,48 +162,69 @@ def get_negotiation_details(negotiation_id):
 
 # place counter offer
 @user_bp.route('/negotiation/negotiation/<int:negotiation_id>/counter-offer', methods=['POST'])
+@swag_from({
+    'summary': 'Place counter offer',
+    'tags': ['User Negotiation'],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'negotiation_id',
+            'required': True,
+            'schema': {
+                'type': 'integer'
+            }
+        }
+    ],
+    'requestBody': {
+        'description': 'Counter offer data',
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'offer_price': { 'type': 'integer', 'example': 10000 },
+                        'message': { 'type': 'string', 'example': 'It\'s worth more than that... You look like you can afford it.' }
+                    }
+                }
+            }
+        }
+    },
+    'responses': {
+        '200': {
+            'description': 'Counter offer placed',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': { 'type': 'string' },
+                            'message': { 'type': 'string' },
+                            'data': { 'type': 'integer' },
+                            'code': { 'type': 'integer' }
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            'description': 'Internal server error',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': { 'type': 'string' },
+                            'message': { 'type': 'string' },
+                            'data': { 'type': 'null' },
+                            'code': { 'type': 'integer' }
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
 def place_counter_offer(negotiation_id):
-    """
-    Place counter offer
-    ---
-    tags: [User Negotiation]
-    parameters:
-        - in: path
-          name: negotiation_id
-          required: true
-          schema:
-            type: integer
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            properties:
-                offer_price: { type: number }
-                message: { type: string }
-    responses:
-        200:
-            description: Counter offer placed
-            schema:
-                type: object
-                properties:
-                    status: { type: string }
-                    message: { type: string }
-                    data:
-                        type: object
-                        properties:
-                            offer_id: { type: integer }
-                    code: { type: integer }
-        500:
-            description: Internal server error
-            schema:
-                type: object
-                properties:
-                    status: { type: string }
-                    message: { type: string }
-                    data: { type: null }
-                    code: { type: integer }
-    """
     try:
         data = request.get_json()
         offer_price = data.get('offer_price')
@@ -290,3 +312,4 @@ def reject_offer(negotiation_id):
         return standardize_response(status='success', message='Offer rejected', data=None, code=200)
     except Exception as e:
         raise e
+    

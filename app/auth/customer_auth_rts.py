@@ -23,7 +23,7 @@ standardize_response = Utilities.standardize_response
                         'last_name': {'type': 'string'},
                         'email': {'type': 'string'},
                         'password': {'type': 'string'},
-                        'birth_date': {'type': 'string'},
+                        'birth_date': {'type': 'string', 'format': 'date', 'example': '1998-04-04'},
                         'drivers_license': {'type': 'string'}
                     }
                 }
