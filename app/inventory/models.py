@@ -4,6 +4,68 @@ from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import relationship
 from enum import Enum
 
+# class Service(db.Model):
+#     __tablename__ = 'service'
+
+#     class ServiceStatus(Enum):
+#         INACTIVE = 0
+#         ACTIVE = 1
+
+#     service_id = Column(INTEGER, primary_key=True, unique=True)
+#     service_type = Column(String(45))
+#     price = Column(INTEGER)
+#     description = Column(String(254))
+#     status = Column(INTEGER, server_default=text("'1'"))
+
+#     @classmethod
+#     def get_services(cls):
+#         try:
+#             services = db.session.query(Service).all()
+#             return services
+#         except Exception as e:
+#             raise e
+        
+#     @classmethod
+#     def get_service(cls, service_id):
+#         try:
+#             service = db.session.query(Service).filter_by(service_id=service_id).first()
+#             return service
+#         except Exception as e:
+#             raise e
+        
+#     @classmethod
+#     def create_service(cls, service_type, price, description):
+#         try:
+#             service = Service(service_type=service_type, price=price, description=description)
+#             db.session.add(service)
+#             return service
+#         except Exception as e:
+#             raise e
+    
+#     @classmethod
+#     def update_service(cls, service_id, service_type=None, price=None, description=None):
+#         try:
+#             service = db.session.query(Service).filter_by(service_id=service_id).first()
+#             if service_type:
+#                 service.service_type = service_type
+#             if price:
+#                 service.price = price
+#             if description:
+#                 service.description = description
+#             return service
+#         except Exception as e:
+#             raise e
+        
+#     @classmethod
+#     def update_service_status(cls, service_id, status):
+#         try:
+#             service = db.session.query(Service).filter_by(service_id=service_id).first()
+#             service.status = status
+#             return service
+#         except Exception as e:
+#             raise e
+        
+#copied from scheduling
 class Service(db.Model):
     __tablename__ = 'service'
 
@@ -12,50 +74,46 @@ class Service(db.Model):
         ACTIVE = 1
 
     service_id = Column(INTEGER, primary_key=True, unique=True)
-    service_type = Column(String(45))
-    price = Column(INTEGER)
-    description = Column(String(254))
+    service_type = Column(String(255), nullable=False)
+    price = Column(INTEGER, nullable=False)
+    description = Column(String(255), nullable=False)
     status = Column(INTEGER, server_default=text("'1'"))
 
+
+    #get service by service id
     @classmethod
-    def get_services(cls):
+    def get_service_by_service_id(cls, service_id):
         try:
-            services = db.session.query(Service).all()
-            return services
+            return db.session.query(Service).filter(Service.service_id == service_id).first()
         except Exception as e:
             raise e
-        
+    
+    #get service by service_type
     @classmethod
-    def get_service(cls, service_id):
+    def get_service_by_service_type(cls, service_type):
         try:
-            service = db.session.query(Service).filter_by(service_id=service_id).first()
-            return service
+            return db.session.query(Service).filter(Service.service_type == service_type).first()
         except Exception as e:
             raise e
-        
+
+    #get all services
     @classmethod
-    def create_service(cls, service_type, price, description):
+    def get_all_services(cls):
+        try:
+            return db.session.query(Service).all()
+        except Exception as e:
+            raise e
+
+    #create service
+    @classmethod
+    def create_service(self, service_type, price, description):
         try:
             service = Service(service_type=service_type, price=price, description=description)
             db.session.add(service)
             return service
         except Exception as e:
             raise e
-    
-    @classmethod
-    def update_service(cls, service_id, service_type=None, price=None, description=None):
-        try:
-            service = db.session.query(Service).filter_by(service_id=service_id).first()
-            if service_type:
-                service.service_type = service_type
-            if price:
-                service.price = price
-            if description:
-                service.description = description
-            return service
-        except Exception as e:
-            raise e
-        
+
     @classmethod
     def update_service_status(cls, service_id, status):
         try:
@@ -63,7 +121,22 @@ class Service(db.Model):
             service.status = status
             return service
         except Exception as e:
+            raise e    
+
+    #update service
+    @classmethod
+    def update_service(self, service_id, service_type, price, description, status):
+        try:
+            service = db.session.query(Service).filter(Service.service_id == service_id).first()
+            service.service_type = service_type
+            service.price = price
+            service.description = description
+            service.status = status
+            return service
+        except Exception as e:
             raise e
+
+
 
 class Vehicle(db.Model):
     __tablename__ = 'vehicle'
@@ -90,6 +163,7 @@ class Vehicle(db.Model):
     
     @classmethod
     def get_vehicles(cls, page=1, limit=10, query=None):
+    def get_vehicles(cls, page=1, limit=10, query=None):
         try:
             query_obj = db.session.query(Vehicle)
             if query:
@@ -112,22 +186,28 @@ class Vehicle(db.Model):
             
             start_index = (page - 1) * limit
             vehicles = query_obj.slice(start_index, start_index + limit).all()
+            vehicles = query_obj.slice(start_index, start_index + limit).all()
 
+            return vehicles, num_of_pages, num_of_records
             return vehicles, num_of_pages, num_of_records
         except Exception as e:
             raise e
         
     @classmethod
     def get_vehicle(cls, vehicle_id):
+    def get_vehicle(cls, vehicle_id):
         try:
-            vehicle = db.session.query(vehicle).filter_by(vehicle_id=vehicle_id).first()
+            vehicle = db.session.query(Vehicle).filter_by(vehicle_id=vehicle_id).first()
             return vehicle
         except Exception as e:
             raise e
         
     @classmethod    
     def get_top_5_vehicles(cls):
+    def get_top_5_vehicles(cls):
         try:
+            vehicles = db.session.query(Vehicle).limit(5).all()
+            return vehicles
             vehicles = db.session.query(Vehicle).limit(5).all()
             return vehicles
         except Exception as e:
@@ -136,10 +216,15 @@ class Vehicle(db.Model):
     @classmethod
     def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
                        fuel_type, transmission, image, vehicle_status):
+    def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
+                       fuel_type, transmission, image, vehicle_status):
         try:
-            vehicle = vehicle(vin=vin, price=price, year=year, make=make, 
+            vehicle = Vehicle(vin=vin, price=price, year=year, make=make, 
                               model=model, miles=miles, mpg=mpg, color=color, 
                               fuel_type=fuel_type, transmission=transmission, image=image, 
+                              vehicle_status=vehicle_status)
+            db.session.add(vehicle)
+            return vehicle
                               vehicle_status=vehicle_status)
             db.session.add(vehicle)
             return vehicle
@@ -148,31 +233,46 @@ class Vehicle(db.Model):
     
     @classmethod
     def update_vehicle(cls, vehicle_id, vin=None, price=None, year=None, 
+    def update_vehicle(cls, vehicle_id, vin=None, price=None, year=None, 
                        make=None, model=None, miles=None, mpg=None, color=None, 
                        fuel_type=None, transmission=None, image=None, vehicle_status=None):
         try:
-            vehicle = db.session.query(vehicle).filter_by(vehicle_id=vehicle_id).first()
+            vehicle = db.session.query(Vehicle).filter_by(vehicle_id=vehicle_id).first()
             if vin:
+                vehicle.vin = vin
                 vehicle.vin = vin
             if price: 
                 vehicle.price = price
+                vehicle.price = price
             if year:
+                vehicle.year = year
                 vehicle.year = year
             if make:
                 vehicle.make = make
+                vehicle.make = make
             if model:
+                vehicle.model = model
                 vehicle.model = model
             if miles:
                 vehicle.miles = miles
+                vehicle.miles = miles
             if mpg:
+                vehicle.mpg = mpg
                 vehicle.mpg = mpg
             if color:
                 vehicle.color = color
+                vehicle.color = color
             if fuel_type:
+                vehicle.fuel_type = fuel_type
                 vehicle.fuel_type = fuel_type
             if transmission:
                 vehicle.transmission = transmission
+                vehicle.transmission = transmission
             if image:
+                vehicle.image = image
+            if vehicle_status:
+                vehicle.vehicle_status = vehicle_status
+            return vehicle
                 vehicle.image = image
             if vehicle_status:
                 vehicle.vehicle_status = vehicle_status

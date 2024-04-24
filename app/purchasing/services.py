@@ -2,7 +2,7 @@ from decimal import Decimal
 import os
 from flask import current_app, g
 from app.contracts.models import Contract
-from .models import Purchase, Finance, Payment, PurchaseAddon, PurchaseVehicle
+from .models import Purchase, Finance, Payment, PurchaseAddon, Purchasevehicle
 from app.exceptions import ExposedException
 from app import db
 
@@ -29,7 +29,7 @@ class PurchasingServices:
             # create purchase vehicle
             db.session.commit()
             current_app.logger.info('created purchase with id: %s', purchase.purchase_id)
-            purchase_vehicle = PurchaseVehicle.create_purchase_vehicle(purchase_id=purchase.purchase_id,
+            purchase_vehicle = Purchasevehicle.create_purchase_vehicle(purchase_id=purchase.purchase_id,
                                                                        vehicle_id=negotiation.vehicle_id,
                                                                        offer_id=negotiation.offers[-1].offer_id)
             # set vehicle status to RESERVED
