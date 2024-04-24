@@ -1,15 +1,20 @@
 from flask import jsonify, request, current_app
 from flask_jwt_extended import jwt_required
 import requests
+#from app.utilities import Utilities
 from . import credit_bp
 from flasgger import swag_from
 
-@credit_bp.route('/customer/credit-score', methods=['GET'])
+
+#standardize_response = Utilities.standardize_response
+
+@credit_bp.route('/customer/credit-score', methods=['POST'])
+@jwt_required()
 @swag_from({
     'summary': 'Request customer credit score',
     'description': 'Post a customer\'s details and retrieve their credit score from an external service.',
     'tags': ['Credit Score'],
-    'security': [{'jwt': []}],
+    'security': [{'BearerAuth': []}],
     'requestBody': {
         'content': {
             'application/json': {
@@ -45,26 +50,33 @@ from flasgger import swag_from
         '500': {'description': 'Internal server error'}
     }
 })
-def request_credit_score(first_name, last_name, ssn, birth_date, address):
-    # Stub or actual API endpoint
+def request_credit_score():
+    data = request.get_json()
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    ssn = data.get('ssn')
+    birth_date = data.get('birth_date')
+    address = data.get('address')
+
+    current_app.logger.debug(f"Received data: {data}")
+
     try:
-        credit_score_api_url = 'http://127.0.0.1:8080/customer/credit-score'  # Replace with real URL
+        credit_score_api_url = 'http://127.0.0.1:8080/customers/credit-score'
         payload = {
             'first_name': first_name, 'last_name': last_name,
             'ssn': ssn, 'birth_date': birth_date, 'address': address
         }
         response = requests.post(credit_score_api_url, json=payload)
-        if response.status_code == 200:
-            return jsonify(credit_score=response.json()['credit_score']), 200
+
+        if response.status_code == 200 or response.status_code == 201:
+            return jsonify(credit_score=response.json().get('credit_score')), 200
         else:
-            current_app.logger.error('Failed to retrieve credit score')
-            return jsonify(error='Failed to retrieve credit score'), 400
+            current_app.logger.error(f"not Failed to retrieve credit score: {response.text}")
+            return jsonify(error='not Failed to retrieve credit score'), response.status_code
+
     except requests.RequestException as e:
         current_app.logger.error(f"Request failed: {str(e)}")
         return jsonify(error='Internal server error'), 500
-
-
-# Example of a simple test case
 from flask_testing import TestCase
 
 class MyTest(TestCase):

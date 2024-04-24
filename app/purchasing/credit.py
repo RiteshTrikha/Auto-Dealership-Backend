@@ -1,5 +1,5 @@
 from flask import jsonify, request, current_app, g, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from flasgger import swag_from
 from . import purchasing_bp
 from .services import LoanService
@@ -8,6 +8,8 @@ from app.utilities import Utilities
 from app.customer.models import Customer, CreditReport
 import requests
 
+
+
 standardize_response = Utilities.standardize_response
 
 @purchasing_bp.route('/customer/credit-score', methods=['POST'])
@@ -15,7 +17,7 @@ standardize_response = Utilities.standardize_response
 @swag_from({
     'summary': 'Get and Save Customer Credit Score',
     'tags': ['Customer Credit'],
-    'security': [{'jwt': []}],
+    'security': [{'BearerAuth': []}],
     'requestBody': {
         'content': {
             'application/json': {
@@ -80,7 +82,7 @@ def get_and_save_credit_score():
         return jsonify({"error": "An error occurred processing your request"}), 500
 
 def request_credit_score(first_name, last_name, ssn, birth_date, address):
-    credit_score_api_url = 'http://127.0.0.1:5000/customer/credit-score'  # Update with actual URL
+    credit_score_api_url = 'http://127.0.0.1:8080/customer/credit-score'  # Update with actual URL
     payload = {
         'first_name': first_name,
         'last_name': last_name,
