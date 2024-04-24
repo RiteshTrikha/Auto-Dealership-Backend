@@ -45,7 +45,35 @@ class ContractServices:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
-        
+    
+    def re_generate_contract(self, contract_id):
+        '''
+        Re-generates a contract
+        ---
+        updates pdf file with new contract data
+        '''
+        try:
+            contract = Contract.get_contract(contract_id)
+            contract_data = {
+                'customer_name': contract.signer_full_name,
+                'year': contract.vehicle_year,
+                'make': contract.vehicle_make,
+                'model': contract.vehicle_model,
+                'vin': contract.vehicle_vin,
+                'date': contract.contract_date.strftime('%Y-%m-%d'),
+                'customer_signature': contract.customer_signature if contract.customer_signature else '________________________',
+                'dealer_signature': contract.dealer_signature if contract.dealer_signature else '________________________'
+            }
+            contract_path = contract.contract_path
+
+            html = render_template('contract_template.html', **contract_data)
+            HTML(string=html).write_pdf(contract_path)
+            return contract_path
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+
     def get_contract(self, contract_id):
         '''
         Retrieves a contract

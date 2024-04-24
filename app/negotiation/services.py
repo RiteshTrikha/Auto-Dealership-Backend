@@ -175,7 +175,7 @@ class NegotiationService:
     def counter_offer(self, negotiation_id, offer_price, message=None):
         try:
             if Offer.current_offer_is_counter_offer(negotiation_id):
-                raise ExposedException('Must wait for additional offer before placing another counter offer')
+                raise ExposedException('Must wait for a response to your counter offer')
             # update current offer status
             Offer.update_current_offer_status(negotiation_id, Offer.OfferStatus.COUNTERED.value)
             # create offer
@@ -186,19 +186,21 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
-            raise ExpDatabaseException
+            raise e
         
     # additional offer
     def additional_offer(self, negotiation_id, offer_price, message=None):
         try:
+            current_app.logger.info(f'negotiation_id: {negotiation_id}')
             # check if most recent offer is a counter offer
-            if not Offer.current_offer_is_offer(negotiation_id):
-                raise ExposedException('Must wait for counter offer before placing additional offer')
+            if Offer.current_offer_is_offer(negotiation_id):
+                raise ExposedException('Must wait for a response to your counter offer')
             # update current offer status
             Offer.update_current_offer_status(negotiation_id, Offer.OfferStatus.COUNTERED.value)
             # create offer
             offer = Offer.create_offer(negotiation_id=negotiation_id, offer_type=Offer.OfferType.OFFER.value, 
                                        offer_price=offer_price, message=message)
+            current_app.logger.info(f'offer_id: {offer.offer_id}')
             db.session.commit()
             return {'offer_id': offer.offer_id}
         except Exception as e:
@@ -209,8 +211,8 @@ class NegotiationService:
     # accept offer
     def accept_offer(self, negotiation_id):
         try:
-            if Offer.current_offer_is_counter_offer(negotiation_id):
-                raise ExposedException('Must wait for a response to counter offer')
+            if not Offer.current_offer_is_offer(negotiation_id):
+                raise ExposedException('Must wait for a response to your counter offer')
             # update negotiation status to 2 (accepted)
             Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.ACCEPTED.value)
             # update offer status to 2 (accepted)
@@ -219,12 +221,12 @@ class NegotiationService:
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
-            raise ExpDatabaseException
+            raise e
         
     def accept_counter_offer(self, negotiation_id):
         try:
-            if Offer.current_offer_is_offer(negotiation_id):
-                raise ExposedException('Must wait for a response to offer')
+            if not Offer.current_offer_is_counter_offer(negotiation_id):
+                raise ExposedException('Must wait for a response to your offer')
             # update negotiation status to 2 (accepted)
             Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.ACCEPTED.value)
             # update offer status to 2 (accepted)
@@ -238,8 +240,8 @@ class NegotiationService:
     # reject offer
     def reject_offer(self, negotiation_id):
         try:
-            if Offer.current_offer_is_counter_offer(negotiation_id):
-                raise ExposedException('Must wait for a response to counter offer')
+            if not Offer.current_offer_is_offer(negotiation_id):
+                raise ExposedException('Must wait for a response to offer')
             # update negotiation status to 3 (rejected)
             Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.REJECTED.value)
             # update offer status to 3 (rejected)
@@ -253,7 +255,7 @@ class NegotiationService:
     # reject counter offer
     def reject_counter_offer(self, negotiation_id):
         try:
-            if Offer.current_offer_is_offer(negotiation_id):
+            if not Offer.current_offer_is_counter_offer(negotiation_id):
                 raise ExposedException('Must wait for a response to offer')
             # update negotiation status to 3 (rejected)
             Negotiation.update_negotiation_status(negotiation_id, Negotiation.NegotiationStatus.REJECTED.value)
@@ -264,3 +266,4 @@ class NegotiationService:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
+

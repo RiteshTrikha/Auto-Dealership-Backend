@@ -1,5 +1,5 @@
 from flask import current_app
-from .models import Customer
+from .models import Customer, CustomerVehicle
 from app.exceptions import ExposedException
 from app import db
 
@@ -12,7 +12,7 @@ class CustomerServices:
             return customer.customer_id
         except Exception as e:
             db.session.rollback()
-            current_app.logger.error(str(e))
+            current_app.logger.exception(e)
             raise e
         
     def get_by_email(self, email):
@@ -20,7 +20,7 @@ class CustomerServices:
             customer = Customer.get_by_email(email)
             return customer
         except Exception as e:
-            current_app.logger.error(str(e))
+            current_app.logger.exception(e)
             raise e
 
     def get_customer_details(self, customer_id):
@@ -40,6 +40,16 @@ class CustomerServices:
             }
             return customer_dict
         except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+    def create_customer_vehicle(self, customer_id, year, make, model, vin):
+        try:
+            vehicle = CustomerVehicle.create_vehicle(vin, year, make, model, customer_id)
+            db.session.commit()
+            return vehicle
+        except Exception as e:
+            db.session.rollback()
             current_app.logger.exception(e)
             raise e
         
