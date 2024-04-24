@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from enum import Enum
 
 
-class Customer(db.Model):
+class Customer(db.Model):  
     __tablename__ = 'customer'
 
     class CustomerStatus(Enum):
@@ -61,8 +61,17 @@ class CreditReport(db.Model):
     credit_report_id = Column(INTEGER, primary_key=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
     score = Column(INTEGER, nullable=False)
+    apy = Column(Float, nullable=False)
 
     customer = relationship('Customer')
+
+    def save_credit_score(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 
 class CustomerVehicle(db.Model):

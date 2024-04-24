@@ -47,6 +47,9 @@ def create_app(config_class=Config):
 
     from app.purchasing import purchasing_bp
     app.register_blueprint(purchasing_bp, url_prefix=f"{api_prefix}/purchasing")
+
+    from app.credit import credit_bp
+    app.register_blueprint(credit_bp, url_prefix=f"{api_prefix}/credit")
     
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix=f"{api_prefix}/auth")

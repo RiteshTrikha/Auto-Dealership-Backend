@@ -2,7 +2,6 @@ from flask import current_app
 from .models import Customer, CustomerVehicle
 from app.exceptions import ExposedException
 from app import db
-
 class CustomerServices:
 
     def create(self, first_name, last_name, email, password, birth_date, drivers_license):
@@ -22,7 +21,6 @@ class CustomerServices:
         except Exception as e:
             current_app.logger.exception(e)
             raise e
-
     def get_customer_details(self, customer_id):
         try:
             customer = Customer.get_customer(customer_id)
