@@ -33,7 +33,7 @@ class Customer(db.Model):
             customer = Customer(first_name=first_name, last_name=last_name, email=email, password=password, 
                                 birth_date=birth_date, drivers_license=drivers_license, status=1)
             db.session.add(customer)
-            return customer.customer_id
+            return customer
         except Exception as e:
             raise e
         
@@ -42,6 +42,14 @@ class Customer(db.Model):
     def get_by_email(cls, email):
         try:
             customer =  db.session.query(Customer).filter(Customer.email == email).first()
+            return customer
+        except Exception as e:
+            raise e
+    
+    @classmethod
+    def get_customer(cls, customer_id):
+        try:
+            customer = db.session.query(Customer).filter(Customer.customer_id == customer_id).first()
             return customer
         except Exception as e:
             raise e
@@ -57,10 +65,10 @@ class CreditReport(db.Model):
     customer = relationship('Customer')
 
 
-class CustomerVehical(db.Model):
-    __tablename__ = 'customer_vehical'
+class Customervehicle(db.Model):
+    __tablename__ = 'customer_vehicle'
 
-    customer_vehical_id = Column(INTEGER, primary_key=True, unique=True)
+    customer_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
     vin = Column(String(45))
     year = Column(String(4))
     make = Column(String(254))

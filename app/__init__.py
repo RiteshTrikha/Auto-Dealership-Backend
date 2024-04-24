@@ -54,6 +54,9 @@ def create_app(config_class=Config):
     from app.inventory import inventory_bp
     app.register_blueprint(inventory_bp, url_prefix=f"{api_prefix}/inventory")
 
+    from app.contracts import contracts_bp
+    app.register_blueprint(contracts_bp, url_prefix=f"{api_prefix}/contracts")
+
     # Registering Services
     from app.negotiation.services import NegotiationService
     app.negotiation_service = NegotiationService()
@@ -67,6 +70,12 @@ def create_app(config_class=Config):
     from app.user.services import UserServices
     app.user_service = UserServices()
 
+    from app.contracts.services import ContractServices
+    app.contract_service = ContractServices()
+
+    from app.purchasing.services import PurchasingServices
+    app.purchasing_service = PurchasingServices()
+
     from app.scheduling.scheduling_service import ScheduleService
     app.scheduling_service = ScheduleService()
 
@@ -76,6 +85,8 @@ def create_app(config_class=Config):
         g.inventory_service = current_app.inventory_service
         g.customer_service = current_app.customer_service
         g.user_service = current_app.user_service
+        g.contract_service = current_app.contract_service
+        g.purchasing_service = current_app.purchasing_service
         g.scheduling_service = current_app.scheduling_service
 
     return app

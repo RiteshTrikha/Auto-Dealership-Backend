@@ -33,7 +33,15 @@ standardize_response = Utilities.standardize_response
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'access_token': {'type': 'string'}
+                    'data': {
+                        'type': 'object',
+                        'properties': {
+                            'access_token': {'type': 'string'},
+                            'user_type': {'type': 'string'},
+                            'user_id': {'type': 'integer'},
+                            'role': {'type': 'string'}
+                        }
+                    }
                 }
             }
         }
