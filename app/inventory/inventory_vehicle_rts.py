@@ -1,20 +1,18 @@
-from flask import jsonify, request, current_app, g
+from flask import request
 from flasgger import swag_from
 from . import inventory_bp
-from app import g
 from .services import InventoryService
-from app.exceptions import ExposedException
 
 # import utilities
 from app.utilities import Utilities
 standardize_response = Utilities.standardize_response
 
-# get all vehicals
-@inventory_bp.route('/vehicals', methods=['GET'])
+# get all vehicles
+@inventory_bp.route('/vehicles', methods=['GET'])
 @swag_from(
     {
-        'summary': 'Get all vehicals',
-        'tags': ['vehical'],
+        'summary': 'Get all vehicles',
+        'tags': ['Vehicle'],
         'parameters': [
             {
                 'in': 'query',
@@ -26,7 +24,7 @@ standardize_response = Utilities.standardize_response
                 'in': 'query',
                 'name': 'limit',
                 'schema': { 'type': 'integer' },
-                'description': 'Number of vehicals per page'
+                'description': 'Number of vehicles per page'
             },
             {
                 'in': 'query',
@@ -37,7 +35,7 @@ standardize_response = Utilities.standardize_response
         ],
         'responses': {
             200: {
-                'description': 'A list of vehicals',
+                'description': 'A list of vehicles',
                 'content': {
                     'application/json': {
                         'schema': {
@@ -48,13 +46,14 @@ standardize_response = Utilities.standardize_response
                                     'type': 'object',
                                     'properties': {
                                         'num_of_pages': { 'type': 'integer' },
+                                        'num_of_results': { 'type': 'integer' },
                                         'page': { 'type': 'integer' },
-                                        'vehicals': {
+                                        'vehicles': {
                                             'type': 'array',
                                             'items': {
                                                 'type': 'object',
                                                 'properties': {
-                                                    'vehical_id': { 'type': 'integer' },
+                                                    'vehicle_id': { 'type': 'integer' },
                                                     'price': { 'type': 'integer' },
                                                     'year': { 'type': 'string' },
                                                     'make': { 'type': 'string' },
@@ -65,7 +64,7 @@ standardize_response = Utilities.standardize_response
                                                     'fuel_type': { 'type': 'string' },
                                                     'transmission': { 'type': 'string' },
                                                     'image': { 'type': 'string' },
-                                                    'vehical_status': { 'type': 'integer' }
+                                                    'vehicle_status': { 'type': 'integer' }
                                                 }
                                             }
                                         }
@@ -79,7 +78,7 @@ standardize_response = Utilities.standardize_response
                 }
             },
             404: {
-                'description': 'No vehicals found',
+                'description': 'No vehicles found',
                 'content': {
                     'application/json': {
                         'schema': {
@@ -94,7 +93,7 @@ standardize_response = Utilities.standardize_response
                 }
             },
             500: {
-                'description': 'Failed to retrieve vehicals',
+                'description': 'Failed to retrieve vehicles',
                 'content': {
                     'application/json': {
                         'schema': {
@@ -125,35 +124,35 @@ standardize_response = Utilities.standardize_response
             }
         }
     })
-def get_vehicals():
+def get_vehicles():
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 10, type=int)
         query = request.args.get('query', None, type=str)
-        vehicals_dict = InventoryService().get_vehicals(page=page, limit=limit, query=query)
-        return standardize_response(status='success', data=vehicals_dict, 
-                                    message='Successfully retrieved vehicals', code=200)
+        vehicles_dict = InventoryService().get_vehicles(page=page, limit=limit, query=query)
+        return standardize_response(status='success', data=vehicles_dict, 
+                                    message='Successfully retrieved vehicles', code=200)
     except Exception as e:
         raise e
         
 
-# get vehical by id
-@inventory_bp.route('/vehical/<vehical_id>', methods=['GET'])
-def get_vehical(vehical_id):
+# get vehicle by id
+@inventory_bp.route('/vehicle/<vehicle_id>', methods=['GET'])
+def get_vehicle(vehicle_id):
     """
-    Get vehical by id
+    Get vehicle by id
     ---
-    tags: [vehical]
+    tags: [Vehicle]
     parameters:
         - in: path
-          name: vehical_id
+          name: vehicle_id
           schema:
             type: integer
           required: true
-          description: vehical id
+          description: Vehicle id
     responses:
         200:
-            description: A vehical
+            description: A vehicle
             schema:
                 type: object
                 properties:
@@ -161,7 +160,7 @@ def get_vehical(vehical_id):
                     data: 
                         type: object
                         properties:
-                            vehical_id: { type: integer }
+                            vehicle_id: { type: integer }
                             vin: { type: string }
                             price: { type: integer }
                             year: { type: string }
@@ -173,11 +172,11 @@ def get_vehical(vehical_id):
                             fuel_type: { type: string }
                             transmission: { type: string }
                             image: { type: string }
-                            vehical_status: { type: integer }
+                            vehicle_status: { type: integer }
                     message: { type: string }
                     code: { type: integer }
         404:
-            description: vehical not found
+            description: Vehicle not found
             schema:
                 type: object
                 properties:
@@ -185,7 +184,7 @@ def get_vehical(vehical_id):
                     message: { type: string }
                     code: { type: integer }
         500:
-            description: Failed to retrieve vehical
+            description: Failed to retrieve vehicle
             schema:
                 type: object
                 properties:
@@ -202,23 +201,23 @@ def get_vehical(vehical_id):
                     code: { type: integer }
     """
     try:
-        vehical = InventoryService().get_vehical(vehical_id)
-        return standardize_response(status='success', data=vehical,
-                                     message='Successfully retrieved vehical', code=200)
+        vehicle = InventoryService().get_vehicle(vehicle_id)
+        return standardize_response(status='success', data=vehicle,
+                                     message='Successfully retrieved vehicle', code=200)
     except Exception as e:
         raise e
 
-# get top 5 vehicals
-@inventory_bp.route('/top-vehicals', methods=['GET'])
-def get_top_5_vehicals():
+# get top 5 vehicles
+@inventory_bp.route('/top-vehicles', methods=['GET'])
+def get_top_5_vehicles():
     """
-    Get top 5 vehicals
+    Get top 5 vehicles
     ---
     tags:
-      - vehical
+      - Vehicle
     responses:
       200:
-        description: A list of top 5 vehicals
+        description: A list of top 5 vehicles
         schema:
           type: object
           properties:
@@ -228,7 +227,7 @@ def get_top_5_vehicals():
               items:
                 type: object
                 properties:
-                  vehical_id: {type: integer}
+                  vehicle_id: {type: integer}
                   price: {type: integer}
                   year: {type: string}
                   make: {type: string}
@@ -239,13 +238,13 @@ def get_top_5_vehicals():
                   fuel_type: {type: string}
                   transmission: {type: string}
                   image: {type: string}
-                  vehical_status: {type: integer}
+                  vehicle_status: {type: integer}
             message:
               type: string
             code:
               type: integer
         404:
-            description: No vehicals found
+            description: No vehicles found
             schema:
                 type: object
                 properties:
@@ -253,7 +252,7 @@ def get_top_5_vehicals():
                 message: {type: string}
                 code: {type: integer}
         500:
-            description: Failed to retrieve top vehicals
+            description: Failed to retrieve top vehicles
             schema:
                 type: object
                 properties:
@@ -270,8 +269,8 @@ def get_top_5_vehicals():
                 code: {type: integer}
     """
     try:
-        vehicals = InventoryService().get_top_5_vehicals()
-        return standardize_response(status='success', data=vehicals, 
-                                    message='Successfully retrieved top vehicals', code=200)
+        vehicles = InventoryService().get_top_5_vehicles()
+        return standardize_response(status='success', data=vehicles, 
+                                    message='Successfully retrieved top vehicles', code=200)
     except Exception as e:
         raise e

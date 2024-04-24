@@ -152,7 +152,7 @@ class InventoryService:
             raise e
             
     
-    def get_vehicals(self, page, limit, query):
+    def get_vehicles(self, page, limit, query):
         try:
             vehicles, num_of_pages, num_of_records = Vehicle.get_vehicles(page=page, limit=limit, query=query)
             if vehicles == []:
@@ -161,7 +161,7 @@ class InventoryService:
                     'num_of_pages': num_of_pages,
                     'num_of_results': num_of_records,
                     'page': page,
-                    'vehicals': 
+                    'vehicles': 
                     [{
                         'vehicle_id': vehicle.vehicle_id,
                         'price': vehicle.price,
@@ -182,7 +182,7 @@ class InventoryService:
             current_app.logger.exception(e) # TODO: switch all loggers to exception instead of error and remove the str()
             raise e
         
-    def get_top_5_vehicals(self):
+    def get_top_5_vehicles(self):
         try:
             vehicles = Vehicle.get_top_5_vehicles()
             if vehicles == []:

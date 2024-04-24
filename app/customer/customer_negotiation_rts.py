@@ -184,7 +184,7 @@ def get_negotiations(customer_id):
                                     }
                                 }
                             },
-                            'vehical': {
+                            'vehicle': {
                                 'type': 'object',
                                 'properties': {
                                     'vehicle_id': {'type': 'integer'},
