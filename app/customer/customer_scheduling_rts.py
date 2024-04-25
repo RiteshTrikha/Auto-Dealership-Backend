@@ -1,6 +1,7 @@
-from flask import jsonify, request
+from flask import jsonify, request, g, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import customer_bp
-from app import g
+from flasgger import swag_from
 from .models import Customer
 from app.scheduling.models import Appointment, TimeSlot, Service_Ticket, Service_Ticket_Service
 from app.inventory.models import Service
