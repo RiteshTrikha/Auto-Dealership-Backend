@@ -56,7 +56,7 @@ class InventoryService:
         
     def get_service(self, service_id):
         try:
-            service = Service.get_service(service_id)
+            service = Service.get_service_by_service_id(service_id)
             if not service:
                 raise ExposedException('Service not found', code=404)
             return {
@@ -72,7 +72,7 @@ class InventoryService:
         
     def get_services(self):
         try:
-            services = Service.get_services()
+            services = Service.get_all_services()
             if services == []:
                 raise ExposedException('No services found', code=404)
             return [{
@@ -117,7 +117,7 @@ class InventoryService:
         
     def change_vehicle_status(self, vehicle_id, vehicle_status):
         try:
-            if vehicle_status not in [status.value for status in vehicle.VehicleStatus]:
+            if vehicle_status not in [status.value for status in Vehicle.VehicleStatus]:
                 raise ExposedException('Invalid vehicle status', code=400)
             vehicle = Vehicle.update_vehicle(vehicle_id, vehicle_status=vehicle_status)
             db.session.commit()
@@ -131,7 +131,7 @@ class InventoryService:
         try:
             vehicle = Vehicle.get_vehicle(vehicle_id)
             if not vehicle:
-                raise ExposedException('Vehicle not found', code=404)
+                raise ExposedException('vehicle not found', code=404)
             return {
                 'vehicle_id': vehicle.vehicle_id,
                 'vin': vehicle.vin,

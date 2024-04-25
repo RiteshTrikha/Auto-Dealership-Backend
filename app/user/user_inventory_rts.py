@@ -257,7 +257,7 @@ def set_service_status(service_id):
 @user_bp.route('/inventory/vehicle', methods=['POST'])
 @swag_from({
     'summary': 'Create vehicle',
-    'tags': ['User Vehicle'],
+    'tags': ['User vehicle'],
     'security': [{'BearerAuth': []}],
     'requestBody': {
         'required': True,
@@ -349,7 +349,7 @@ def create_vehicle():
 @user_bp.route('/inventory/vehicle/<int:vehicle_id>', methods=['PUT'])
 @swag_from({
     'summary': 'Update vehicle',
-    'tags': ['User Vehicle'],
+    'tags': ['User vehicle'],
     'security': [{'BearerAuth': []}],
     'parameters': [
         {
@@ -451,7 +451,7 @@ def update_vehicle(vehicle_id):
 @user_bp.route('/inventory/vehicle/<int:vehicle_id>/status', methods=['PUT'])
 @swag_from({
     'summary': 'Set vehicle status',
-    'tags': ['User Vehicle'],
+    'tags': ['User vehicle'],
     'security': [{'BearerAuth': []}],
     'parameters': [
         {

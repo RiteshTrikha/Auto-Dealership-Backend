@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import customer_bp
 from flasgger import swag_from
 from .models import Customer
-from app.purchasing.models import Purchase, PurchaseVehicle, PurchaseAddon, Finance, Payment
+from app.purchasing.models import Purchase, Purchasevehicle, PurchaseAddon, Finance, Payment
 from app.contracts.models import Contract
 
 # import utilities

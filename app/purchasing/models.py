@@ -30,7 +30,7 @@ class Purchase(db.Model):
     finance = relationship('Finance', backref='purchase')
     payment = relationship('Payment', backref='purchase', uselist=False)
     purchase_addons = relationship('PurchaseAddon', backref='purchase')
-    purchase_vehicle = relationship('PurchaseVehicle', backref='purchase', uselist=False)
+    purchase_vehicle = relationship('Purchasevehicle', backref='purchase', uselist=False)
     contracts = relationship('app.contracts.models.Contract', backref='purchase')
 
     def get_purchase_totals(self):
@@ -295,7 +295,7 @@ class PurchaseAddon(db.Model):
         except Exception as e:
             raise e
         
-class PurchaseVehicle(db.Model):
+class Purchasevehicle(db.Model):
     __tablename__ = 'purchase_vehicle'
 
     purchase_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
@@ -309,7 +309,7 @@ class PurchaseVehicle(db.Model):
     @classmethod
     def get_purchase_vehicles(cls):
         try:
-            purchase_vehicles = db.session.query(PurchaseVehicle).all()
+            purchase_vehicles = db.session.query(Purchasevehicle).all()
             return purchase_vehicles
         except Exception as e:
             raise e
@@ -317,7 +317,7 @@ class PurchaseVehicle(db.Model):
     @classmethod
     def get_purchase_vehicle(cls, purchase_vehicle_id):
         try:
-            purchase_vehicle = db.session.query(PurchaseVehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
+            purchase_vehicle = db.session.query(Purchasevehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
             return purchase_vehicle
         except Exception as e:
             raise e
@@ -325,7 +325,7 @@ class PurchaseVehicle(db.Model):
     @classmethod
     def create_purchase_vehicle(cls, purchase_id, vehicle_id, offer_id):
         try:
-            purchase_vehicle = PurchaseVehicle(purchase_id=purchase_id, vehicle_id=vehicle_id, 
+            purchase_vehicle = Purchasevehicle(purchase_id=purchase_id, vehicle_id=vehicle_id, 
                                                offer_id=offer_id)
             db.session.add(purchase_vehicle)
             return purchase_vehicle
@@ -335,7 +335,7 @@ class PurchaseVehicle(db.Model):
     @classmethod
     def update_purchase_vehicle(cls, purchase_vehicle_id, purchase_id=None, vehicle_id=None):
         try:
-            purchase_vehicle = db.session.query(PurchaseVehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
+            purchase_vehicle = db.session.query(Purchasevehicle).filter_by(purchase_vehicle_id=purchase_vehicle_id).first()
             if purchase_id:
                 purchase_vehicle.purchase_id = purchase_id
             if vehicle_id:
