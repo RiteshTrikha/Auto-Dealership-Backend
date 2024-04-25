@@ -1,10 +1,12 @@
 from flask import jsonify, request
 from . import customer_bp
 from app import g
+from flask_jwt_extended import jwt_required
 from .models import Customer
 from app.scheduling.models import Appointment, TimeSlot, Service_Ticket, Service_Ticket_Service
 from app.inventory.models import Service
 from app.exceptions import ExposedException
+from flasgger import swag_from
 
 #import utilities
 from app.utilities import Utilities
