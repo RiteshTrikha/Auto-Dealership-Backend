@@ -13,11 +13,9 @@ standardize_response = Utilities.standardize_response
 
 #schedule a test drive
 @customer_bp.route('/appointment/test-drive', methods=['POST'])
-@jwt_required()
 @swag_from({
     'summary': 'Schedule a test drive',
     'tags': ['Customer Scheduling'],
-    'security': [{'BearerAuth': []}],
     'requestBody': {
         'content': {
             'application/json': {
