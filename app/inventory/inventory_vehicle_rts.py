@@ -59,6 +59,7 @@ standardize_response = Utilities.standardize_response
                                                     'year': { 'type': 'string' },
                                                     'make': { 'type': 'string' },
                                                     'model': { 'type': 'string' },
+                                                    'body_type': { 'type': 'string' },
                                                     'miles': { 'type': 'integer' },
                                                     'mpg': { 'type': 'integer' },
                                                     'color': { 'type': 'string' },
@@ -167,6 +168,7 @@ def get_vehicle(vehicle_id):
                             year: { type: string }
                             make: { type: string }
                             model: { type: string }
+                            body_type: { type: string }
                             miles: { type: integer }
                             mpg: { type: integer }
                             color: { type: string }
@@ -234,6 +236,7 @@ def get_top_5_vehicles():
                   year: {type: string}
                   make: {type: string}
                   model: {type: string}
+                  body_type: {type: string}
                   miles: {type: integer}
                   mpg: {type: integer}
                   color: {type: string}
