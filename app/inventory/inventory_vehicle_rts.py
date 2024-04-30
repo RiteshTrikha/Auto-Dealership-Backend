@@ -30,7 +30,9 @@ standardize_response = Utilities.standardize_response
             {
                 'in': 'query',
                 'name': 'query',
-                'schema': { 'type': 'string' },
+                'schema': { 'type': 'array',
+                            'items': { 'type': 'string' } }
+                            ,
                 'description': 'Search query'
             }
         ],
@@ -130,8 +132,8 @@ def get_vehicles():
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 10, type=int)
-        query = request.args.get('query', None, type=str)
-        vehicles_dict = InventoryService().get_vehicles(page=page, limit=limit, query=query)
+        queries = request.args.getlist('query')
+        vehicles_dict = InventoryService().get_vehicles(page=page, limit=limit, queries=queries)
         return standardize_response(status='success', data=vehicles_dict, 
                                     message='Successfully retrieved vehicles', code=200)
     except Exception as e:

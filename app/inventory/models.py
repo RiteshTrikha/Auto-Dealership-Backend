@@ -163,19 +163,20 @@ class Vehicle(db.Model):
     vehicle_status = Column(INTEGER)
     
     @classmethod
-    def get_vehicles(cls, page=1, limit=10, query=None):
+    def get_vehicles(cls, page=1, limit=10, queries=None):
         try:
             query_obj = db.session.query(Vehicle)
-            if query:
-                query_obj = query_obj.filter(
-                    Vehicle.year.like(f'%{query}%') | 
-                    Vehicle.make.like(f'%{query}%') | 
-                    Vehicle.model.like(f'%{query}%') |
-                    Vehicle.body_type.like(f'%{query}%') | 
-                    Vehicle.color.like(f'%{query}%') | 
-                    Vehicle.fuel_type.like(f'%{query}%') | 
-                    Vehicle.transmission.like(f'%{query}%')
-                )              
+            if queries:
+                for query in queries:
+                    query_obj = query_obj.filter(
+                        Vehicle.year.like(f'%{query}%') | 
+                        Vehicle.make.like(f'%{query}%') | 
+                        Vehicle.model.like(f'%{query}%') |
+                        Vehicle.body_type.like(f'%{query}%') | 
+                        Vehicle.color.like(f'%{query}%') | 
+                        Vehicle.fuel_type.like(f'%{query}%') | 
+                        Vehicle.transmission.like(f'%{query}%')
+                    )              
             
             num_of_records = query_obj.count()
             num_of_pages = num_of_records // limit
