@@ -258,7 +258,19 @@ def get_service_appointments():
                                             'time_slot_id': {'type': 'integer'},
                                             'customer_note': {'type': 'string'},
                                             'technician_note': {'type': 'string'},
-                                            'status': {'type': 'string'}
+                                            'status': {'type': 'string'},
+                                            'services': {
+                                                'type': 'array',
+                                                'items': {
+                                                    'type': 'object',
+                                                    'properties': {
+                                                        'service_id': {'type': 'integer'},
+                                                        'name': {'type': 'integer'},
+                                                        'description': {'type': 'string'},
+                                                        'price': {'type': 'number'}
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }

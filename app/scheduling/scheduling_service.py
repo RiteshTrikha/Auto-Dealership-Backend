@@ -314,6 +314,12 @@ class ScheduleService:
                         'customer_note': service.customer_note,
                         'technician_note': service.technician_note,
                         'status': Service_Ticket.Status(service.status).name,
+                        'services': [{
+                            'service_id': sts.service.service_id,
+                            'name': sts.service.service_type,
+                            'description': sts.service.description,
+                            'price': sts.service.price
+                        } for sts in Service_Ticket_Service.get_all_services_by_service_ticket_id(service.service_ticket_id)]
                     } for service in service_ticket]
                 }
                 appointments_with_tickets.append(appointment_data)
@@ -379,7 +385,7 @@ class ScheduleService:
 ############## Add Technician Notes to Service Ticket ####################
     
     #add technician notes to service ticket
-    def add_technician_note(self, technician_note, service_ticket_id):
+    def add_technician_note(self, service_ticket_id, technician_note):
         try:
             #get service ticket
             service_ticket = Service_Ticket.get_service_ticket_by_service_ticket_id(service_ticket_id)
