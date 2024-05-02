@@ -256,8 +256,8 @@ def set_service_status(service_id):
 # create vehicle
 @user_bp.route('/inventory/vehicle', methods=['POST'])
 @swag_from({
-    'summary': 'Create vehicle',
-    'tags': ['User vehicle'],
+    'summary': 'Create Vehicle',
+    'tags': ['User Vehicle'],
     'security': [{'BearerAuth': []}],
     'requestBody': {
         'required': True,
@@ -271,6 +271,7 @@ def set_service_status(service_id):
                         'year': {'type': 'string'},
                         'make': {'type': 'string'},
                         'model': {'type': 'string'},
+                        'body_type': {'type': 'string'},
                         'miles': {'type': 'integer'},
                         'mpg': {'type': 'integer'},
                         'color': {'type': 'string'},
@@ -331,6 +332,7 @@ def create_vehicle():
         year = data.get('year')
         make = data.get('make')
         model = data.get('model')
+        body_type = data.get('body_type')
         miles = data.get('miles')
         mpg = data.get('mpg')
         color = data.get('color')
@@ -338,7 +340,7 @@ def create_vehicle():
         image = data.get('image')
         transmission = data.get('transmission')
         vehicle_id = g.inventory_service.create_vehicle(vin=vin, price=price, year=year, make=make, 
-                                                     model=model, miles=miles, mpg=mpg, color=color, 
+                                                     model=model, body_type=body_type, miles=miles, mpg=mpg, color=color, 
                                                      fuel_type=fuel_type, image=image, 
                                                      transmission=transmission)
         return standardize_response(data=vehicle_id, message='Vehicle created successfully', code=201)
@@ -348,8 +350,8 @@ def create_vehicle():
 # update vehicle
 @user_bp.route('/inventory/vehicle/<int:vehicle_id>', methods=['PUT'])
 @swag_from({
-    'summary': 'Update vehicle',
-    'tags': ['User vehicle'],
+    'summary': 'Update Vehicle',
+    'tags': ['User Vehicle'],
     'security': [{'BearerAuth': []}],
     'parameters': [
         {
@@ -373,6 +375,7 @@ def create_vehicle():
                         'year': {'type': 'string'},
                         'make': {'type': 'string'},
                         'model': {'type': 'string'},
+                        'body_type': {'type': 'string'},
                         'miles': {'type': 'integer'},
                         'mpg': {'type': 'integer'},
                         'color': {'type': 'string'},
@@ -433,6 +436,7 @@ def update_vehicle(vehicle_id):
         year = data.get('year')
         make = data.get('make')
         model = data.get('model')
+        body_type = data.get('body_type')
         miles = data.get('miles')
         mpg = data.get('mpg')
         color = data.get('color')
@@ -440,7 +444,7 @@ def update_vehicle(vehicle_id):
         image = data.get('image')
         transmission = data.get('transmission')
         vehicle_id = g.inventory_service.update_vehicle(vehicle_id, vin=vin, price=price, year=year, 
-                                                     make=make, model=model, miles=miles, mpg=mpg, 
+                                                     make=make, model=model, body_type=body_type, miles=miles, mpg=mpg, 
                                                      color=color, fuel_type=fuel_type, image=image, 
                                                      transmission=transmission)
         return standardize_response(data=vehicle_id, message='Vehicle updated successfully', code=200)
@@ -451,7 +455,7 @@ def update_vehicle(vehicle_id):
 @user_bp.route('/inventory/vehicle/<int:vehicle_id>/status', methods=['PUT'])
 @swag_from({
     'summary': 'Set vehicle status',
-    'tags': ['User vehicle'],
+    'tags': ['User Vehicle'],
     'security': [{'BearerAuth': []}],
     'parameters': [
         {
