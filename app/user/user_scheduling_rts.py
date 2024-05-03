@@ -469,7 +469,7 @@ def assign_technician_to_service_ticket(service_ticket_id):
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'technician_note': {'type': 'string'}
+                        'technician_note': {'type': 'string', 'example': 'No notes added...'}
                     }
                 }
             }
