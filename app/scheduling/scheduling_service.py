@@ -314,6 +314,7 @@ class ScheduleService:
                         'customer_note': service.customer_note,
                         'technician_note': service.technician_note,
                         'status': Service_Ticket.Status(service.status).name,
+                        'vehicle': service.vehicle.model,
                         'services': [{
                             'service_id': sts.service.service_id,
                             'name': sts.service.service_type,
