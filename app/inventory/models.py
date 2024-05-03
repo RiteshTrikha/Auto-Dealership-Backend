@@ -153,6 +153,7 @@ class Vehicle(db.Model):
     year = Column(String(4))
     make = Column(String(45))
     model = Column(String(45))
+    body_type = Column(String(45))
     miles = Column(INTEGER)
     mpg = Column(INTEGER)
     color = Column(String(45))
@@ -162,18 +163,20 @@ class Vehicle(db.Model):
     vehicle_status = Column(INTEGER)
     
     @classmethod
-    def get_vehicles(cls, page=1, limit=10, query=None):
+    def get_vehicles(cls, page=1, limit=10, queries=None):
         try:
             query_obj = db.session.query(Vehicle)
-            if query:
-                query_obj = query_obj.filter(
-                    Vehicle.year.like(f'%{query}%') | 
-                    Vehicle.make.like(f'%{query}%') | 
-                    Vehicle.model.like(f'%{query}%') | 
-                    Vehicle.color.like(f'%{query}%') | 
-                    Vehicle.fuel_type.like(f'%{query}%') | 
-                    Vehicle.transmission.like(f'%{query}%')
-                )
+            if queries:
+                for query in queries:
+                    query_obj = query_obj.filter(
+                        Vehicle.year.like(f'%{query}%') | 
+                        Vehicle.make.like(f'%{query}%') | 
+                        Vehicle.model.like(f'%{query}%') |
+                        Vehicle.body_type.like(f'%{query}%') | 
+                        Vehicle.color.like(f'%{query}%') | 
+                        Vehicle.fuel_type.like(f'%{query}%') | 
+                        Vehicle.transmission.like(f'%{query}%')
+                    )              
             
             num_of_records = query_obj.count()
             num_of_pages = num_of_records // limit
@@ -185,9 +188,7 @@ class Vehicle(db.Model):
             
             start_index = (page - 1) * limit
             vehicles = query_obj.slice(start_index, start_index + limit).all()
-            vehicles = query_obj.slice(start_index, start_index + limit).all()
 
-            return vehicles, num_of_pages, num_of_records
             return vehicles, num_of_pages, num_of_records
         except Exception as e:
             raise e
@@ -205,17 +206,15 @@ class Vehicle(db.Model):
         try:
             vehicles = db.session.query(Vehicle).limit(5).all()
             return vehicles
-            vehicles = db.session.query(Vehicle).limit(5).all()
-            return vehicles
         except Exception as e:
             raise e
     
     @classmethod
-    def create_vehicle(cls, vin, price, year, make, model, miles, mpg, color, 
+    def create_vehicle(cls, vin, price, year, make, model, body_type, miles, mpg, color, 
                        fuel_type, transmission, image, vehicle_status):
         try:
             vehicle = Vehicle(vin=vin, price=price, year=year, make=make, 
-                              model=model, miles=miles, mpg=mpg, color=color, 
+                              model=model, body_type=body_type, miles=miles, mpg=mpg, color=color, 
                               fuel_type=fuel_type, transmission=transmission, image=image, 
                               vehicle_status=vehicle_status)
             db.session.add(vehicle)
@@ -223,44 +222,39 @@ class Vehicle(db.Model):
         except Exception as e:
             raise e
     
-    @classmethod
+    @classmethod 
     def update_vehicle(cls, vehicle_id, vin=None, price=None, year=None, 
-                       make=None, model=None, miles=None, mpg=None, color=None, 
+                       make=None, model=None, body_type=None, miles=None, mpg=None, color=None, 
                        fuel_type=None, transmission=None, image=None, vehicle_status=None):
         try:
             vehicle = db.session.query(Vehicle).filter_by(vehicle_id=vehicle_id).first()
             if vin:
                 vehicle.vin = vin
-                vehicle.vin = vin
             if price: 
-                vehicle.price = price
                 vehicle.price = price
             if year:
                 vehicle.year = year
-                vehicle.year = year
             if make:
-                vehicle.make = make
                 vehicle.make = make
             if model:
                 vehicle.model = model
-                vehicle.model = model
+            if body_type:
+                vehicle.body_type = body_type
             if miles:
-                vehicle.miles = miles
                 vehicle.miles = miles
             if mpg:
                 vehicle.mpg = mpg
-                vehicle.mpg = mpg
             if color:
-                vehicle.color = color
                 vehicle.color = color
             if fuel_type:
                 vehicle.fuel_type = fuel_type
-                vehicle.fuel_type = fuel_type
             if transmission:
-                vehicle.transmission = transmission
                 vehicle.transmission = transmission
             if image:
                 vehicle.image = image
+            if vehicle_status:
+                vehicle.vehicle_status = vehicle_status
+            if image:
                 vehicle.image = image
             if vehicle_status:
                 vehicle.vehicle_status = vehicle_status

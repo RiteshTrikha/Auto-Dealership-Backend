@@ -79,6 +79,9 @@ def create_app(config_class=Config):
     from app.purchasing.services import PurchasingServices
     app.purchasing_service = PurchasingServices()
 
+    from app.scheduling.scheduling_service import ScheduleService
+    app.scheduling_service = ScheduleService()
+
     @app.before_request
     def before_request():
         g.negotiation_service = current_app.negotiation_service
@@ -87,5 +90,6 @@ def create_app(config_class=Config):
         g.user_service = current_app.user_service
         g.contract_service = current_app.contract_service
         g.purchasing_service = current_app.purchasing_service
+        g.scheduling_service = current_app.scheduling_service
 
     return app

@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`vehicle` (
   `year` VARCHAR(4) NULL,
   `make` VARCHAR(45) NULL,
   `model` VARCHAR(45) NULL,
+  `body_type` VARCHAR(45) NULL,
   `miles` INT NULL,
   `mpg` INT NULL,
   `color` VARCHAR(45) NULL,

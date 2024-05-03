@@ -11,6 +11,7 @@ class InventoryService:
     # year = Column(String(4))
     # make = Column(String(45))
     # model = Column(String(45))
+    # body_type = Column(String(45))
     # miles = Column(INTEGER)
     # mpg = Column(INTEGER)
     # color = Column(String(45))
@@ -89,11 +90,11 @@ class InventoryService:
 
     # vehicle services
     
-    def create_vehicle(self, vin, price, year, make, model, miles, mpg, color, fuel_type, 
+    def create_vehicle(self, vin, price, year, make, model, body_type, miles, mpg, color, fuel_type, 
                        transmission, image, vehicle_status=Vehicle.VehicleStatus.AVAILABLE.value):
         try:
             vehicle = Vehicle.create_vehicle(vin=vin, price=price, year=year, make=make, 
-                                             model=model, miles=miles, mpg=mpg, color=color, 
+                                             model=model, body_type=body_type, miles=miles, mpg=mpg, color=color, 
                                              fuel_type=fuel_type, transmission=transmission,
                                              image=image, vehicle_status=vehicle_status)
             db.session.commit()
@@ -103,10 +104,10 @@ class InventoryService:
             current_app.logger.exception(e)
             raise e
         
-    def update_vehicle(self, vehicle_id, vin, price, year, make, model, miles, mpg, 
+    def update_vehicle(self, vehicle_id, vin, price, year, make, model, body_type, miles, mpg, 
                        color, fuel_type, transmission, image):
         try:
-            vehicle = Vehicle.update_vehicle(vehicle_id, vin, price, year, make, model, miles, mpg, 
+            vehicle = Vehicle.update_vehicle(vehicle_id, vin, price, year, make, model, body_type, miles, mpg, 
                                              color, fuel_type, transmission, image)
             db.session.commit()
             return { 'vehicle_id': vehicle.vehicle_id }
@@ -139,6 +140,7 @@ class InventoryService:
                 'year': vehicle.year,
                 'make': vehicle.make,
                 'model': vehicle.model,
+                'body_type': vehicle.body_type,
                 'miles': vehicle.miles,
                 'mpg': vehicle.mpg,
                 'color': vehicle.color,
@@ -152,9 +154,9 @@ class InventoryService:
             raise e
             
     
-    def get_vehicles(self, page, limit, query):
+    def get_vehicles(self, page, limit, queries):
         try:
-            vehicles, num_of_pages, num_of_records = Vehicle.get_vehicles(page=page, limit=limit, query=query)
+            vehicles, num_of_pages, num_of_records = Vehicle.get_vehicles(page=page, limit=limit, queries=queries)
             if vehicles == []:
                 raise ExposedException('No vehicles found', code=404)
             json_dict = {
@@ -168,6 +170,7 @@ class InventoryService:
                         'year': vehicle.year,
                         'make': vehicle.make,
                         'model': vehicle.model,
+                        'body_type': vehicle.body_type,
                         'miles': vehicle.miles,
                         'mpg': vehicle.mpg,
                         'color': vehicle.color,
@@ -193,6 +196,7 @@ class InventoryService:
                 'year': vehicle.year,
                 'make': vehicle.make,
                 'model': vehicle.model,
+                'body_type': vehicle.body_type,
                 'miles': vehicle.miles,
                 'mpg': vehicle.mpg,
                 'color': vehicle.color,

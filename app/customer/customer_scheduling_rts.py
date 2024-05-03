@@ -1,7 +1,7 @@
-from flask import jsonify, request
+from flask import jsonify, request, g, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import customer_bp
-from app import g
-from flask_jwt_extended import jwt_required
+from flasgger import swag_from
 from .models import Customer
 from app.scheduling.models import Appointment, TimeSlot, Service_Ticket, Service_Ticket_Service
 from app.inventory.models import Service
@@ -14,11 +14,9 @@ standardize_response = Utilities.standardize_response
 
 #schedule a test drive
 @customer_bp.route('/appointment/test-drive', methods=['POST'])
-@jwt_required()
 @swag_from({
     'summary': 'Schedule a test drive',
     'tags': ['Customer Scheduling'],
-    'security': [{'BearerAuth': []}],
     'requestBody': {
         'content': {
             'application/json': {
@@ -73,8 +71,8 @@ def schedule_test_drive():
                         'customer_id': {'type': 'integer'},
                         'time_slot_id': {'type': 'integer'},
                         'customer_vehicle_id': {'type': 'integer'},
-                        'customer_note': {'type': 'string'},
-                        'technician_note': {'type': 'string'},
+                        'customer_note': {'type': 'string', 'example': 'No notes added...'},
+                        'technician_note': {'type': 'string', 'example': 'No notes added...'},
                         'services': {
                             'type': 'array',
                             'items': {
@@ -251,7 +249,7 @@ def get_appointments_by_customer_id(customer_id):
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'customer_note': {'type': 'string'}
+                        'customer_note': {'type': 'string', 'example': 'No notes added...'}
                     }
                 }
             }
