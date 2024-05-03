@@ -133,6 +133,7 @@ class Finance(db.Model):
     down_payment = Column(INTEGER)
     loan_amount = Column(INTEGER)
     apy = Column(Float)
+    #turn this into apr
     term = Column(INTEGER)
     paid = Column(INTEGER)
     finance_status = Column(INTEGER)
