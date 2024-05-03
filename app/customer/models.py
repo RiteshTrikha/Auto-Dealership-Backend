@@ -80,7 +80,7 @@ class CustomerVehicle(db.Model):
     @classmethod
     def create_vehicle(cls, vin, year, make, model, customer_id):
         try:
-            vehicle = Customervehicle(vin=vin, year=year, make=make, model=model, customer_id=customer_id)
+            vehicle = CustomerVehicle(vin=vin, year=year, make=make, model=model, customer_id=customer_id)
             db.session.add(vehicle)
             return vehicle
         except Exception as e:
@@ -88,14 +88,14 @@ class CustomerVehicle(db.Model):
         
     def get_vehicle(cls, customer_vehicle_id):
         try:
-            vehicle = db.session.query(Customervehicle).filter(Customervehicle.customer_vehicle_id == customer_vehicle_id).first()
+            vehicle = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_vehicle_id == customer_vehicle_id).first()
             return vehicle
         except Exception as e:
             raise e
         
     def update_vehicle(cls, customer_vehicle_id, vin, year, make, model):
         try:
-            vehicle = db.session.query(Customervehicle).filter(Customervehicle.customer_vehicle_id == customer_vehicle_id).first()
+            vehicle = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_vehicle_id == customer_vehicle_id).first()
             vehicle.vin = vin
             vehicle.year = year
             vehicle.make = make
