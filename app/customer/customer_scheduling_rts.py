@@ -70,8 +70,8 @@ def schedule_test_drive():
                         'customer_id': {'type': 'integer'},
                         'time_slot_id': {'type': 'integer'},
                         'customer_vehicle_id': {'type': 'integer'},
-                        'customer_note': {'type': 'string'},
-                        'technician_note': {'type': 'string'},
+                        'customer_note': {'type': 'string', 'example': 'No notes added...'},
+                        'technician_note': {'type': 'string', 'example': 'No notes added...'},
                         'services': {
                             'type': 'array',
                             'items': {
@@ -248,7 +248,7 @@ def get_appointments_by_customer_id(customer_id):
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'customer_note': {'type': 'string'}
+                        'customer_note': {'type': 'string', 'example': 'No notes added...'}
                     }
                 }
             }
