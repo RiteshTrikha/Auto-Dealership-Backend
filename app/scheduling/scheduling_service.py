@@ -95,8 +95,108 @@ class ScheduleService:
             current_app.logger.exception(e)
             raise e
  
+############# Get Available Time Slots / Check Availability / Update Availability ####################
+
+    #get all test drive time slots appointments
+    def get_test_drive_time_slots(self):
+        try:
+            time_slots = TimeSlot.get_test_drive_time_slots()
+            if time_slots is None:
+                raise ExposedException("No test drive time slots found", code = 404)
+            return {
+                'time_slots': [{
+                    'time_slot_id': time_slot.time_slot_id,
+                    'start_time': time_slot.start_time,
+                    'end_time': time_slot.end_time,
+                    'is_available': time_slot.is_available
+                } for time_slot in time_slots]
+            }
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+
+    #get all test drive time slots appointments and only available time slots
+    def get_available_test_drive_time_slots(self):
+        try:
+            time_slots = TimeSlot.get_available_test_drive_time_slots()
+            if time_slots is None:
+                raise ExposedException("No available test drive time slots found", code = 404)
+            return {
+                'time_slots': [{
+                    'time_slot_id': time_slot.time_slot_id,
+                    'start_time': time_slot.start_time,
+                    'end_time': time_slot.end_time,
+                    'is_available': time_slot.is_available
+                } for time_slot in time_slots]
+            }
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+
+    #get all service time slots appointments
+    def get_service_time_slots(self):
+        try:
+            time_slots = TimeSlot.get_service_time_slots()
+            if time_slots is None:
+                raise ExposedException("No service time slots found", code = 404)
+            return {
+                'time_slots': [{
+                    'time_slot_id': time_slot.time_slot_id,
+                    'start_time': time_slot.start_time,
+                    'end_time': time_slot.end_time,
+                    'is_available': time_slot.is_available
+                } for time_slot in time_slots]
+            }
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+
+    #get all service time slots appointments and only available time slots
+    def get_available_service_time_slots(self):
+        try:
+            time_slots = TimeSlot.get_available_service_time_slots()
+            if time_slots is None:
+                raise ExposedException("No available service time slots found", code = 404)
+            return {
+                'time_slots': [{
+                    'time_slot_id': time_slot.time_slot_id,
+                    'start_time': time_slot.start_time,
+                    'end_time': time_slot.end_time,
+                    'is_available': time_slot.is_available
+                } for time_slot in time_slots]
+            }
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+
+    #check if time slot is available
+    def check_time_slot_availability(self, time_slot_id):
+        try:
+            time_slot = TimeSlot.is_time_slot_available(time_slot_id)
+            if time_slot is None:
+                raise ExposedException("Time slot not found", code = 404)
+            return {'is_available': time_slot.is_available}
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+
+    #update time slot availability
+    def update_time_slot_availability(self, time_slot_id, is_available):
+        try:
+            time_slot = TimeSlot.update_time_slot_availability(time_slot_id, is_available)
+            if time_slot is None:
+                raise ExposedException("Time slot not found", code = 404)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
 
 ############## GET APPOINTMENTS FOR CUSTOMERS#################### 
+
 
     #get all appointments for a customer
     def get_appointments_by_customer_id(self, customer_id):

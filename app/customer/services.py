@@ -22,6 +22,14 @@ class CustomerServices:
         except Exception as e:
             current_app.logger.exception(e)
             raise e
+        
+    def update_customer_status(self, customer_id, status):
+        try:
+            customer = Customer.update_customer_status(customer_id, status)
+            db.session.commit()
+            return customer
+        except Exception as e:
+            raise e
 
     def get_customer_details(self, customer_id):
         try:
@@ -42,6 +50,8 @@ class CustomerServices:
         except Exception as e:
             current_app.logger.exception(e)
             raise e
+
+######## Customer Vehicle Services ########
         
     def create_customer_vehicle(self, customer_id, year, make, model, vin):
         try:
@@ -52,4 +62,36 @@ class CustomerServices:
             db.session.rollback()
             current_app.logger.exception(e)
             raise e
+        
+    def get_vehicle(self, customer_vehicle_id):
+        try:
+            vehicle = CustomerVehicle.get_vehicle(customer_vehicle_id)
+            return vehicle
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_vehicles(self, customer_id):
+        try:
+            vehicles = CustomerVehicle.get_vehicles(customer_id)
+            return vehicles
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+    
+    def update_vehicle(self, customer_vehicle_id, year, make, model):
+        try:
+            vehicle = CustomerVehicle.get_vehicle(customer_vehicle_id)
+            if vehicle is None:
+                raise ExposedException('Vehicle not found', 404)
+            vehicle.year = year
+            vehicle.make = make
+            vehicle.model = model
+            db.session.commit()
+            return vehicle
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+    
         

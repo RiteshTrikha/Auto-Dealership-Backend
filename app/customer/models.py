@@ -53,6 +53,15 @@ class Customer(db.Model):
             return customer
         except Exception as e:
             raise e
+        
+    @classmethod
+    def update_customer_status(cls, customer_id, status):
+        try:
+            customer = db.session.query(Customer).filter(Customer.customer_id == customer_id).first()
+            customer.status = status
+            return customer
+        except Exception as e:
+            raise e
 
         
 class CreditReport(db.Model):
@@ -70,33 +79,52 @@ class CustomerVehicle(db.Model):
 
     customer_vehicle_id = Column(INTEGER, primary_key=True, unique=True)
     vin = Column(String(45), nullable=False, unique=True)
-    year = Column(String(4))
+    year = Column(INTEGER, server_default=text("2024"))
     make = Column(String(254))
     model = Column(String(254))
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
 
-    customer = relationship('Customer')
+    customer = relationship('app.customer.models.Customer', backref='customer_vehicle')
+
+    def to_dict(self):
+        return {
+            'customer_vehicle_id': self.customer_vehicle_id,
+            'vin': self.vin,
+            'year': self.year,
+            'make': self.make,
+            'model': self.model,
+            'customer_id': self.customer_id
+        }
 
     @classmethod
     def create_vehicle(cls, vin, year, make, model, customer_id):
         try:
-            vehicle = Customervehicle(vin=vin, year=year, make=make, model=model, customer_id=customer_id)
+            vehicle = CustomerVehicle(vin=vin, year=year, make=make, model=model, customer_id=customer_id)
             db.session.add(vehicle)
             return vehicle
         except Exception as e:
             raise e
-        
+
+    @classmethod    
     def get_vehicle(cls, customer_vehicle_id):
         try:
-            vehicle = db.session.query(Customervehicle).filter(Customervehicle.customer_vehicle_id == customer_vehicle_id).first()
+            vehicle = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_vehicle_id == customer_vehicle_id).first()
             return vehicle
         except Exception as e:
             raise e
-        
-    def update_vehicle(cls, customer_vehicle_id, vin, year, make, model):
+
+    @classmethod    
+    def get_vehicles(cls, customer_id):
         try:
-            vehicle = db.session.query(Customervehicle).filter(Customervehicle.customer_vehicle_id == customer_vehicle_id).first()
-            vehicle.vin = vin
+            vehicles = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_id == customer_id).all()
+            return vehicles
+        except Exception as e:
+            raise e
+
+    @classmethod
+    def update_vehicle(cls, customer_vehicle_id, year, make, model):
+        try:
+            vehicle = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_vehicle_id == customer_vehicle_id).first()
             vehicle.year = year
             vehicle.make = make
             vehicle.model = model
