@@ -11,7 +11,7 @@ from app.utilities import Utilities
 standardize_response = Utilities.standardize_response
 
 # get all services
-@inventory_bp.route('/services', methods=['GET'])
+@inventory_bp.route('/services', methods=['GET'], endpoint='get_services')
 @swag_from({
     'summary': 'Get all services',
     'tags': ['Services'],
@@ -54,7 +54,7 @@ def get_services():
         return e
     
 # get a service
-@inventory_bp.route('/service/<int:service_id>', methods=['GET'])
+@inventory_bp.route('/service/<int:service_id>', methods=['GET'], endpoint='get_service')
 @swag_from({
     'summary': 'Get a service',
     'tags': ['Services'],
@@ -105,7 +105,7 @@ def get_service(service_id):
         return e
     
 #create a service
-@inventory_bp.route('/service/addservice', methods=['POST'])
+@inventory_bp.route('/service/addservice', methods=['POST'], endpoint='add_service')
 @jwt_required
 @manager_required
 @swag_from({
@@ -161,7 +161,7 @@ def add_service():
         return e
     
 # update a service
-@inventory_bp.route('/service/updateservice', methods=['PUT'])
+@inventory_bp.route('/service/updateservice', methods=['PUT'], endpoint='update_service')
 @jwt_required
 @manager_required
 @swag_from({
@@ -218,7 +218,7 @@ def update_service():
         return e
     
 # change service status
-@inventory_bp.route('/service/changestatus', methods=['PUT'])
+@inventory_bp.route('/service/changestatus', methods=['PUT'], endpoint='change_service_status')
 @jwt_required
 @manager_required
 @swag_from({
