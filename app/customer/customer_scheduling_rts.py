@@ -14,9 +14,11 @@ standardize_response = Utilities.standardize_response
 
 #schedule a test drive
 @customer_bp.route('/appointment/test-drive', methods=['POST'])
+@jwt_required()
 @swag_from({
     'summary': 'Schedule a test drive',
     'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
     'requestBody': {
         'content': {
             'application/json': {
@@ -291,3 +293,329 @@ def add_customer_note_to_service_ticket(service_ticket_id):
     except Exception as e:
         raise e
 
+
+#get all test drive time slots
+@customer_bp.route('/time-slots/test-drive', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get all test drive time slots',
+    'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'time_slot_id': {'type': 'integer'},
+                                'start_time': {'type': 'DateTime'},
+                                'end_time': {'type': 'DateTime'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_all_test_drive_time_slots():
+    try:
+        time_slots = g.scheduling_service.get_test_drive_time_slots()
+        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+#get all service time slots
+@customer_bp.route('/time-slots/service', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get all service time slots',
+    'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'time_slot_id': {'type': 'integer'},
+                                'start_time': {'type': 'DateTime'},
+                                'end_time': {'type': 'DateTime'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_all_service_time_slots():
+    try:
+        time_slots = g.scheduling_service.get_service_time_slots()
+        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+
+#get all test drive time slots
+@customer_bp.route('/time-slots/test-drive/available', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get all available test drive time slots',
+    'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'time_slot_id': {'type': 'integer'},
+                                'start_time': {'type': 'DateTime'},
+                                'end_time': {'type': 'DateTime'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_test_drive_time_slots():
+    try:
+        time_slots = g.scheduling_service.get_test_drive_time_slots()
+        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+
+#get all test drive time slots and only return the available ones
+@customer_bp.route('/time-slots/test-drive/available', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get all available test drive time slots',
+    'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'time_slot_id': {'type': 'integer'},
+                                'start_time': {'type': 'DateTime'},
+                                'end_time': {'type': 'DateTime'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_available_test_drive_time_slots():
+    try:
+        time_slots = g.scheduling_service.get_available_test_drive_time_slots()
+        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+
+
+#get all service time slots
+@customer_bp.route('/time-slots/service/available', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get all available service time slots',
+    'tags': ['Customer Timeslots'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'time_slot_id': {'type': 'integer'},
+                                'start_time': {'type': 'DateTime'},
+                                'end_time': {'type': 'DateTime'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_service_time_slots():
+    try:
+        time_slots = g.scheduling_service.get_service_time_slots()
+        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+
+#get all service time slots and only return the available ones
+@customer_bp.route('/time-slots/service/available', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get all available service time slots',
+    'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'A list of time slots',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'status': {'type': 'string'},
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'time_slot_id': {'type': 'integer'},
+                                'start_time': {'type': 'DateTime'},
+                                'end_time': {'type': 'DateTime'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'No time slots found'
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def get_available_service_time_slots():
+    try:
+        time_slots = g.scheduling_service.get_available_service_time_slots()
+        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
+    except Exception as e:
+        raise e
+    
+#update time slot availability
+@customer_bp.route('/time-slot/<int:time_slot_id>/availability', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Update time slot availability',
+    'tags': ['Customer Scheduling'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'time_slot_id',
+            'type': 'integer',
+            'required': True,
+            'description': 'The id of the time slot'
+        }
+    ],
+    'requestBody': {
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'is_available': {'type': 'integer'}
+                    }
+                }
+            }
+        }
+    },
+    'responses': {
+        '200': {
+            'description': 'Time slot availability updated successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'time_slot_id': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request'
+        }
+    }
+})
+def update_time_slot_availability(time_slot_id):
+    try:
+        data = request.get_json()
+        is_available = data.get('is_available')
+        time_slot_id = g.scheduling_service.update_time_slot_availability(time_slot_id=time_slot_id, is_available=is_available)
+        return standardize_response(data=time_slot_id, message='Time slot availability updated successfully', code = 200)
+    except Exception as e:
+        raise e

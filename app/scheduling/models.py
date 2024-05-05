@@ -171,6 +171,22 @@ class TimeSlot(db.Model):
             return time_slot.is_available
         except Exception as e:
             raise e
+        
+    #get all test drive time slots and only available time slots
+    @classmethod
+    def get_available_test_drive_time_slots(cls):
+        try:
+            return db.session.query(TimeSlot).filter(TimeSlot.time_slot_type == 2, TimeSlot.is_available == 1).all()
+        except Exception as e:
+            raise e
+        
+    #get all service time slots and only available time slots
+    @classmethod
+    def get_available_service_time_slots(cls):
+        try:
+            return db.session.query(TimeSlot).filter(TimeSlot.time_slot_type == 1, TimeSlot.is_available == 1).all()
+        except Exception as e:
+            raise e
     
     #create time slot     
     @classmethod
@@ -182,7 +198,7 @@ class TimeSlot(db.Model):
         except Exception as e:
             raise e
         
-    #update time slot availability
+    #update time slot available
     @classmethod
     def update_time_slot_availability(self, time_slot_id, is_available):
         try:
