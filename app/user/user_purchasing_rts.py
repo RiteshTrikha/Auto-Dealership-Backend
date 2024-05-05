@@ -75,6 +75,76 @@ def get_purchases():
     except Exception as e:
         raise e
     
+
+@user_bp.route('/purchases_with_dates', methods=['GET'])
+@swag_from({
+    'summary': 'Get all purchases including dates',
+    'tags': ['User Purchasing'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        200: {
+            'description': 'All purchases with dates',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'status': {'type': 'string'},
+                            'data': {
+                                'type': 'object',
+                                'properties': {
+                                    'purchases': {
+                                        'type': 'array',
+                                        'items': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'customer': {
+                                                    'type': 'object',
+                                                    'properties': {
+                                                        'customer_id': {'type': 'integer'},
+                                                        'first_name': {'type': 'string'},
+                                                        'last_name': {'type': 'string'}
+                                                    }
+                                                },
+                                                'purchase_id': {'type': 'integer'},
+                                                'purchase_status': {'type': 'string'},
+                                                'purchase_vehicle': {
+                                                    'type': 'object',
+                                                    'properties': {
+                                                        'vehicle_id': {'type': 'integer'},
+                                                        'year': {'type': 'integer'},
+                                                        'make': {'type': 'string'},
+                                                        'model': {'type': 'string'},
+                                                    }
+                                                },
+                                                'purchase_total': {'type': 'string'},
+                                                'open_date': {'type': 'string', 'format': 'date-time'},
+                                                'close_date': {'type': 'string', 'format': 'date-time'}
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            'message': {'type': 'string'},
+                            'code': {'type': 'integer'}
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+@jwt_required()
+@manager_required
+def get_purchases_with_dates():
+    try:
+        purchases = g.purchasing_service.get_purchases_with_dates()
+        return standardize_response(data=purchases)
+    except Exception as e:
+        raise e
+
+
+
 # get purchase details
 @user_bp.route('/purchases/<int:purchase_id>', methods=['GET'])
 @swag_from({

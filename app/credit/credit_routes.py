@@ -77,15 +77,3 @@ def request_credit_score():
     except requests.RequestException as e:
         current_app.logger.error(f"Request failed: {str(e)}")
         return jsonify(error='Internal server error'), 500
-from flask_testing import TestCase
-
-class MyTest(TestCase):
-
-    def test_credit_score_route(self):
-        response = self.client.post('/api/customer/credit-score', json={
-            'first_name': 'John', 'last_name': 'Doe',
-            'ssn': '123-45-6789', 'birth_date': '1980-01-01',
-            'address': '123 Elm St'
-        })
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('credit_score', response.json)

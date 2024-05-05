@@ -67,6 +67,36 @@ class PurchasingServices:
         except Exception as e:
             current_app.logger.exception(e)
             raise e
+    
+    def get_purchases_with_dates(self):
+        try:
+            purchases = Purchase.get_purchases()
+            purchases_dict = {
+                'purchases': [
+                    {
+                        'customer': {
+                            'customer_id': purchase.customer.customer_id,
+                            'first_name': purchase.customer.first_name,
+                            'last_name': purchase.customer.last_name
+                        },
+                        'purchase_id': purchase.purchase_id,
+                        'purchase_status': purchase.PurchaseStatus(purchase.purchase_status).name,
+                        'purchase_vehicle': {
+                            'vehicle_id': purchase.purchase_vehicle.vehicle.vehicle_id,
+                            'year': purchase.purchase_vehicle.vehicle.year,
+                            'make': purchase.purchase_vehicle.vehicle.make,
+                            'model': purchase.purchase_vehicle.vehicle.model,
+                        },
+                        'purchase_total': '{:.2f}'.format(purchase.get_purchase_totals()[0]),
+                        'open_date': purchase.open_date.isoformat() if purchase.open_date else None,
+                        'close_date': purchase.close_date.isoformat() if purchase.close_date else None
+                    } for purchase in purchases]
+            }
+            return purchases_dict
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+
 
     def get_customer_purchases(self, customer_id):
         try:
