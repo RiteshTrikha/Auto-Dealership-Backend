@@ -18,4 +18,3 @@ class ExposedException(Exception):
 class ExpDatabaseException(ExposedException):
     def __init__(self, message='database error occurred', code=500):
         super().__init__(message, code)
-    

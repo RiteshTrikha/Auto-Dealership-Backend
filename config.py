@@ -30,3 +30,9 @@ class Config:
         },
         "security": [{"BearerAuth": []}]
     }
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rootpassword@localhost:3307/DealershipDB'
+
+    JWT_SECRET = 'secret_key'
