@@ -1,6 +1,6 @@
 from flask import jsonify, request, current_app, g
 from . import user_bp
-from app.inventory.models import Vehicle
+from app.inventory.models import Vehicle, Addon
 from app.exceptions import ExposedException
 from flasgger import swag_from
 from flask_jwt_extended import jwt_required
@@ -529,3 +529,4 @@ def set_vehicle_status(vehicle_id):
         return standardize_response(data=vehicle_id, message='Vehicle status updated successfully', code=200)
     except Exception as e:
         raise e
+  

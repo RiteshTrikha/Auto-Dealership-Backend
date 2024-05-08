@@ -1,5 +1,5 @@
 from flask import request, jsonify, current_app
-from .models import Vehicle, Service
+from .models import Vehicle, Service, Addon
 from app.exceptions import ExposedException
 from app import db
 
@@ -35,7 +35,7 @@ class InventoryService:
     def update_service(self, service_id, service_type, price, description):
         try:
             service = Service.update_service(service_id=service_id, service_type=service_type, 
-                                             price=price, description=description)
+                                             price=price, description=description, status=Service.ServiceStatus.ACTIVE.value)
             db.session.commit()
             return { 'service_id': service.service_id }
         except Exception as e:
@@ -208,3 +208,69 @@ class InventoryService:
         except Exception as e:
             current_app.logger.exception(e)
             raise e
+        
+    def get_all_addons(self):
+        try:
+            addons = Addon.get_addons()
+            if addons == []:
+                raise ExposedException('No addons found', code=404)
+            return [{
+                'addon_id': addon.addon_id,
+                'addon_name': addon.addon_name,
+                'price': addon.price,
+                'description': addon.description,
+                'status': addon.status
+            } for addon in addons]
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+    
+    def get_addon(self, addon_id):
+        try:
+            addon = Addon.get_addon(addon_id)
+            if not addon:
+                raise ExposedException('Addon not found', code=404)
+            return {
+                'addon_id': addon.addon_id,
+                'addon_name': addon.addon_name,
+                'price': addon.price,
+                'description': addon.description,
+                'status': addon.status
+            }
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+    
+    def create_addon(self, addon_name, price, description):
+        try:
+            addon = Addon.create_addon(addon_name=addon_name, price=price, description=description)
+            db.session.commit()
+            return { 'addon_id': addon.addon_id }
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+    
+    def update_addon(self, addon_id, addon_name, price, description):
+        try:
+            addon = Addon.update_addon(addon_id=addon_id, addon_name=addon_name, price=price, description=description)
+            db.session.commit()
+            return { 'addon_id': addon.addon_id }
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+    
+    def change_addon_status(self, addon_id, status):
+        try:
+            if status not in [status.value for status in Addon.AddonStatus]:
+                raise ExposedException('Invalid addon status', code=400)
+            addon = Addon.update_addon_status(addon_id, status)
+            db.session.commit()
+            return { 'addon_id': addon.addon_id }
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+    

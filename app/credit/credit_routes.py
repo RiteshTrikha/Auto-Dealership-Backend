@@ -23,9 +23,11 @@ from flasgger import swag_from
                     'properties': {
                         'first_name': {'type': 'string', 'example': 'John'},
                         'last_name': {'type': 'string', 'example': 'Doe'},
-                        'ssn': {'type': 'string', 'example': '123-45-6789'},
+                        # 'ssn': {'type': 'string', 'example': '123456789'},
                         'birth_date': {'type': 'string', 'example': '1980-01-01'},
-                        'address': {'type': 'string', 'example': '123 Elm St'}
+                        'address': {'type': 'string', 'example': '123 Elm St'},
+                        'annual_income': {'type': 'number', 'example': '100000'},
+                        'loan_amount': {'type': 'number', 'example': '10000'},
                     },
                     'required': ['first_name', 'last_name', 'ssn', 'birth_date', 'address']
                 }
@@ -54,9 +56,11 @@ def request_credit_score():
     data = request.get_json()
     first_name = data.get('first_name')
     last_name = data.get('last_name')
-    ssn = data.get('ssn')
+    # ssn = data.get('ssn')
     birth_date = data.get('birth_date')
     address = data.get('address')
+    annual_income = data.get('annual_income')
+    loan_amount = data.get('loan_amount')
 
     current_app.logger.debug(f"Received data: {data}")
 
@@ -64,7 +68,8 @@ def request_credit_score():
         credit_score_api_url = 'http://127.0.0.1:8080/customers/credit-score'
         payload = {
             'first_name': first_name, 'last_name': last_name,
-            'ssn': ssn, 'birth_date': birth_date, 'address': address
+            'birth_date': birth_date, 'address': address, 
+            'annual_income' : annual_income, 'loan_amount': loan_amount
         }
         response = requests.post(credit_score_api_url, json=payload)
 
