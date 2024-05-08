@@ -2,10 +2,10 @@
 FROM mysql:8.0
 
 # Set the root password (change it to something secure in production)
-ENV MYSQL_ROOT_PASSWORD=root_password
+ENV MYSQL_ROOT_PASSWORD=rootpassword
 
 # Set the default database name
-ENV MYSQL_DATABASE=my_database
+ENV MYSQL_DATABASE=DealershipDB
 
 # Copy the SQL script to initialize the database schema
 COPY ./initdb/* /docker-entrypoint-initdb.d/
