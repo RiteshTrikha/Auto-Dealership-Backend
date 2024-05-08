@@ -176,11 +176,20 @@ class Finance(db.Model):
             return finance
         except Exception as e:
             raise e
+        
+    @classmethod
+    def get_finances_by_customer(cls, customer_id):
+        try:
+            finances = db.session.query(Finance).join(Purchase).filter(Purchase.customer_id==customer_id).all()
+            return finances
+        except Exception as e:
+            raise e
 
     @classmethod
     def create_finance(cls, purchase_id, loan_amount, apr, 
                        term):
         try:
+            paid = 0
             down_payment = loan_amount * 0.2
             total_loan_amount = (loan_amount - down_payment) * (1 + apr) ** term
             monthly_payment = total_loan_amount / term
@@ -188,7 +197,8 @@ class Finance(db.Model):
             finance = Finance(purchase_id=purchase_id, loan_amount=loan_amount, 
                               apr=apr, term=term,
                               down_payment=down_payment, total_loan_amount=total_loan_amount,
-                              monthly_payment=monthly_payment)
+                              monthly_payment=monthly_payment,
+                              paid=paid)
             db.session.add(finance)
             db.session.commit()
             return finance
