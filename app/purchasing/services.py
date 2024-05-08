@@ -395,6 +395,10 @@ class PurchasingServices:
             purchase.update_purchase_status(Purchase.PurchaseStatus.PAID.value)
             purchase.purchase_vehicle.vehicle.update_vehicle_status(2)  # SOLD
 
+            # get rid of finance record if it exists
+            if purchase.finance:
+                db.session.delete(purchase.finance)
+                db.session.commit()
 
             # Handling vehicle creation without immediate commit
             customer_vehicle = g.customer_service.create_customer_vehicle_no_commit(
@@ -404,8 +408,81 @@ class PurchasingServices:
                 make=purchase.purchase_vehicle.vehicle.make,
                 model=purchase.purchase_vehicle.vehicle.model
             )
-            db.session.commit()
+            db.session.flush()
             # Addons loop, make sure it is syntactically correct
+            for addon in purchase.purchase_addons:
+                g.customer_service.create_customer_addon(customer_id=customer_id, addon_id=addon.addon_id,
+                                                            customer_vehicle_id=customer_vehicle.customer_vehicle_id)
+
+            db.session.commit()
+            return {'payment_id': payment.payment_id, 'customer_vehicle_id': customer_vehicle.customer_vehicle_id}
+        except Exception as e:
+            db.session.rollback()
+            existing_vehicle = CustomerVehicle.query.filter_by(vin=purchase.purchase_vehicle.vehicle.vin).first()
+            if existing_vehicle:
+                db.session.delete(existing_vehicle)
+                db.session.flush()  # Flush here to ensure deletion is executed immediately
+            purchase.update_purchase_status(Purchase.PurchaseStatus.ACTIVE.value)
+            purchase.purchase_vehicle.vehicle.update_vehicle_status(1)  # AVAILABLE
+            db.session.commit()
+            current_app.logger.exception(e)
+            raise e
+
+    def pay_purchase_down_payment(self, customer_id, purchase_id, account_number, routing_number):
+        '''
+        Makes an ACH payment for a purchase
+        ---
+        creates a payment record and updates the purchase status to PAID and vehicle status to SOLD
+        '''
+        try:
+            # Ensure this method is fetching and checking the purchase correctly
+            purchase = Purchase.get_purchase(purchase_id)
+            if not purchase:
+                raise ExposedException('Purchase does not exist')
+
+            if purchase.purchase_status == Purchase.PurchaseStatus.PAID.value:
+                raise ExposedException('Purchase is already paid')
+
+            if purchase.customer_id != customer_id:
+                raise ExposedException('Unauthorized')
+            
+            #check that purchase is an FINANCE purchase
+            if purchase.payment_type != Purchase.PaymentType.FINANCE.value:
+                raise ExposedException('Invalid payment type. please generate and sign a finance contract')
+
+            contract = g.contract_service.get_contract_by_purchase(purchase_id)
+            current_app.logger.info('Contract signed: %s', contract.customer_signed)
+            if not contract or contract.customer_signed != 1 or contract.dealer_signed != 1:
+                raise ExposedException('Contract not signed')
+
+            finance = purchase.finance
+
+            if not finance:
+                raise ExposedException('Finance record does not exist. Please generate a finance contract')
+
+            self.validate_bank_account_details(account_number, routing_number)
+            down_payment = finance.down_payment
+
+            # Ensure that payment creation is handled correctly
+            payment = Payment.create_payment(purchase_id=purchase_id, finance_id=None,
+                                            account_number=account_number,
+                                            routing_number=routing_number,
+                                            payment_amount=down_payment)
+
+            purchase.update_purchase_status(Purchase.PurchaseStatus.PAID.value)
+            purchase.purchase_vehicle.vehicle.update_vehicle_status(2)  # SOLD
+
+
+            # Handling vehicle creation without immediate commit
+            customer_vehicle = g.customer_service.create_customer_vehicle_no_commit(
+                customer_id=customer_id,
+                vin=purchase.purchase_vehicle.vehicle.vin,
+                year=purchase.purchase_vehicle.vehicle.year,
+                make=purchase.purchase_vehicle.vehicle.make,
+                model=purchase.purchase_vehicle.vehicle.model
+            )
+            db.session.flush()
+            # Addons loop
             for addon in purchase.purchase_addons:
                 g.customer_service.create_customer_addon(customer_id=customer_id, addon_id=addon.addon_id,
                                                             customer_vehicle_id=customer_vehicle.customer_vehicle_id)
@@ -442,8 +519,83 @@ class PurchasingServices:
             # update vehicle status
             purchase.purchase_vehicle.vehicle.update_vehicle_status(1) # AVAILABLE
             db.session.commit()
-            return {'purchase_id': purchase.purchase_id}
+            return {'purchase_id': purchase.purchase_id, 'purchase_status': purchase.PurchaseStatus(purchase.purchase_status).name}
         except Exception as e:
             db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+
+    ####### Finance Services ########
+
+    def get_finances(self):
+        try:
+            finances = Finance.get_finances()
+            finances_dict = {
+                'finances': [
+                    {
+                        'finance_id': finance.finance_id,
+                        'purchase_id': finance.purchase_id,
+                        'start_date': finance.start_date.isoformat(),
+                        'end_date': finance.end_date.isoformat() if finance.end_date else None,
+                        'loan_amount': finance.loan_amount,
+                        'down_payment': finance.down_payment,
+                        'total_loan_amount': finance.total_loan_amount,
+                        'monthly_payment': finance.monthly_payment,
+                        'apr': finance.apr,
+                        'term': finance.term,
+                        'paid': finance.paid,
+                        'finance_status': finance.FinanceStatus(finance.finance_status).name if finance.finance_status else None
+                    } for finance in finances]
+            }
+            return finances_dict
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_customer_finances(self, customer_id):
+        try:
+            finances = Finance.get_finances_by_customer(customer_id)
+            finances_dict = {
+                'finances': [
+                    {
+                        'finance_id': finance.finance_id,
+                        'purchase_id': finance.purchase_id,
+                        'start_date': finance.start_date.isoformat(),
+                        'end_date': finance.end_date.isoformat() if finance.end_date else None,
+                        'loan_amount': finance.loan_amount,
+                        'down_payment': finance.down_payment,
+                        'total_loan_amount': finance.total_loan_amount,
+                        'monthly_payment': finance.monthly_payment,
+                        'apr': finance.apr,
+                        'term': finance.term,
+                        'paid': finance.paid,
+                        'finance_status': finance.FinanceStatus(finance.finance_status).name if finance.finance_status else None
+                    } for finance in finances]
+            }
+            return finances_dict
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_finance_details(self, finance_id):
+        try:
+            finance = Finance.get_finance(finance_id)
+            finance_dict = {
+                'finance_id': finance.finance_id,
+                'purchase_id': finance.purchase_id,
+                'start_date': finance.start_date.isoformat(),
+                'end_date': finance.end_date.isoformat() if finance.end_date else None,
+                'loan_amount': finance.loan_amount,
+                'down_payment': finance.down_payment,
+                'total_loan_amount': finance.total_loan_amount,
+                'monthly_payment': finance.monthly_payment,
+                'apr': finance.apr,
+                'term': finance.term,
+                'paid': finance.paid,
+                'finance_status': finance.FinanceStatus(finance.finance_status).name if finance.finance_status else None
+            }
+            return finance_dict
+        except Exception as e:
             current_app.logger.exception(e)
             raise e

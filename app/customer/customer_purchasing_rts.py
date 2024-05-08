@@ -407,9 +407,6 @@ def get_customer_purchase_contract(purchase_id):
     except Exception as e:
         raise e
 
-
-# WORKING PROGRESS
-
 # sign contract
 @customer_bp.route('/purchase/<int:purchase_id>/contract/sign', methods=['POST'])
 @jwt_required()
@@ -509,9 +506,7 @@ def sign_purchase_contract(purchase_id):
                                 'type': 'object',
                                 'properties': {
                                     'payment_id': { 'type': 'integer' },
-                                    'payment_status': { 'type': 'string' },
-                                    'payment_date': { 'type': 'string' },
-                                    'payment_amount': { 'type': 'number' }
+                                    'customer_vehicle_id': { 'type': 'integer'}
                                 }
                             },
                             'message': { 'type': 'string' }
@@ -530,5 +525,119 @@ def pay_purchase_ACH(purchase_id):
         payment_dict = g.purchasing_service.pay_purchase_ACH(purchase_id=purchase_id, customer_id=customer_id,
                                                              account_number=account_number, routing_number=routing_number)
         return standardize_response(data=payment_dict, message='Payment successful')
+    except Exception as e:
+        raise e
+    
+# pay down payment
+@customer_bp.route('/purchase/<int:purchase_id>/payment/down', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Pay down payment',
+    'tags': ['Customer Purchasing'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'purchase_id',
+            'required': True,
+            'description': 'Purchase id',
+            'schema': { 'type': 'integer' }
+        }
+    ],
+    'requestBody': {
+        'description': 'Payment details',
+        'required': True,
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'account_number': { 'type': 'string' },
+                        'routing_number': { 'type': 'string' }
+                    },
+                    'required': [ 'payment_method', 'payment_amount' ]
+                }
+            }
+        }
+    },
+    'responses': {
+        '200': {
+            'description': 'Payment successful',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'data': {
+                                'type': 'object',
+                                'properties': {
+                                    'payment_id': { 'type': 'integer' },
+                                    'customer_vehicle_id': { 'type': 'integer' }
+                                }
+                            },
+                            'message': { 'type': 'string' }
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def pay_down_payment_ACH(purchase_id):
+    try:
+        customer_id = get_jwt_identity().get('customer_id')
+        account_number = request.json.get('account_number')
+        routing_number = request.json.get('routing_number')
+        payment_dict = g.purchasing_service.pay_purchase_down_payment(purchase_id=purchase_id, customer_id=customer_id,
+                                                                 account_number=account_number, routing_number=routing_number)
+        return standardize_response(data=payment_dict, message='Payment successful')
+    except Exception as e:
+        raise e
+    
+
+# cancel purchase
+@customer_bp.route('/purchase/<int:purchase_id>/cancel', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Cancel purchase',
+    'tags': ['Customer Purchasing'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'purchase_id',
+            'required': True,
+            'description': 'Purchase id',
+            'schema': { 'type': 'integer' }
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Purchase cancelled successfully',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'data': {
+                                'type': 'object',
+                                'properties': {
+                                    'purchase_id': { 'type': 'integer' },
+                                    'purchase_status': { 'type': 'string' }
+                                }
+                            },
+                            'message': { 'type': 'string' }
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
+def cancel_purchase(purchase_id):
+    try:
+        customer_id = get_jwt_identity().get('customer_id')
+        purchase_dict = g.purchasing_service.cancel_purchase(purchase_id, customer_id)
+        return standardize_response(data=purchase_dict, message='Purchase cancelled successfully')
     except Exception as e:
         raise e
