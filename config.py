@@ -1,21 +1,15 @@
 class Config:
     # database configurations
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rootpassword@db/DealershipDB'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rootpassword@backend-db-7btsjsynaa-uc.a.run.app/DealershipDB'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SWAGGER = {
-        'title': 'Dealership API',
-        'uiversion': 3
-    }
-    # debug mode
-    DEBUG = True
 
     # JWT configurations
     JWT_SECRET_KEY = 'secret_key'
     JWT_ACCESS_TOKEN_EXPIRES = 3600
-    # swagger configurations
-    
+
+    # Swagger configurations
     SWAGGER = {
-        'title': 'My API',
+        'title': 'Dealership API',
         'uiversion': 3,
         "openapi": "3.0.2",
         "specs_route": "/",
@@ -30,6 +24,9 @@ class Config:
         },
         "security": [{"BearerAuth": []}]
     }
+
+    # debug mode
+    DEBUG = True
 
 class TestingConfig(Config):
     TESTING = True
