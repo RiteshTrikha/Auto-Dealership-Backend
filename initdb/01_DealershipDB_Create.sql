@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`credit_report` (
   `customer_id` INT UNSIGNED NOT NULL,
   `score` INT NOT NULL,
   `apr` FLOAT NOT NULL,
+  `max_loan` INT NOT NULL,
   PRIMARY KEY (`credit_report_id`),
   UNIQUE INDEX `credit_report_id_UNIQUE` (`credit_report_id` ASC) VISIBLE,
   INDEX `fk_customer_idx` (`customer_id` ASC) VISIBLE,

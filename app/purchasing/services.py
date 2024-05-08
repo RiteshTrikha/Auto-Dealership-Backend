@@ -367,15 +367,16 @@ class PurchasingServices:
             purchase = Purchase.get_purchase(purchase_id)
             if not purchase:
                 raise ExposedException('Purchase does not exist')
-            
-            # This should be after checking if the purchase exists
-            purchase.update_purchase_status(Purchase.PurchaseStatus.ACTIVE.value)
 
             if purchase.purchase_status == Purchase.PurchaseStatus.PAID.value:
                 raise ExposedException('Purchase is already paid')
 
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
+            
+            #check that purchase is an ACH purchase
+            if purchase.payment_type != Purchase.PaymentType.ACH.value:
+                raise ExposedException('Invalid payment type. please generate and sign a purchase contract')
 
             contract = g.contract_service.get_contract_by_purchase(purchase_id)
             current_app.logger.info('Contract signed: %s', contract.customer_signed)
