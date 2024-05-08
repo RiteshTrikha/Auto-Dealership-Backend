@@ -94,4 +94,15 @@ class CustomerServices:
             current_app.logger.exception(e)
             raise e
     
+    def delete_vehicle(self, customer_vehicle_id):
+        try:
+            vehicle = CustomerVehicle.get_vehicle(customer_vehicle_id)
+            if vehicle is None:
+                raise ExposedException('Vehicle not found', 404)
+            db.session.delete(vehicle)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
         

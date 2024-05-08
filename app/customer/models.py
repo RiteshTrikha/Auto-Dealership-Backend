@@ -131,3 +131,11 @@ class CustomerVehicle(db.Model):
             return vehicle
         except Exception as e:
             raise e
+        
+    @classmethod
+    def delete_vehicle(cls, customer_vehicle_id):
+        try:
+            vehicle = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_vehicle_id == customer_vehicle_id).first()
+            db.session.delete(vehicle)
+        except Exception as e:
+            raise e

@@ -384,52 +384,6 @@ def get_all_service_time_slots():
         raise e
     
 
-#get all test drive time slots
-@customer_bp.route('/time-slots/test-drive/available', methods=['GET'])
-@jwt_required()
-@swag_from({
-    'summary': 'Get all available test drive time slots',
-    'tags': ['Customer Scheduling'],
-    'security': [{'BearerAuth': []}],
-    'responses': {
-        '200': {
-            'description': 'A list of time slots',
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'status': {'type': 'string'},
-                    'data': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'properties': {
-                                'time_slot_id': {'type': 'integer'},
-                                'start_time': {'type': 'DateTime'},
-                                'end_time': {'type': 'DateTime'}
-                            }
-                        }
-                    },
-                    'message': {'type': 'string'},
-                    'code': {'type': 'integer'}
-                }
-            }
-        },
-        '404': {
-            'description': 'No time slots found'
-        },
-        '400': {
-            'description': 'Bad request'
-        }
-    }
-})
-def get_test_drive_time_slots():
-    try:
-        time_slots = g.scheduling_service.get_test_drive_time_slots()
-        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
-    except Exception as e:
-        raise e
-    
-
 #get all test drive time slots and only return the available ones
 @customer_bp.route('/time-slots/test-drive/available', methods=['GET'])
 @jwt_required()
@@ -471,52 +425,6 @@ def get_test_drive_time_slots():
 def get_available_test_drive_time_slots():
     try:
         time_slots = g.scheduling_service.get_available_test_drive_time_slots()
-        return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
-    except Exception as e:
-        raise e
-
-
-#get all service time slots
-@customer_bp.route('/time-slots/service/available', methods=['GET'])
-@jwt_required()
-@swag_from({
-    'summary': 'Get all available service time slots',
-    'tags': ['Customer Timeslots'],
-    'security': [{'BearerAuth': []}],
-    'responses': {
-        '200': {
-            'description': 'A list of time slots',
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'status': {'type': 'string'},
-                    'data': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'properties': {
-                                'time_slot_id': {'type': 'integer'},
-                                'start_time': {'type': 'DateTime'},
-                                'end_time': {'type': 'DateTime'}
-                            }
-                        }
-                    },
-                    'message': {'type': 'string'},
-                    'code': {'type': 'integer'}
-                }
-            }
-        },
-        '404': {
-            'description': 'No time slots found'
-        },
-        '400': {
-            'description': 'Bad request'
-        }
-    }
-})
-def get_service_time_slots():
-    try:
-        time_slots = g.scheduling_service.get_service_time_slots()
         return standardize_response(data=time_slots, message='Time slots retrieved successfully', code = 200)
     except Exception as e:
         raise e
