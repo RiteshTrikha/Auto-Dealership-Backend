@@ -3,6 +3,7 @@ import os
 from flask import current_app, g
 from app.contracts.models import Contract
 from .models import Purchase, Finance, Payment, PurchaseAddon, Purchasevehicle
+from app.customer.models import CustomerVehicle, CreditReport
 from app.exceptions import ExposedException
 from app import db
 
@@ -21,21 +22,14 @@ class PurchasingServices:
         try:
             # get accepted negotiation
             negotiation = g.negotiation_service.get_accepted_negotiation(customer_id, negotiation_id)
-            # check if negotiation is accepted
-            if negotiation.negotiation_status != 2: # ACCEPTED
-                raise ExposedException('Negotiation is not accepted')
+
             # create a purchase
-            purchase = Purchase.create_purchase(customer_id=customer_id)
-            # create purchase vehicle
+            purchase = Purchase.create_purchase(customer_id=customer_id,
+                                                negotiation_id=negotiation_id,
+                                                purchase_type=Purchase.PurchaseType.CAR_PURCHASE.value)
+
             db.session.commit()
-            current_app.logger.info('created purchase with id: %s', purchase.purchase_id)
-            purchase_vehicle = Purchasevehicle.create_purchase_vehicle(purchase_id=purchase.purchase_id,
-                                                                       vehicle_id=negotiation.vehicle_id,
-                                                                       offer_id=negotiation.offers[-1].offer_id)
-            # set vehicle status to RESERVED
-            negotiation.vehicle.update_vehicle_status(3) # RESERVED
-            db.session.commit()
-            return {'purchase_id': purchase.purchase_id, 'purchase_vehicle_id': purchase_vehicle.purchase_vehicle_id}
+            return {'purchase_id': purchase.purchase_id}
         except Exception as e:
             db.session.rollback()
             current_app.logger.exception(e)
@@ -89,7 +83,8 @@ class PurchasingServices:
                         },
                         'purchase_total': '{:.2f}'.format(purchase.get_purchase_totals()[0]),
                         'open_date': purchase.open_date.isoformat() if purchase.open_date else None,
-                        'close_date': purchase.close_date.isoformat() if purchase.close_date else None
+                        'close_date': purchase.close_date.isoformat() if purchase.close_date else None,
+                        'is_open': purchase.is_open
                     } for purchase in purchases]
             }
             return purchases_dict
@@ -113,7 +108,9 @@ class PurchasingServices:
                             'model': purchase.purchase_vehicle.vehicle.model,
                         },
                         'puchase_total': '{:.2f}'.format(purchase.get_purchase_totals()[0]),
-
+                        'open_date': purchase.open_date.isoformat() if purchase.open_date else None,
+                        'close_date': purchase.close_date.isoformat() if purchase.close_date else None,
+                        'is_open': purchase.is_open
                     } for purchase in purchases]
             }
             return purchases_dict
@@ -124,6 +121,7 @@ class PurchasingServices:
     def get_purchase_details(self, purchase_id):
         try:
             purchase = Purchase.get_purchase(purchase_id)
+            contract = g.contract_service.get_contract_by_purchase(purchase_id)
             purchase_dict = {
                 'customer': {
                     'customer_id': purchase.customer.customer_id,
@@ -138,7 +136,8 @@ class PurchasingServices:
                     'make': purchase.purchase_vehicle.vehicle.make,
                     'model': purchase.purchase_vehicle.vehicle.model,
                     'vin': purchase.purchase_vehicle.vehicle.vin,
-                    'price': purchase.purchase_vehicle.offer.offer_price
+                    'price': purchase.purchase_vehicle.offer.offer_price,
+                    'status': purchase.purchase_vehicle.VehicleStatus(purchase.purchase_vehicle.vehicle.status).name
                 },
                 'purchase_subtotal': '{:.2f}'.format(purchase.get_purchase_totals()[1]),
                 'tax': purchase.tax,
@@ -149,11 +148,15 @@ class PurchasingServices:
                     'price': pa.addon.price,
                     'description': pa.addon.description
                 } for pa in purchase.purchase_addons] if purchase.purchase_addons else [],
-                'contracts': [{
-                    'contract_id': contract.contract_id,
-                    'contract_type': contract.ContractType(contract.contract_type).name,
-                    'contract_status': contract.ContractStatus(contract.contract_status).name
-                } for contract in purchase.contracts] if purchase.contracts else []
+                'finance': {
+                    'finance_id': purchase.finance.finance_id if purchase.finance else None
+                },
+                'open_date': purchase.open_date.isoformat() if purchase.open_date else None,
+                'close_date': purchase.close_date.isoformat() if purchase.close_date else None,
+                'is_open': purchase.is_open,
+                'payment_type': purchase.PaymentType(purchase.payment_type).name if purchase.payment_type else None,
+                'customer_signed': contract.customer_signed if contract else False,
+                'dealer_signed': contract.dealer_signed if contract else False
 
             }
             return purchase_dict
@@ -164,10 +167,16 @@ class PurchasingServices:
     def get_customer_purchase_details(self, customer_id, purchase_id):
         try:
             purchase = Purchase.get_purchase(purchase_id)
+            contract = g.contract_service.get_contract_by_purchase(purchase_id)
             # check if purchase belongs to customer
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
             purchase_dict = {
+                'customer': {
+                    'customer_id': purchase.customer.customer_id,
+                    'first_name': purchase.customer.first_name,
+                    'last_name': purchase.customer.last_name
+                },
                 'purchase_id': purchase.purchase_id,
                 'purchase_status': purchase.PurchaseStatus(purchase.purchase_status).name,
                 'purchase_vehicle': {
@@ -176,7 +185,8 @@ class PurchasingServices:
                     'make': purchase.purchase_vehicle.vehicle.make,
                     'model': purchase.purchase_vehicle.vehicle.model,
                     'vin': purchase.purchase_vehicle.vehicle.vin,
-                    'price': purchase.purchase_vehicle.offer.offer_price
+                    'price': purchase.purchase_vehicle.offer.offer_price,
+                    'status': purchase.purchase_vehicle.vehicle.VehicleStatus(purchase.purchase_vehicle.vehicle.vehicle_status).name
                 },
                 'purchase_subtotal': '{:.2f}'.format(purchase.get_purchase_totals()[1]),
                 'tax': purchase.tax,
@@ -187,11 +197,15 @@ class PurchasingServices:
                     'price': pa.addon.price,
                     'description': pa.addon.description
                 } for pa in purchase.purchase_addons] if purchase.purchase_addons else [],
-                'contracts': [{
-                    'contract_id': contract.contract_id,
-                    'contract_type': contract.ContractType(contract.contract_type).name,
-                    'contract_status': contract.ContractStatus(contract.contract_status).name
-                } for contract in purchase.contracts] if purchase.contracts else []
+                'finance': {
+                    'finance_id': purchase.finance.finance_id if purchase.finance else None
+                },
+                'open_date': purchase.open_date.isoformat() if purchase.open_date else None,
+                'close_date': purchase.close_date.isoformat() if purchase.close_date else None,
+                'is_open': purchase.is_open,
+                'payment_type': purchase.PaymentType(purchase.payment_type).name if purchase.payment_type else None,
+                'customer_signed': contract.customer_signed if contract else False,
+                'dealer_signed': contract.dealer_signed if contract else False
 
             }
             return purchase_dict
@@ -219,119 +233,84 @@ class PurchasingServices:
             current_app.logger.exception(e)
             raise e
     
-    def generate_purchase_contract(self, purchase_id):
-        '''
-        Generates a purchase contract
-        ---
-        creates a contract record
-        '''
+    def generate_finance_contract(self, purchase_id, customer_id):
         try:
-            purchase = Purchase.get_purchase(purchase_id)
-            # check if purchase contract already exists
-            contract = next((contract for contract in purchase.contracts if contract.contract_type == Contract.ContractType.PURCHASE.value), None)
-            if contract is not None:
-                contract_path = g.contract_service.re_generate_contract(contract_id=contract.contract_id)
-                return contract_path
-            
-            contract_path = g.contract_service.generate_purchase_contract(purchase_id=purchase_id, 
-                                                          customer_name=purchase.customer.first_name + '_' + purchase.customer.last_name,
-                                                          year=purchase.purchase_vehicle.vehicle.year,
-                                                          make=purchase.purchase_vehicle.vehicle.make,
-                                                          model=purchase.purchase_vehicle.vehicle.model,
-                                                          vin=purchase.purchase_vehicle.vehicle.vin)
-            db.session.commit()
-            return contract_path
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.exception(e)
-            raise e
 
-    def generate_customer_purchase_contract(self, purchase_id, customer_id):
-        '''
-        Generates a purchase contract
-        ---
-        creates a contract record
-        '''
-        try:
             purchase = Purchase.get_purchase(purchase_id)
             # check if purchase belongs to customer
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
             
-            # check if purchase contract already exists
-            purchase_contract = next((contract for contract in purchase.contracts if contract.contract_type == Contract.ContractType.PURCHASE.value), None)
-            if purchase_contract is not None:
-                contract_path = g.contract_service.re_generate_contract(contract_id=purchase_contract.contract_id)
-                return contract_path
+            # check if customer has a credit report
+            credit_report = g.customer_service.get_credit_report_by_customer(customer_id)
+            current_app.logger.info('credit report: %s', credit_report)
+            if not credit_report:
+                raise ExposedException('No credit report found. You do not qualify for financing')
+
+            # create finance record
+            if purchase.finance is None:
+                finance = Finance.create_finance(purchase_id=purchase_id, loan_amount=purchase.get_purchase_totals()[0],
+                                            apr=credit_report.apr, term=36)
+            else:
+                finance = purchase.finance
             
-            contract_path = g.contract_service.generate_purchase_contract(purchase_id=purchase_id, 
-                                                          customer_name=purchase.customer.first_name + '_' + purchase.customer.last_name,
-                                                          year=purchase.purchase_vehicle.vehicle.year,
-                                                          make=purchase.purchase_vehicle.vehicle.make,
-                                                          model=purchase.purchase_vehicle.vehicle.model,
-                                                          vin=purchase.purchase_vehicle.vehicle.vin)
+            current_app.logger.info('finance id: %s', finance.finance_id)
+
+            # update purchase payment type to finance
+            purchase.payment_type = Purchase.PaymentType.FINANCE.value
             db.session.commit()
+            
+            contract_path = g.contract_service.generate_contract(purchase_id=purchase_id, is_finance=True)
+
             return contract_path
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.exception(e)
-            raise e
-    
-    def get_purchase_contract(self, purchase_id):
-        '''
-        Retrieves a purchase contract
-        ---
-        returns the contract pdf file
-        '''
-        try:
-            purchase = Purchase.get_purchase(purchase_id)
-            # check if purchase has a purchase contract
-            purchase_contract = next((contract for contract in purchase.contracts if contract.contract_type == Contract.ContractType.PURCHASE.value), None)
-            if purchase_contract is None:
-                raise ExposedException('contract does not exist')
-            if not os.path.exists(purchase_contract.contract_path):
-                raise ExposedException('contract file not found. Please regenerate contract')
-            return purchase_contract.contract_path
         except Exception as e:
             current_app.logger.exception(e)
             raise e
 
-    def get_customer_purchase_contract(self, purchase_id, customer_id):
-        '''
-        Retrieves a purchase contract
-        ---
-        returns the contract pdf file
-        '''
+    def generate_purchase_contract(self, purchase_id, customer_id):
         try:
             purchase = Purchase.get_purchase(purchase_id)
             # check if purchase belongs to customer
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
-            contracts = purchase.contracts
-            purchase_contract = next((contract for contract in contracts if contract.contract_type == Contract.ContractType.PURCHASE.value), None)
-            return purchase_contract.contract_path
+
+            purchase.payment_type = Purchase.PaymentType.ACH.value
+
+            contract_path = g.contract_service.generate_contract(purchase_id=purchase_id, is_finance=False)
+
+            return contract_path
         except Exception as e:
             current_app.logger.exception(e)
             raise e
     
-    def customer_sign_purchase_contract(self, customer_id, purchase_id, signature):
-        '''
-        Signs a purchase contract
-        ---
-        updates contract status to SIGNED
-        '''
+    def get_contract(self, purchase_id, customer_id=None):
+        try:
+            purchase = Purchase.get_purchase(purchase_id)
+            # check if purchase belongs to customer
+            if customer_id:
+                if purchase.customer_id != customer_id:
+                    raise ExposedException('Unauthorized')
+            
+            is_finance = purchase.payment_type == Purchase.PaymentType.FINANCE.value
+
+            contract_path = g.contract_service.re_generate_contract(purchase_id=purchase_id, is_finance=is_finance)
+
+            return contract_path
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+    
+    def customer_sign_contract(self, purchase_id, customer_id, signature):
         try:
             purchase = Purchase.get_purchase(purchase_id)
             # check if purchase belongs to customer
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
-            # check if contract has been signed
-            purchase_contract = next((contract for contract in purchase.contracts if contract.contract_type == Contract.ContractType.PURCHASE.value), None)
-            if purchase_contract is None:
-                raise ExposedException('contract does not exist')
             
+            contract = g.contract_service.get_contract_by_purchase(purchase_id)
+
             # get contract id
-            contract_id = purchase_contract.contract_id
+            contract_id = contract.contract_id
             contract_path = g.contract_service.customer_sign_contract(contract_id=contract_id, signature=signature)
 
             return contract_path
@@ -339,12 +318,7 @@ class PurchasingServices:
             current_app.logger.exception(e)
             raise e
         
-    def dealer_sign_purchase_contract(self, purchase_id, signature):
-        '''
-        Signs a purchase contract
-        ---
-        updates contract status to SIGNED
-        '''
+    def dealer_sign_contract(self, purchase_id, signature):
         try:
             purchase = Purchase.get_purchase(purchase_id)
 

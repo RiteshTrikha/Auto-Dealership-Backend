@@ -1,5 +1,5 @@
 from flask import current_app
-from .models import Customer, CustomerVehicle
+from .models import CreditReport, Customer, CustomerVehicle
 from app.exceptions import ExposedException
 from app import db
 class CustomerServices:
@@ -90,6 +90,26 @@ class CustomerServices:
             return vehicle
         except Exception as e:
             db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+######## Customer Credit Report Services ########
+
+    def create_credit_report(self, customer_id, score, apy):
+        try:
+            credit_report = CreditReport.create_credit_report(customer_id, score, apy)
+            db.session.commit()
+            return credit_report
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_credit_report_by_customer(self, customer_id):
+        try:
+            credit_report = CreditReport.get_credit_report_by_customer(customer_id)
+            return credit_report
+        except Exception as e:
             current_app.logger.exception(e)
             raise e
     

@@ -69,8 +69,8 @@ def register_customer():
                 'schema': {
                     'type': 'object',
                     'properties': {
-                        'email': {'type': 'string'},
-                        'password': {'type': 'string'}
+                        'email': {'type': 'string', 'example': 'email'},
+                        'password': {'type': 'string', 'example': 'password'}
                     }
                 }
             }

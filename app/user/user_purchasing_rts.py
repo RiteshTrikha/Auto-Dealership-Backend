@@ -277,48 +277,10 @@ def get_purchase_details(purchase_id):
     #         current_app.logger.exception(e)
     #         raise e
 
-# generate purchase contract
-@user_bp.route('/purchases/<int:purchase_id>/contract', methods=['POST'])
-@swag_from({
-    'summary': 'Generate purchase contract',
-    'tags': ['User Purchasing'],
-    'security': [{'BearerAuth': []}],
-    'parameters': [
-        {
-            'in': 'path',
-            'name': 'purchase_id',
-            'schema': {'type': 'integer'},
-            'required': True,
-            'description': 'The purchase id'
-        }
-    ],
-    'responses': {
-        '200': {
-            'description': 'Contract generated successfully',
-            'content': {
-                'application/pdf': {
-                    'schema': { 'type': 'string', 'format': 'binary' }
-                }
-            }
-        }
-    }
-})
-@jwt_required()
-@manager_required
-def generate_purchase_contract(purchase_id):
-    try:
-        contract_path = g.purchasing_service.generate_purchase_contract(purchase_id)
-        return send_file(open(contract_path, 'rb'),
-                         mimetype='application/pdf',
-                         as_attachment=True,
-                         download_name=contract_path.split('/')[-1])
-    except Exception as e:
-        raise e
-
-# get purchase contract
+# get contract
 @user_bp.route('/purchases/<int:purchase_id>/contract', methods=['GET'])
 @swag_from({
-    'summary': 'Get purchase contract',
+    'summary': 'Get contract',
     'tags': ['User Purchasing'],
     'security': [{'BearerAuth': []}],
     'parameters': [
@@ -345,7 +307,7 @@ def generate_purchase_contract(purchase_id):
 @manager_required
 def get_purchase_contract(purchase_id):
     try:
-        contract_path = g.purchasing_service.get_purchase_contract(purchase_id)
+        contract_path = g.purchasing_service.get_contract(purchase_id)
         return send_file(open(contract_path, 'rb'),
                          mimetype='application/pdf',
                          as_attachment=True,
@@ -353,10 +315,10 @@ def get_purchase_contract(purchase_id):
     except Exception as e:
         raise e
     
-# sign purchase contract
+# sign contract
 @user_bp.route('/purchases/<int:purchase_id>/contract/sign', methods=['POST'])
 @swag_from({
-    'summary': 'Sign purchase contract',
+    'summary': 'Sign contract',
     'tags': ['User Purchasing'],
     'security': [{'BearerAuth': []}],
     'parameters': [
@@ -398,7 +360,7 @@ def get_purchase_contract(purchase_id):
 def sign_purchase_contract(purchase_id):
     try:
         signature = request.json.get('signature')
-        contract_path = g.purchasing_service.dealer_sign_purchase_contract(purchase_id, signature)
+        contract_path = g.purchasing_service.dealer_sign_contract(purchase_id, signature)
         return send_file(open(contract_path, 'rb'),
                          mimetype='application/pdf',
                          as_attachment=True,

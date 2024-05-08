@@ -68,7 +68,7 @@ class CreditReport(db.Model):
     __tablename__ = 'credit_report'
 
     credit_report_id = Column(INTEGER, primary_key=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
+    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True, unique=True)
     score = Column(INTEGER, nullable=False)
     apr = Column(Float, nullable=False)
     max_loan = Column(Float, nullable=False)
@@ -81,6 +81,23 @@ class CreditReport(db.Model):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
+            raise e
+        
+    @classmethod
+    def get_credit_report_by_customer(cls, customer_id):
+        try:
+            credit_report = db.session.query(CreditReport).filter(CreditReport.customer_id == customer_id).first()
+            return credit_report
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def create_credit_report(cls, customer_id, score, apr):
+        try:
+            credit_report = CreditReport(customer_id=customer_id, score=score, apr=apr)
+            db.session.add(credit_report)
+            return credit_report
+        except Exception as e:
             raise e
 
 
