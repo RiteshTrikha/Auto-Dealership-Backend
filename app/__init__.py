@@ -76,8 +76,8 @@ def create_app(config_class=Config):
     from app.user.services import UserServices
     app.user_service = UserServices()
 
-    from app.contracts.services import ContractServices
-    app.contract_service = ContractServices()
+    #from app.contracts.services import ContractServices
+    #app.contract_service = ContractServices()
 
     from app.purchasing.services import PurchasingServices
     app.purchasing_service = PurchasingServices()
@@ -91,7 +91,7 @@ def create_app(config_class=Config):
         g.inventory_service = current_app.inventory_service
         g.customer_service = current_app.customer_service
         g.user_service = current_app.user_service
-        g.contract_service = current_app.contract_service
+        #g.contract_service = current_app.contract_service
         g.purchasing_service = current_app.purchasing_service
         g.scheduling_service = current_app.scheduling_service
 
