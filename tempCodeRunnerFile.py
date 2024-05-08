@@ -1,0 +1,1 @@
+app = create_app()
