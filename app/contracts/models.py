@@ -24,12 +24,6 @@ from enum import Enum
 class Contract(db.Model):
     __tablename__ = 'contract'
 
-
-    class ContractStatus(Enum):
-        ACTIVE = 1
-        CUSTOMER_SIGNED = 2
-        APPROVED = 3
-
     contract_id = Column(INTEGER(10, unsigned=True), primary_key=True)
     purchase_id = Column(ForeignKey('purchase.purchase_id'), nullable=False, unique=True)
     vehicle_id = Column(ForeignKey('vehicle.vehicle_id'), nullable=False)
@@ -40,8 +34,8 @@ class Contract(db.Model):
     generated_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     customer_signature_date = Column(DateTime, nullable=True)
     dealer_signature_date = Column(DateTime, nullable=True)
-    dealer_signed = Column(TINYINT(1), nullable=False, server_default=text("0"))
-    customer_signed = Column(TINYINT(1), nullable=False, server_default=text("0"))
+    dealer_signed = Column(INTEGER, nullable=False, server_default=text("0"))
+    customer_signed = Column(INTEGER, nullable=False, server_default=text("0"))
     contract_path = Column(String(254), nullable=True)
 
     finance = relationship('app.purchasing.models.Finance', backref='contracts', uselist=False)

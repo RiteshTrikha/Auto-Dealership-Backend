@@ -134,7 +134,7 @@ class ContractServices:
             html = render_template(template, **contract_data)
             HTML(string=html).write_pdf(contract_path)
 
-            contract.contract_status = Contract.ContractStatus.CUSTOMER_SIGNED.value
+            contract.customer_signed = 1
             contract.customer_signature = signature
             db.session.commit()
             return contract_path
@@ -177,7 +177,7 @@ class ContractServices:
             html = render_template(template, **contract_data)
             HTML(string=html).write_pdf(contract_path)
 
-            contract.contract_status = Contract.ContractStatus.APPROVED.value
+            contract.dealer_signed = 1
             contract.dealer_signature = signature
             db.session.commit()
             return contract_path

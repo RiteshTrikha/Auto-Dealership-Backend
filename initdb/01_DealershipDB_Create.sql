@@ -82,6 +82,37 @@ CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer_vehicle` (
 
 
 -- -----------------------------------------------------
+-- Table `DealershipDB`.`customer_addon`
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `DealershipDB`.`customer_addon` (
+  `customer_addon_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `customer_id` INT UNSIGNED NOT NULL,
+  `addon_id` INT UNSIGNED NOT NULL,
+  `customer_vehicle_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`customer_addon_id`),
+  UNIQUE INDEX `customer_addon_id_UNIQUE` (`customer_addon_id` ASC) VISIBLE,
+  INDEX `fk_customer_addon_customer_idx` (`customer_id` ASC) VISIBLE,
+  INDEX `fk_customer_addon_addon_idx` (`addon_id` ASC) VISIBLE,
+  INDEX `fk_customer_addon_customer_vehicle_idx` (`customer_vehicle_id` ASC) VISIBLE,
+  CONSTRAINT `fk_customer_addon_customer`
+    FOREIGN KEY (`customer_id`)
+    REFERENCES `DealershipDB`.`customer` (`customer_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_customer_addon_addon`
+    FOREIGN KEY (`addon_id`)
+    REFERENCES `DealershipDB`.`addon` (`addon_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_customer_addon_customer_vehicle`
+    FOREIGN KEY (`customer_vehicle_id`)
+    REFERENCES `DealershipDB`.`customer_vehicle` (`customer_vehicle_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+
+-- -----------------------------------------------------
 -- Table `DealershipDB`.`vehicle`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `DealershipDB`.`vehicle` ;

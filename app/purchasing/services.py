@@ -137,7 +137,7 @@ class PurchasingServices:
                     'model': purchase.purchase_vehicle.vehicle.model,
                     'vin': purchase.purchase_vehicle.vehicle.vin,
                     'price': purchase.purchase_vehicle.offer.offer_price,
-                    'status': purchase.purchase_vehicle.VehicleStatus(purchase.purchase_vehicle.vehicle.status).name
+                    'status': purchase.purchase_vehicle.vehicle.VehicleStatus(purchase.purchase_vehicle.vehicle.vehicle_status).name
                 },
                 'purchase_subtotal': '{:.2f}'.format(purchase.get_purchase_totals()[1]),
                 'tax': purchase.tax,
@@ -308,6 +308,8 @@ class PurchasingServices:
                 raise ExposedException('Unauthorized')
             
             contract = g.contract_service.get_contract_by_purchase(purchase_id)
+            if not contract:
+                raise ExposedException('Contract does not exist. Please generate contract first')
 
             # get contract id
             contract_id = contract.contract_id
@@ -323,17 +325,12 @@ class PurchasingServices:
             purchase = Purchase.get_purchase(purchase_id)
 
             # check if contract exists
-            purchase_contract = next((contract for contract in purchase.contracts if contract.contract_type == Contract.ContractType.PURCHASE.value), None)
-            if purchase_contract is None:
-                raise ExposedException('contract does not exist')
-            current_app.logger.info('contract status: %s contract type: %s', purchase_contract.contract_status, purchase_contract.contract_type)
-            if purchase_contract.contract_status == Contract.ContractStatus.APPROVED.value:
-                raise ExposedException('contract already signed')
-            if purchase_contract.contract_status == Contract.ContractStatus.ACTIVE.value:
-                raise ExposedException('contract must be signed by customer before dealer can sign')
+            contract = g.contract_service.get_contract_by_purchase(purchase_id)
+            if not contract:
+                raise ExposedException('Contract does not exist')
             
             # get contract id
-            contract_id = purchase_contract.contract_id
+            contract_id = contract.contract_id
             contract_path = g.contract_service.dealer_sign_contract(contract_id=contract_id, signature=signature)
 
             return contract_path
@@ -366,46 +363,63 @@ class PurchasingServices:
         creates a payment record and updates the purchase status to PAID and vehicle status to SOLD
         '''
         try:
+            # Ensure this method is fetching and checking the purchase correctly
             purchase = Purchase.get_purchase(purchase_id)
-            # check if contract has been signed
-            if next((contract for contract in purchase.contracts if contract.contract_status == Contract.ContractStatus.APPROVED.value), None):
-                raise ExposedException('contract has not been approved')
-            # check if purchase exists and is not paid
             if not purchase:
-                raise ExposedException('purchase does not exist')
+                raise ExposedException('Purchase does not exist')
+            
+            # This should be after checking if the purchase exists
+            purchase.update_purchase_status(Purchase.PurchaseStatus.ACTIVE.value)
+
             if purchase.purchase_status == Purchase.PurchaseStatus.PAID.value:
-                raise ExposedException('purchase is already paid')
-            # check if purchase belongs to customer
+                raise ExposedException('Purchase is already paid')
+
             if purchase.customer_id != customer_id:
                 raise ExposedException('Unauthorized')
-            # validate account details
+
+            contract = g.contract_service.get_contract_by_purchase(purchase_id)
+            current_app.logger.info('Contract signed: %s', contract.customer_signed)
+            if not contract or contract.customer_signed != 1 or contract.dealer_signed != 1:
+                raise ExposedException('Contract not signed')
+
             self.validate_bank_account_details(account_number, routing_number)
-
-            # get purchase total
             purchase_total, _ = purchase.get_purchase_totals()
-            # create payment
+
+            # Ensure that payment creation is handled correctly
             payment = Payment.create_payment(purchase_id=purchase_id, finance_id=None,
-                                             account_number=account_number,
-                                             routing_number=routing_number,
-                                             payment_amount=purchase_total)
-            # update purchase type and status
-            purchase.update_purchase_type(Purchase.PurchaseType.ACH.value)
+                                            account_number=account_number,
+                                            routing_number=routing_number,
+                                            payment_amount=purchase_total)
+
             purchase.update_purchase_status(Purchase.PurchaseStatus.PAID.value)
+            purchase.purchase_vehicle.vehicle.update_vehicle_status(2)  # SOLD
 
-            # update vehicle status
-            purchase.purchase_vehicle.vehicle.update_vehicle_status(2) # SOLD
 
-            # add vehicle to customer's vehicles
-            customer_vehicle = g.customer_service.create_customer_vehicle(customer_id=customer_id,
-                                                                      vin=purchase.purchase_vehicle.vehicle.vin,
-                                                                      year=purchase.purchase_vehicle.vehicle.year,
-                                                                      make=purchase.purchase_vehicle.vehicle.make,
-                                                                      model=purchase.purchase_vehicle.vehicle.model)
+            # Handling vehicle creation without immediate commit
+            customer_vehicle = g.customer_service.create_customer_vehicle_no_commit(
+                customer_id=customer_id,
+                vin=purchase.purchase_vehicle.vehicle.vin,
+                year=purchase.purchase_vehicle.vehicle.year,
+                make=purchase.purchase_vehicle.vehicle.make,
+                model=purchase.purchase_vehicle.vehicle.model
+            )
+            db.session.commit()
+            # Addons loop, make sure it is syntactically correct
+            for addon in purchase.purchase_addons:
+                g.customer_service.create_customer_addon(customer_id=customer_id, addon_id=addon.addon_id,
+                                                            customer_vehicle_id=customer_vehicle.customer_vehicle_id)
 
             db.session.commit()
             return {'payment_id': payment.payment_id, 'customer_vehicle_id': customer_vehicle.customer_vehicle_id}
         except Exception as e:
             db.session.rollback()
+            existing_vehicle = CustomerVehicle.query.filter_by(vin=purchase.purchase_vehicle.vehicle.vin).first()
+            if existing_vehicle:
+                db.session.delete(existing_vehicle)
+                db.session.flush()  # Flush here to ensure deletion is executed immediately
+            purchase.update_purchase_status(Purchase.PurchaseStatus.ACTIVE.value)
+            purchase.purchase_vehicle.vehicle.update_vehicle_status(1)  # AVAILABLE
+            db.session.commit()
             current_app.logger.exception(e)
             raise e
         
