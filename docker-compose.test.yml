@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  test_db:
+    image: mysql:8.0
+    volumes:
+      - test_mysql_data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: DealershipDB
+    ports:
+      - "3307:3306"
+
+volumes:
+  test_mysql_data:

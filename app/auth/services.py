@@ -60,7 +60,7 @@ class AuthService:
             # get user by email
             user = g.user_service.get_by_email(email)
             # check if user exists
-            if not user or not password == user.password:
+            if not user or not check_password_hash(user.password, password):
                 raise ExposedException('Invalid email or password', 400)
             # create jwt token
             access_token = create_access_token(identity={'user_type': 'user', 'user_id': user.user_id, 'role': user.role.role})
