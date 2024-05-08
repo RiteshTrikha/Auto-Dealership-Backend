@@ -323,3 +323,12 @@ class Addon(db.Model):
             return addon
         except Exception as e:
             raise e
+    
+    @classmethod
+    def update_addon_status(cls, addon_id, status):
+        try:
+            addon = db.session.query(Addon).filter_by(addon_id=addon_id).first()
+            addon.status = status
+            return addon
+        except Exception as e:
+            raise e

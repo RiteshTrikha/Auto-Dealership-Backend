@@ -70,7 +70,8 @@ class CreditReport(db.Model):
     credit_report_id = Column(INTEGER, primary_key=True)
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
     score = Column(INTEGER, nullable=False)
-    apy = Column(Float, nullable=False)
+    apr = Column(Float, nullable=False)
+    max_loan = Column(Float, nullable=False)
 
     customer = relationship('Customer')
 
