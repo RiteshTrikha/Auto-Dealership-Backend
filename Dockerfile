@@ -3,6 +3,11 @@ FROM python:3.8-slim
 # Set the working directory in the container
 WORKDIR /app
 
+# Copy SSL certificates
+COPY server-ca.pem /app
+COPY client-cert.pem /app
+COPY client-key.pem /app
+
 COPY . /app
 
 # Install system libraries required for WeasyPrint

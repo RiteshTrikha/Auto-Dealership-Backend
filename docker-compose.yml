@@ -1,16 +1,5 @@
 version: '3.8'
 services:
-  db:
-    image: mysql:8.0
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./initdb:/docker-entrypoint-initdb.d
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: DealershipDB
-    ports:
-      - "3307:3306"
-
   app:
     build: .
     command: flask run --host=0.0.0.0 --reload --extra-files /app/**/*.py
@@ -18,12 +7,11 @@ services:
       - .:/app
     ports:
       - "5000:5000"
-    depends_on:
-      - db
     environment:
       FLASK_ENV: development
       FLASK_APP: run.py
       FLASK_RUN_HOST: 0.0.0.0
+      SQLALCHEMY_DATABASE_URI: "mysql+pymysql://backend:backend-password@dealershipdb/DealershipDB?ssl_ca=/app/server-ca.pem&ssl_cert=/app/client-cert.pem&ssl_key=/app/client-key.pem"
 
 volumes:
   mysql_data:
