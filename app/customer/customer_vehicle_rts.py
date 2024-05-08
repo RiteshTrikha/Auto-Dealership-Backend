@@ -1,5 +1,6 @@
 from flask import jsonify, request, current_app, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import customer_bp
 from flasgger import swag_from
 from app.customer.models import Customer
@@ -355,5 +356,72 @@ def delete_customer_vehicle(customer_vehicle_id):
     try:
         g.customer_service.delete_vehicle(customer_vehicle_id)
         return standardize_response(message='Customer Vehicle deleted', code=200)
+    except Exception as e:
+        raise e
+    
+
+# get customer addons
+@customer_bp.route('/addons', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'summary': 'Get Customer Addons',
+    'tags': ['Customer Addons'],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        '200': {
+            'description': 'Customer Addons',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'data': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'customer_addon_id': {'type': 'integer'},
+                                'addon_id': {'type': 'integer'}
+                            }
+                        }
+                    },
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '404': {
+            'description': 'Customer Addons not found',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        },
+        '400': {
+            'description': 'Bad request',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {'type': 'string'},
+                    'code': {'type': 'integer'}
+                }
+            }
+        }
+    }
+})
+def get_customer_addons():
+    try:
+        customer_id = get_jwt_identity().get('customer_id')
+        addons = g.customer_service.get_customer_addons(customer_id=customer_id)
+        addons_dict = [{
+            'customer_addon_id': addon.customer_addon_id,
+            'customer_vehicle_id': addon.customer_vehicle_id,
+            'addon_id': addon.addon_id,
+            'addon': addon.addon.addon_name,
+            'price': addon.addon.price,
+            'description': addon.addon.description
+        } for addon in addons ]
+        return standardize_response(data=addons_dict, message='Customer Addons', code=200)
     except Exception as e:
         raise e

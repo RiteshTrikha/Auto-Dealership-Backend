@@ -1,5 +1,5 @@
 from flask import current_app
-from .models import Customer, CustomerVehicle
+from .models import CreditReport, Customer, CustomerAddon, CustomerVehicle
 from app.exceptions import ExposedException
 from app import db
 class CustomerServices:
@@ -62,6 +62,15 @@ class CustomerServices:
             current_app.logger.exception(e)
             raise e
         
+    # create customer vehicle no commit
+    def create_customer_vehicle_no_commit(self, customer_id, year, make, model, vin):
+        try:
+            vehicle = CustomerVehicle.create_vehicle(vin, year, make, model, customer_id)
+            return vehicle
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
     def get_vehicle(self, customer_vehicle_id):
         try:
             vehicle = CustomerVehicle.get_vehicle(customer_vehicle_id)
@@ -90,6 +99,46 @@ class CustomerServices:
             return vehicle
         except Exception as e:
             db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+######## Customer Credit Report Services ########
+
+    def create_credit_report(self, customer_id, score, apy):
+        try:
+            credit_report = CreditReport.create_credit_report(customer_id, score, apy)
+            db.session.commit()
+            return credit_report
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_credit_report_by_customer(self, customer_id):
+        try:
+            credit_report = CreditReport.get_credit_report_by_customer(customer_id)
+            return credit_report
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
+        
+######## Customer Addon Services ########
+
+    def create_customer_addon(self, customer_id, addon_id, customer_vehicle_id):
+        try:
+            customer_addon = CustomerAddon.create_customer_addon(customer_id, addon_id, customer_vehicle_id)
+            db.session.commit()
+            return customer_addon
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception(e)
+            raise e
+        
+    def get_customer_addons(self, customer_id):
+        try:
+            addons = CustomerAddon.get_by_customer(customer_id)
+            return addons
+        except Exception as e:
             current_app.logger.exception(e)
             raise e
     

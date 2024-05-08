@@ -15,30 +15,41 @@ class Purchase(db.Model):
         CANCELLED = 2
 
     class PurchaseType(Enum):
+        CAR_PURCHASE = 0
+        SERVICE_PURCHASE = 1
+
+    class PaymentType(Enum):
         ACH = 0
         FINANCE = 1
 
     purchase_id = Column(INTEGER, primary_key=True, unique=True)
     customer_id = Column(INTEGER, ForeignKey('customer.customer_id'))
+    negotiation_id = Column(INTEGER, ForeignKey('negotiation.negotiation_id'))
     open_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     close_date = Column(DateTime)
+    is_open = Column(INTEGER, server_default=text("1"))
+    payment_type = Column(INTEGER)
     purchase_type = Column(INTEGER)
     purchase_status = Column(INTEGER)
     tax = Column(Float)
 
-    customer = relationship('app.customer.models.Customer', backref='purchase')
-    finance = relationship('Finance', backref='purchase')
+    customer = relationship('app.customer.models.Customer', backref='purchase', uselist=False)
+    finance = relationship('Finance', backref='purchase', uselist=False)
     payment = relationship('Payment', backref='purchase', uselist=False)
     purchase_addons = relationship('PurchaseAddon', backref='purchase')
     purchase_vehicle = relationship('Purchasevehicle', backref='purchase', uselist=False)
-    contracts = relationship('app.contracts.models.Contract', backref='purchase')
 
     def get_purchase_totals(self):
         try:
             sub_total = 0
-            for purchase_addon in self.purchase_addons:
-                sub_total += purchase_addon.addon.price
-            sub_total += self.purchase_vehicle.offer.offer_price
+
+            if self.purchase_addons:
+                for purchase_addon in self.purchase_addons:
+                    sub_total += purchase_addon.addon.price
+
+            if self.purchase_vehicle.offer.offer_price:
+                sub_total += self.purchase_vehicle.offer.offer_price
+
             total = sub_total + (sub_total * self.tax)
             return total, sub_total
         except Exception as e:
@@ -69,11 +80,21 @@ class Purchase(db.Model):
             raise e
 
     @classmethod
-    def create_purchase(cls, customer_id, tax=0.06625):
+    def get_purchase_by_customer(cls, purchase_id, customer_id):
+        try:
+            purchase = db.session.query(Purchase).filter_by(purchase_id=purchase_id, customer_id=customer_id).first()
+            return purchase
+        except Exception as e:
+            raise e
+
+    @classmethod
+    def create_purchase(cls, customer_id, purchase_type, tax=0.06625, negotiation_id=None):
         try:
             purchase = Purchase(customer_id=customer_id,
-                                tax=tax,
-                                purchase_status=cls.PurchaseStatus.ACTIVE.value)
+                                negotiation_id=negotiation_id,
+                                purchase_type=purchase_type,
+                                purchase_status=cls.PurchaseStatus.ACTIVE.value,
+                                tax=tax)
             db.session.add(purchase)
             return purchase
         except Exception as e:
@@ -118,15 +139,17 @@ class Finance(db.Model):
         PAID = 1
 
     finance_id = Column(INTEGER, primary_key=True, unique=True)
-    purchase_id = Column(INTEGER, ForeignKey('purchase.purchase_id'))
+    purchase_id = Column(INTEGER, ForeignKey('purchase.purchase_id'), unique=True)
     start_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     end_date = Column(DateTime)
-    down_payment = Column(INTEGER)
     loan_amount = Column(INTEGER)
-    apy = Column(Float)
+    down_payment = Column(INTEGER)
+    total_loan_amount = Column(INTEGER)
+    monthly_payment = Column(INTEGER)
+    apr = Column(Float)
     term = Column(INTEGER)
     paid = Column(INTEGER)
-    finance_status = Column(INTEGER)
+    finance_status = Column(INTEGER, server_default=text("0"))
 
     payment = relationship('Payment', backref='finance')
 
@@ -147,21 +170,35 @@ class Finance(db.Model):
             raise e
 
     @classmethod
-    def create_finance(cls, purchase_id, start_date, end_date, down_payment, loan_amount, apy, 
-                       term, paid, finance_status):
+    def get_finance_by_purchase(cls, purchase_id):
         try:
-            finance = Finance(purchase_id=purchase_id, start_date=start_date, 
-                              end_date=end_date, down_payment=down_payment, 
-                              loan_amount=loan_amount, apy=apy, term=term, 
-                              paid=paid, finance_status=finance_status)
-            db.session.add(finance)
-            return finance.finance_id
+            finance = db.session.query(Finance).filter_by(purchase_id=purchase_id).first()
+            return finance
         except Exception as e:
             raise e
 
     @classmethod
+    def create_finance(cls, purchase_id, loan_amount, apr, 
+                       term):
+        try:
+            down_payment = loan_amount * 0.2
+            total_loan_amount = (loan_amount - down_payment) * (1 + apr) ** term
+            monthly_payment = total_loan_amount / term
+
+            finance = Finance(purchase_id=purchase_id, loan_amount=loan_amount, 
+                              apr=apr, term=term,
+                              down_payment=down_payment, total_loan_amount=total_loan_amount,
+                              monthly_payment=monthly_payment)
+            db.session.add(finance)
+            db.session.commit()
+            return finance
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    @classmethod
     def update_finance(cls, finance_id, purchase_id=None, start_date=None, end_date=None, 
-                       down_payment=None, loan_amount=None, apy=None, term=None, paid=None):
+                       down_payment=None, loan_amount=None, apr=None, term=None, paid=None):
         try:
             finance = db.session.query(Finance).filter_by(finance_id=finance_id).first()
             if purchase_id:
@@ -174,8 +211,8 @@ class Finance(db.Model):
                 finance.down_payment = down_payment
             if loan_amount:
                 finance.loan_amount = loan_amount
-            if apy:
-                finance.apy = apy
+            if apr:
+                finance.apr = apr
             if term:
                 finance.term = term
             if paid:

@@ -8,37 +8,38 @@ from app import db
 
 class ContractServices:
 
-    def generate_purchase_contract(self, purchase_id, customer_name, year, make, model, vin):
-        '''
-        Generates a contract
-        ---
-        creates a contract record
-        '''
-        contract_data = {
-            'customer_name': customer_name,
-            'year': year,
-            'make': make,
-            'model': model,
-            'vin': vin,
-            'date': datetime.now().strftime('%Y-%m-%d'),
-            'customer_signature': '________________________',
-            'dealer_signature': '________________________'
-        }
-
+    def generate_contract(self, purchase_id, is_finance=False):
         try:
-            contract_path = os.path.join('app/data/contracts/', f'purchase_contract_{purchase_id}.pdf')
+            contract = Contract.get_contract_by_purchase(purchase_id)
+
+            contract_data = {
+                'customer_name': f'{contract.customer.first_name} {contract.customer.last_name}',
+                'year': contract.vehicle.year,
+                'make': contract.vehicle.make,
+                'model': contract.vehicle.model,
+                'vin': contract.vehicle.vin,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'customer_signature': '________________________',
+                'dealer_signature': '________________________'
+            }
+
+            if is_finance:
+                contract_data['finance_amount'] = contract.finance.loan_amount
+                contract_data['finance_apr'] = contract.finance.apr * 100
+                contract_data['finance_term'] = contract.finance.term
+                contract_data['finance_down_payment'] = contract.finance.down_payment
+                contract_data['finance_monthly_payment'] = contract.finance.monthly_payment
+                contract_data['finance_total_payment'] = contract.finance.total_loan_amount
+                template = 'finance_contract_template.html'
+            else:
+                template = 'contract_template.html'
+
+            contract_path = os.path.join('app/data/contracts/', f'contract_{purchase_id}.pdf')
             os.makedirs(os.path.dirname(contract_path), exist_ok=True)
-            html = render_template('contract_template.html', **contract_data)
+            html = render_template(template, **contract_data)
             HTML(string=html).write_pdf(contract_path)
 
-            contract = Contract.create_contract(purchase_id=purchase_id, 
-                                                contract_type=Contract.ContractType.PURCHASE.value,
-                                                contract_path=contract_path,
-                                                signer_full_name=customer_name,
-                                                vehicle_year=year,
-                                                vehicle_make=make,
-                                                vehicle_model=model,
-                                                vehicle_vin=vin)
+            contract.contract_path = contract_path
             db.session.commit()
             return contract_path
         except Exception as e:
@@ -46,27 +47,37 @@ class ContractServices:
             current_app.logger.exception(e)
             raise e
     
-    def re_generate_contract(self, contract_id):
+    def re_generate_contract(self, purchase_id, is_finance=False):
         '''
         Re-generates a contract
         ---
         updates pdf file with new contract data
         '''
         try:
-            contract = Contract.get_contract(contract_id)
+            contract = Contract.get_contract_by_purchase(purchase_id)
             contract_data = {
-                'customer_name': contract.signer_full_name,
-                'year': contract.vehicle_year,
-                'make': contract.vehicle_make,
-                'model': contract.vehicle_model,
-                'vin': contract.vehicle_vin,
-                'date': contract.contract_date.strftime('%Y-%m-%d'),
+                'customer_name': f'{contract.customer.first_name} {contract.customer.last_name}',
+                'year': contract.vehicle.year,
+                'make': contract.vehicle.make,
+                'model': contract.vehicle.model,
+                'vin': contract.vehicle.vin,
+                'date': datetime.now().strftime('%Y-%m-%d'),
                 'customer_signature': contract.customer_signature if contract.customer_signature else '________________________',
                 'dealer_signature': contract.dealer_signature if contract.dealer_signature else '________________________'
             }
+            if is_finance:
+                contract_data['finance_amount'] = contract.finance.loan_amount
+                contract_data['finance_apr'] = contract.finance.apr * 100
+                contract_data['finance_term'] = contract.finance.term
+                contract_data['finance_down_payment'] = contract.finance.down_payment
+                contract_data['finance_monthly_payment'] = contract.finance.monthly_payment
+                contract_data['finance_total_payment'] = contract.finance.total_loan_amount
+                template = 'finance_contract_template.html'
+            else:
+                template = 'contract_template.html'
             contract_path = contract.contract_path
 
-            html = render_template('contract_template.html', **contract_data)
+            html = render_template(template, **contract_data)
             HTML(string=html).write_pdf(contract_path)
             return contract_path
         except Exception as e:
@@ -74,7 +85,7 @@ class ContractServices:
             current_app.logger.exception(e)
             raise e
 
-    def get_contract(self, contract_id):
+    def get_contract_path(self, contract_id):
         '''
         Retrieves a contract
         ---
@@ -89,7 +100,7 @@ class ContractServices:
             current_app.logger.exception(e)
             raise e
             
-    def customer_sign_contract(self, contract_id, signature):
+    def customer_sign_contract(self, contract_id, signature, is_finance=False):
         '''
         Signs a contract
         ---
@@ -99,21 +110,31 @@ class ContractServices:
         try:
             contract = Contract.get_contract(contract_id)
             contract_data = {
-                'customer_name': contract.signer_full_name,
-                'year': contract.vehicle_year,
-                'make': contract.vehicle_make,
-                'model': contract.vehicle_model,
-                'vin': contract.vehicle_vin,
-                'date': contract.contract_date.strftime('%Y-%m-%d'),
+                'customer_name': f'{contract.customer.first_name} {contract.customer.last_name}',
+                'year': contract.vehicle.year,
+                'make': contract.vehicle.make,
+                'model': contract.vehicle.model,
+                'vin': contract.vehicle.vin,
+                'date': datetime.now().strftime('%Y-%m-%d'),
                 'customer_signature': signature,
                 'dealer_signature': '________________________'
             }
+            if is_finance:
+                contract_data['finance_amount'] = contract.finance.loan_amount
+                contract_data['finance_apr'] = contract.finance.apr * 100
+                contract_data['finance_term'] = contract.finance.term
+                contract_data['finance_down_payment'] = contract.finance.down_payment
+                contract_data['finance_monthly_payment'] = contract.finance.monthly_payment
+                contract_data['finance_total_payment'] = contract.finance.total_loan_amount
+                template = 'finance_contract_template.html'
+            else:
+                template = 'contract_template.html'
             contract_path = contract.contract_path
 
-            html = render_template('contract_template.html', **contract_data)
+            html = render_template(template, **contract_data)
             HTML(string=html).write_pdf(contract_path)
 
-            contract.contract_status = Contract.ContractStatus.CUSTOMER_SIGNED.value
+            contract.customer_signed = 1
             contract.customer_signature = signature
             db.session.commit()
             return contract_path
@@ -122,7 +143,7 @@ class ContractServices:
             current_app.logger.exception(e)
             raise e
         
-    def dealer_sign_contract(self, contract_id, signature):
+    def dealer_sign_contract(self, contract_id, signature, is_finance=False):
         '''
         Signs a contract
         ---
@@ -132,21 +153,31 @@ class ContractServices:
         try:
             contract = Contract.get_contract(contract_id)
             contract_data = {
-                'customer_name': contract.signer_full_name,
-                'year': contract.vehicle_year,
-                'make': contract.vehicle_make,
-                'model': contract.vehicle_model,
-                'vin': contract.vehicle_vin,
-                'date': contract.contract_date.strftime('%Y-%m-%d'),
-                'customer_signature': contract.customer_signature,
+                'customer_name': f'{contract.customer.first_name} {contract.customer.last_name}',
+                'year': contract.vehicle.year,
+                'make': contract.vehicle.make,
+                'model': contract.vehicle.model,
+                'vin': contract.vehicle.vin,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'customer_signature': contract.customer_signature if contract.customer_signature else '________________________',
                 'dealer_signature': signature
             }
+            if is_finance:
+                contract_data['finance_amount'] = contract.finance.loan_amount
+                contract_data['finance_apr'] = contract.finance.apr * 100
+                contract_data['finance_term'] = contract.finance.term
+                contract_data['finance_down_payment'] = contract.finance.down_payment
+                contract_data['finance_monthly_payment'] = contract.finance.monthly_payment
+                contract_data['finance_total_payment'] = contract.finance.total_loan_amount
+                template = 'finance_contract_template.html'
+            else:
+                template = 'contract_template.html'
             contract_path = contract.contract_path
 
-            html = render_template('contract_template.html', **contract_data)
+            html = render_template(template, **contract_data)
             HTML(string=html).write_pdf(contract_path)
 
-            contract.contract_status = Contract.ContractStatus.APPROVED.value
+            contract.dealer_signed = 1
             contract.dealer_signature = signature
             db.session.commit()
             return contract_path
@@ -155,5 +186,13 @@ class ContractServices:
             current_app.logger.exception(e)
             raise e
 
-
+    def get_contract_by_purchase(self, purchase_id):
+        try:
+            contract = Contract.get_contract_by_purchase(purchase_id)
+            if not contract:
+                raise Exception('Contract not found')
+            return contract
+        except Exception as e:
+            current_app.logger.exception(e)
+            raise e
 

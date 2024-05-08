@@ -1,3 +1,4 @@
+from datetime import datetime
 from app import db
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
@@ -5,41 +6,42 @@ from sqlalchemy.orm import relationship
 from enum import Enum
 
 
-#CREATE TABLE IF NOT EXISTS `DealershipDB`.`contract` (
-#  `contract_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#  `purchase_id` INT UNSIGNED NOT NULL,
-#  `contract_type` INT NULL,
-#  `contract_status` INT NULL,
-#  `contract_date` DATETIME NULL DEFAULT NOW(),
-#  `contract_path` VARCHAR(254) NULL,
+#   `contract_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+#   `purchase_id` INT UNSIGNED NOT NULL,
+#   `vehicle_id` INT UNSIGNED NOT NULL,
+#   `customer_id` INT UNSIGNED NOT NULL,
+#   `finance_id` INT UNSIGNED NULL,
+#   `customer_signature` VARCHAR(254) NULL,
+#   `dealer_signature` VARCHAR(254) NULL,
+#   `generated_date` DATETIME NULL DEFAULT NOW(),
+#   `customer_signature_date` DATETIME NULL,
+#   `dealer_signature_date` DATETIME NULL,
+#   `dealer_signed` INT NOT NULL DEFAULT 0,
+#   `customer_signed` INT NOT NULL DEFAULT 0,
+#   `contract_path` VARCHAR(254) NULL,
 
 
 class Contract(db.Model):
     __tablename__ = 'contract'
-    __table_args__ = (db.UniqueConstraint('purchase_id', 'contract_type', name='purchase_contract_type_uc'),)
 
-    class ContractType(Enum):
-        PURCHASE = 1
-        FINANCE = 2
+    contract_id = Column(INTEGER(10, unsigned=True), primary_key=True)
+    purchase_id = Column(ForeignKey('purchase.purchase_id'), nullable=False, unique=True)
+    vehicle_id = Column(ForeignKey('vehicle.vehicle_id'), nullable=False)
+    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False)
+    finance_id = Column(ForeignKey('finance.finance_id'), nullable=True)
+    customer_signature = Column(String(254), nullable=True)
+    dealer_signature = Column(String(254), nullable=True)
+    generated_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+    customer_signature_date = Column(DateTime, nullable=True)
+    dealer_signature_date = Column(DateTime, nullable=True)
+    dealer_signed = Column(INTEGER, nullable=False, server_default=text("0"))
+    customer_signed = Column(INTEGER, nullable=False, server_default=text("0"))
+    contract_path = Column(String(254), nullable=True)
 
-    class ContractStatus(Enum):
-        ACTIVE = 1
-        CUSTOMER_SIGNED = 2
-        APPROVED = 3
+    finance = relationship('app.purchasing.models.Finance', backref='contracts', uselist=False)
+    vehicle = relationship('app.inventory.models.Vehicle', backref='contracts', uselist=False)
+    customer = relationship('app.customer.models.Customer', backref='contracts', uselist=False)
 
-    contract_id = Column(INTEGER(unsigned=True), primary_key=True)
-    purchase_id = Column(ForeignKey('purchase.purchase_id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
-    contract_type = Column(INTEGER)
-    contract_status = Column(INTEGER)
-    signer_full_name = Column(String(45))
-    customer_signature = Column(String(254))
-    dealer_signature = Column(String(254))
-    vehicle_year = Column(String(4))
-    vehicle_make = Column(String(45))
-    vehicle_model = Column(String(45))
-    vehicle_vin = Column(String(17))
-    contract_date = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-    contract_path = Column(String(254))
 
     @staticmethod
     def get_contract(contract_id):
@@ -50,16 +52,22 @@ class Contract(db.Model):
             raise e
         
     @staticmethod
-    def create_contract(purchase_id, contract_type, contract_path, signer_full_name, vehicle_year, vehicle_make, vehicle_model, vehicle_vin):
+    def get_contract_by_purchase(purchase_id):
         try:
-            contract = Contract(purchase_id=purchase_id, contract_type=contract_type, 
-                                contract_path=contract_path, signer_full_name=signer_full_name, 
-                                vehicle_year=vehicle_year, vehicle_make=vehicle_make, 
-                                vehicle_model=vehicle_model, vehicle_vin=vehicle_vin,
-                                contract_status=Contract.ContractStatus.ACTIVE.value)
-            db.session.add(contract)
+            contract = db.session.query(Contract).filter_by(purchase_id=purchase_id).first()
             return contract
         except Exception as e:
+            raise e
+        
+    @staticmethod
+    def create_contract(purchase_id, vehicle_id, customer_id, finance_id=None):
+        try:
+            contract = Contract(purchase_id=purchase_id, vehicle_id=vehicle_id, customer_id=customer_id, finance_id=finance_id)
+            db.session.add(contract)
+            db.session.commit()
+            return contract
+        except Exception as e:
+            db.session.rollback()
             raise e
         
     def update_contract_signatures(contract_id, customer_signature=None, dealer_signature=None):
@@ -67,17 +75,10 @@ class Contract(db.Model):
             contract = db.session.query(Contract).filter_by(contract_id=contract_id).first()
             if customer_signature:
                 contract.customer_signature = customer_signature
+                contract.customer_signature_date = datetime.now()
             if dealer_signature:
                 contract.dealer_signature = dealer_signature
-            return contract
-        except Exception as e:
-            raise e
-        
-    @staticmethod
-    def update_contract_status(contract_id, status):
-        try:
-            contract = db.session.query(Contract).filter_by(contract_id=contract_id).first()
-            contract.contract_status = status
+                contract.dealer_signature_date = datetime.now()
             return contract
         except Exception as e:
             raise e

@@ -24,7 +24,7 @@ standardize_response = Utilities.standardize_response
             'application/json': {
                 'schema': {
                     'type': 'object',
-                    'properties': { 'negotiation_id': { 'type': 'integer' } },
+                    'properties': { 'negotiation_id': { 'type': 'integer', 'example': 1 } },
                     'required': [ 'negotiation_id' ]
                 }
             }
@@ -136,7 +136,7 @@ def get_customer_purchases():
             'name': 'purchase_id',
             'required': True,
             'description': 'Purchase id',
-            'schema': { 'type': 'integer' }
+            'schema': { 'type': 'integer', 'example': 1 }
         }
     ],
     'responses': {
@@ -228,7 +228,7 @@ def get_customer_purchase_details(purchase_id):
             'name': 'purchase_id',
             'required': True,
             'description': 'Purchase id',
-            'schema': { 'type': 'integer' }
+            'schema': { 'type': 'integer', 'example': 1 }
         }
     ],
     'requestBody': {
@@ -238,7 +238,7 @@ def get_customer_purchase_details(purchase_id):
             'application/json': {
                 'schema': {
                     'type': 'object',
-                    'properties': { 'addon_ids': { 'type': 'array', 'items': { 'type': 'integer' } } },
+                    'properties': { 'addon_ids': { 'type': 'array', 'items': { 'type': 'integer', 'example': 1 } } },
                     'required': [ 'addon_ids' ]
                 }
             }
@@ -287,10 +287,8 @@ def add_addons_to_purchase(purchase_id):
         return standardize_response(data=purchase_addons_dict, message='Addons added successfully')
     except Exception as e:
         raise e
-    
-# TODO: add route to finance purchase
 
-# generate contract
+# generate purchase contract
 @customer_bp.route('/purchase/<int:purchase_id>/contract', methods=['POST'])
 @jwt_required()
 @swag_from({
@@ -303,7 +301,7 @@ def add_addons_to_purchase(purchase_id):
             'name': 'purchase_id',
             'required': True,
             'description': 'Purchase id',
-            'schema': { 'type': 'integer' }
+            'schema': { 'type': 'integer', 'example': 1 }
         }
     ],
     'responses': {
@@ -320,8 +318,48 @@ def add_addons_to_purchase(purchase_id):
 def generate_customer_purchase_contract(purchase_id):
     try:
         customer_id = get_jwt_identity().get('customer_id')
-        contract_path = g.purchasing_service.generate_customer_purchase_contract(purchase_id, customer_id)
+        contract_path = g.purchasing_service.generate_purchase_contract(purchase_id=purchase_id,
+                                                                                customer_id=customer_id)
         current_app.logger.info(f'contract_path: {contract_path}')
+        return send_file(open(contract_path, 'rb'),
+                            mimetype='application/pdf',
+                            as_attachment=True,
+                            download_name=contract_path.split('/')[-1])
+    except Exception as e:
+        raise e
+    
+# generate finance contract
+@customer_bp.route('/purchase/<int:purchase_id>/contract/finance', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'summary': 'Generate finance contract',
+    'tags': ['Customer Purchasing'],
+    'security': [{'BearerAuth': []}],
+    'parameters': [
+        {
+            'in': 'path',
+            'name': 'purchase_id',
+            'required': True,
+            'description': 'Purchase id',
+            'schema': { 'type': 'integer', 'example': 1 }
+        }
+    ],
+    'responses': {
+        '200': {
+            'description': 'Contract generated successfully',
+            'content': {
+                'application/pdf': {
+                    'schema': { 'type': 'string', 'format': 'binary' }
+                }
+            }
+        }
+    }
+})
+def generate_customer_finance_contract(purchase_id):
+    try:
+        customer_id = get_jwt_identity().get('customer_id')
+        contract_path = g.purchasing_service.generate_finance_contract(purchase_id=purchase_id,
+                                                                                customer_id=customer_id)
         return send_file(open(contract_path, 'rb'),
                             mimetype='application/pdf',
                             as_attachment=True,
@@ -333,7 +371,7 @@ def generate_customer_purchase_contract(purchase_id):
 @customer_bp.route('/purchase/<int:purchase_id>/contract', methods=['GET'])
 @jwt_required()
 @swag_from({
-    'summary': 'Get purchase contract',
+    'summary': 'Get contract',
     'tags': ['Customer Purchasing'],
     'security': [{'BearerAuth': []}],
     'parameters': [
@@ -359,7 +397,8 @@ def generate_customer_purchase_contract(purchase_id):
 def get_customer_purchase_contract(purchase_id):
     try:
         customer_id = get_jwt_identity().get('customer_id')
-        contract_path = g.purchasing_service.get_customer_purchase_contract(purchase_id=purchase_id, 
+        current_app.logger.info(f'customer_id: {customer_id}, purchase_id: {purchase_id}')
+        contract_path = g.purchasing_service.get_contract(purchase_id=purchase_id, 
                                                                    customer_id=customer_id)
         return send_file(open(contract_path, 'rb'),
                             mimetype='application/pdf',
@@ -368,11 +407,14 @@ def get_customer_purchase_contract(purchase_id):
     except Exception as e:
         raise e
 
+
+# WORKING PROGRESS
+
 # sign contract
 @customer_bp.route('/purchase/<int:purchase_id>/contract/sign', methods=['POST'])
 @jwt_required()
 @swag_from({
-    'summary': 'Sign purchase contract',
+    'summary': 'Sign contract',
     'tags': ['Customer Purchasing'],
     'security': [{'BearerAuth': []}],
     'parameters': [
@@ -413,7 +455,7 @@ def sign_purchase_contract(purchase_id):
         customer_id = get_jwt_identity().get('customer_id')
         data = request.get_json()
         signature = data.get('signature')
-        contract_path = g.purchasing_service.customer_sign_purchase_contract(purchase_id=purchase_id,
+        contract_path = g.purchasing_service.customer_sign_contract(purchase_id=purchase_id,
                                                                             customer_id=customer_id,
                                                                             signature=signature)
         return send_file(open(contract_path, 'rb'),

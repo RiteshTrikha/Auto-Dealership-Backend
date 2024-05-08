@@ -24,6 +24,10 @@ class Customer(db.Model):
     create_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
     status = Column(Integer, nullable=False)
 
+    credit_report = relationship('CreditReport', uselist=False)
+    customer_vehicle = relationship('CustomerVehicle', backref='customer')
+    addons = relationship('CustomerAddon', backref='customer')
+
     # create customer
     @classmethod
     def create(cls, first_name, last_name, email, password, birth_date, 
@@ -68,7 +72,7 @@ class CreditReport(db.Model):
     __tablename__ = 'credit_report'
 
     credit_report_id = Column(INTEGER, primary_key=True)
-    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
+    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True, unique=True)
     score = Column(INTEGER, nullable=False)
     apr = Column(Float, nullable=False)
     max_loan = Column(Float, nullable=False)
@@ -82,6 +86,23 @@ class CreditReport(db.Model):
         except Exception as e:
             db.session.rollback()
             raise e
+        
+    @classmethod
+    def get_credit_report_by_customer(cls, customer_id):
+        try:
+            credit_report = db.session.query(CreditReport).filter(CreditReport.customer_id == customer_id).first()
+            return credit_report
+        except Exception as e:
+            raise e
+        
+    @classmethod
+    def create_credit_report(cls, customer_id, score, apr):
+        try:
+            credit_report = CreditReport(customer_id=customer_id, score=score, apr=apr)
+            db.session.add(credit_report)
+            return credit_report
+        except Exception as e:
+            raise e
 
 
 class CustomerVehicle(db.Model):
@@ -93,8 +114,6 @@ class CustomerVehicle(db.Model):
     make = Column(String(254))
     model = Column(String(254))
     customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
-
-    customer = relationship('app.customer.models.Customer', backref='customer_vehicle')
 
     def to_dict(self):
         return {
@@ -147,5 +166,42 @@ class CustomerVehicle(db.Model):
         try:
             vehicle = db.session.query(CustomerVehicle).filter(CustomerVehicle.customer_vehicle_id == customer_vehicle_id).first()
             db.session.delete(vehicle)
+        except Exception as e:
+            raise e
+        
+
+class CustomerAddon(db.Model):
+    __tablename__ = 'customer_addon'
+
+    customer_addon_id = Column(INTEGER, primary_key=True)
+    customer_id = Column(ForeignKey('customer.customer_id'), nullable=False, index=True)
+    customer_vehicle_id = Column(ForeignKey('customer_vehicle.customer_vehicle_id'), index=True)
+    addon_id = Column(ForeignKey('addon.addon_id'), nullable=False, index=True)
+
+    addon = relationship('app.inventory.models.Addon', uselist=False, backref='customer_addon')
+
+    @classmethod
+    def create_customer_addon(cls, customer_id, addon_id, customer_vehicle_id):
+        try:
+            customer_addon = CustomerAddon(customer_id=customer_id, addon_id=addon_id,
+                                             customer_vehicle_id=customer_vehicle_id)
+            db.session.add(customer_addon)
+            return customer_addon
+        except Exception as e:
+            raise e
+
+    @classmethod
+    def get_by_customer(cls, customer_id):
+        try:
+            customer_addons = db.session.query(CustomerAddon).filter(CustomerAddon.customer_id == customer_id).all()
+            return customer_addons
+        except Exception as e:
+            raise e
+
+    @classmethod
+    def get_by_addon(cls, addon_id):
+        try:
+            customer_addons = db.session.query(CustomerAddon).filter(CustomerAddon.addon_id == addon_id).all()
+            return customer_addons
         except Exception as e:
             raise e
