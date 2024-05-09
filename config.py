@@ -9,7 +9,7 @@ class Config:
     # Database connection details
     DB_USERNAME = "backend"
     DB_PASSWORD = "backend-password"
-    DB_HOST = "35.193.199.10"
+    DB_HOST = "10.111.112.3"
     DB_NAME = "DealershipDB"
 
     # Database URI components
